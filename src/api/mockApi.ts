@@ -2,7 +2,17 @@ import {mockRestEndpointFunctions} from "@lightningkite/lightning-server-simplif
 import {rand} from "@ngneat/falso"
 import {LocalStorageKey} from "utils/constants"
 import {generateMockDatastore, MockDatastore} from "./mockDatastore"
-import {Api, EmailPinLogin, ServerHealth, User} from "./sdk"
+import {
+  Api,
+  EmailPinLogin,
+  Organization,
+  Project,
+  ServerHealth,
+  Task,
+  TimeEntry,
+  UploadInformation,
+  User
+} from "./sdk"
 
 let myUser: User | null = null
 
@@ -16,10 +26,25 @@ export class MockApi implements Api {
     myUser = rand(this.mockDatastore.users)
   }
 
+  uploadFileForRequest(): Promise<UploadInformation> {
+    throw new Error("Method not implemented.")
+  }
+
   readonly user = mockRestEndpointFunctions<User>(
     this.mockDatastore.users,
     "user"
   )
+
+  readonly organization = mockRestEndpointFunctions<Organization>(
+    [],
+    "organization"
+  )
+
+  readonly project = mockRestEndpointFunctions<Project>([], "project")
+
+  readonly task = mockRestEndpointFunctions<Task>([], "task")
+
+  readonly timeEntry = mockRestEndpointFunctions<TimeEntry>([], "timeEntry")
 
   getServerHealth(): Promise<ServerHealth> {
     return Promise.reject()

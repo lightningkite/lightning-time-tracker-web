@@ -1,4 +1,4 @@
-import {generateUsers} from "./mocks/users"
+// import {generateUsers} from "./mocks/users"
 import {User} from "./sdk"
 
 export interface MockDatastore {
@@ -6,7 +6,8 @@ export interface MockDatastore {
 }
 
 export const generateMockDatastore = (): MockDatastore => {
-  const users = generateUsers(25)
+  // const users = generateUsers(25)
 
-  return {users}
+  // return {users}
+  return {users: []}
 }

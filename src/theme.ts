@@ -7,7 +7,7 @@ export const theme = createTheme({
     h1: {
       fontSize: 30,
       lineHeight: 1.2,
-      fontWeight: 700,
+      fontWeight: 700
     },
     h2: {
       fontSize: 24,
@@ -23,6 +23,7 @@ export const theme = createTheme({
 
   // https://mui.com/material-ui/customization/color/
   palette: {
+    mode: "dark",
     primary: {
       // This is the primary color used throughout the app. See: https://mui.com/material-ui/customization/palette/#using-a-color-object
       main: "#1c386b"

@@ -1,25 +1,16 @@
 import {makeObjectModification} from "@lightningkite/lightning-server-simplified"
-import {
-  makeFormikDateTimePickerProps,
-  makeFormikTextFieldProps
-} from "@lightningkite/mui-lightning-components"
+import {makeFormikTextFieldProps} from "@lightningkite/mui-lightning-components"
 import {LoadingButton} from "@mui/lab"
 import {Alert, Stack, TextField} from "@mui/material"
-import {DatePicker} from "@mui/x-date-pickers"
 import {User} from "api/sdk"
-import {AuthContext} from "utils/context"
-import dayjs from "dayjs"
 import {useFormik} from "formik"
-import React, {FC, useContext, useEffect, useState} from "react"
-import {dateFromISO, dateToISO} from "utils/helpers"
+import React, {FC, useContext, useState} from "react"
+import {AuthContext} from "utils/context"
 import * as yup from "yup"
 
 // Form validation schema. See: https://www.npmjs.com/package/yup#object
 const validationSchema = yup.object().shape({
-  name: yup.string().required("Name is required"),
-  email: yup.string().email().required("Email is required"),
-  phone: yup.string().required("Phone is required"),
-  birthday: yup.string().required("Birthday is required")
+  email: yup.string().email().required("Email is required")
 })
 
 export interface UserFormProps {
@@ -36,16 +27,17 @@ export const UserForm: FC<UserFormProps> = (props) => {
 
   // Formik is a library for managing form state. See: https://formik.org/docs/overview
   const formik = useFormik({
-    initialValues: userToFormikValues(user),
+    initialValues: {
+      email: user.email
+    },
     validationSchema,
     // When the form is submitted, this function is called if the form values are valid
-    onSubmit: async (values) => {
+    onSubmit: async (values, {resetForm}) => {
       setError("")
 
       // Convert date fields from Date back to ISO string
       const formattedValues = {
-        ...values,
-        birthday: dateToISO(values.birthday)
+        ...values
       }
 
       // Automatically builds the Lightning Server modification given the old object and the new values
@@ -63,29 +55,17 @@ export const UserForm: FC<UserFormProps> = (props) => {
         if (currentUser._id === user._id) {
           setCurrentUser(updatedUser)
         }
+
+        resetForm({values})
       } catch {
         setError("Error updating user")
       }
     }
   })
 
-  // Reset the form when the user changes or refreshes
-  useEffect(() => {
-    // Dates are stored as ISO strings in the database, so we need to convert them to Date objects
-    formik.resetForm({values: userToFormikValues(user)})
-  }, [user])
-
   return (
     <Stack gap={3}>
-      <TextField label="Name" {...makeFormikTextFieldProps(formik, "name")} />
       <TextField label="Email" {...makeFormikTextFieldProps(formik, "email")} />
-      <TextField label="Phone" {...makeFormikTextFieldProps(formik, "phone")} />
-      <DatePicker
-        label="Birthday"
-        {...makeFormikDateTimePickerProps(formik, "birthday")}
-        minDate={dayjs().subtract(120, "year")}
-        maxDate={dayjs()}
-      />
 
       {error && <Alert severity="error">{error}</Alert>}
 
@@ -103,13 +83,4 @@ export const UserForm: FC<UserFormProps> = (props) => {
       </LoadingButton>
     </Stack>
   )
-}
-
-function userToFormikValues(user: User) {
-  return {
-    name: user.name,
-    email: user.email,
-    phone: user.phone,
-    birthday: dateFromISO(user.birthday)
-  }
 }

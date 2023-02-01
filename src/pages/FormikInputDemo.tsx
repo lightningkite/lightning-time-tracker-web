@@ -17,12 +17,12 @@ import {
 } from "@mui/material"
 import {DatePicker, DateTimePicker, TimePicker} from "@mui/x-date-pickers"
 import {User} from "api/sdk"
-import {AuthContext} from "utils/context"
 import FormSection from "components/FormSection"
 import PageHeader from "components/PageHeader"
 import dayjs from "dayjs"
 import {useFormik} from "formik"
 import React, {FC, useContext} from "react"
+import {AuthContext} from "utils/context"
 
 const FormikInputDemo: FC = () => {
   const {session} = useContext(AuthContext)
@@ -65,23 +65,8 @@ const FormikInputDemo: FC = () => {
               multiple
               label="Select multiple users"
               restEndpoint={session.user}
-              getOptionLabel={(user) => `${user.name}`}
-              searchProperties={["name"]}
-            />
-
-            <RestAutocompleteInput
-              {...makeFormikAutocompleteProps(formik, "gmailUser")}
-              label="User with gmail email"
-              restEndpoint={session.user}
-              getOptionLabel={(user) => `${user.name} (${user.email})`}
-              additionalQueryConditions={[
-                {
-                  email: {
-                    StringContains: {value: "@gmail.com", ignoreCase: true}
-                  }
-                }
-              ]}
-              searchProperties={["name", "email"]}
+              getOptionLabel={(user) => `${user.email}`}
+              searchProperties={["email"]}
             />
           </FormSection>
 

@@ -36,15 +36,24 @@ export class MockApi implements Api {
   )
 
   readonly organization = mockRestEndpointFunctions<Organization>(
-    [],
+    this.mockDatastore.organizations,
     "organization"
   )
 
-  readonly project = mockRestEndpointFunctions<Project>([], "project")
+  readonly project = mockRestEndpointFunctions<Project>(
+    this.mockDatastore.projects,
+    "project"
+  )
 
-  readonly task = mockRestEndpointFunctions<Task>([], "task")
+  readonly task = mockRestEndpointFunctions<Task>(
+    this.mockDatastore.tasks,
+    "task"
+  )
 
-  readonly timeEntry = mockRestEndpointFunctions<TimeEntry>([], "timeEntry")
+  readonly timeEntry = mockRestEndpointFunctions<TimeEntry>(
+    this.mockDatastore.timeEntries,
+    "timeEntry"
+  )
 
   getServerHealth(): Promise<ServerHealth> {
     return Promise.reject()

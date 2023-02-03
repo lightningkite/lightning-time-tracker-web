@@ -1,24 +1,24 @@
 import {
-  makeFormikDateTimePickerProps,
+  makeFormikCheckboxProps,
   makeFormikTextFieldProps
 } from "@lightningkite/mui-lightning-components"
 import {Add} from "@mui/icons-material"
-import {Button, Stack, TextField} from "@mui/material"
-import {DatePicker} from "@mui/x-date-pickers"
+import {
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Stack,
+  TextField
+} from "@mui/material"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
-import dayjs from "dayjs"
 import {useFormik} from "formik"
 import React, {FC, useContext, useState} from "react"
 import {AuthContext} from "utils/context"
-import {dateToISO} from "utils/helpers"
 import * as yup from "yup"
 
 // Form validation schema. See: https://www.npmjs.com/package/yup#object
 const validationSchema = yup.object().shape({
-  name: yup.string().required("Required"),
-  email: yup.string().email().required("Required"),
-  phone: yup.string().required("Required"),
-  birthday: yup.date().required("Required").nullable()
+  name: yup.string().required("Required")
 })
 
 export interface AddUserProps {
@@ -26,7 +26,7 @@ export interface AddUserProps {
 }
 
 export const AddUserButton: FC<AddUserProps> = (props) => {
-  const {session} = useContext(AuthContext)
+  const {session, currentUser} = useContext(AuthContext)
 
   const [showCreateForm, setShowCreateForm] = useState(false)
 
@@ -37,19 +37,18 @@ export const AddUserButton: FC<AddUserProps> = (props) => {
 
   const formik = useFormik({
     initialValues: {
-      name: "",
       email: "",
-      phone: "",
-      birthday: null as Date | null
+      isSuperUser: false
     },
     validationSchema,
     onSubmit: async (values) => {
       await session.user.insert({
         ...values,
         _id: crypto.randomUUID(),
-        birthday: dateToISO(values.birthday as Date),
-        createdAt: dateToISO(new Date()),
-        modifiedAt: dateToISO(new Date())
+        organization: currentUser.organization,
+        currentTask: undefined,
+        limitToProjects: undefined,
+        termsAgreed: ""
       })
 
       props.afterSubmit()
@@ -76,22 +75,15 @@ export const AddUserButton: FC<AddUserProps> = (props) => {
       >
         <Stack gap={3}>
           <TextField
-            label="Name"
-            {...makeFormikTextFieldProps(formik, "name")}
-          />
-          <TextField
             label="Email"
             {...makeFormikTextFieldProps(formik, "email")}
           />
-          <TextField
-            label="Phone"
-            {...makeFormikTextFieldProps(formik, "phone")}
-          />
-          <DatePicker
-            label="Birthday"
-            {...makeFormikDateTimePickerProps(formik, "birthday")}
-            minDate={dayjs().subtract(120, "year")}
-            maxDate={dayjs()}
+
+          <FormControlLabel
+            control={
+              <Checkbox {...makeFormikCheckboxProps(formik, "isSuperUser")} />
+            }
+            label="Is Super User"
           />
         </Stack>
       </DialogForm>

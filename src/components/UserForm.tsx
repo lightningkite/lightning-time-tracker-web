@@ -1,7 +1,16 @@
 import {makeObjectModification} from "@lightningkite/lightning-server-simplified"
-import {makeFormikTextFieldProps} from "@lightningkite/mui-lightning-components"
+import {
+  makeFormikCheckboxProps,
+  makeFormikTextFieldProps
+} from "@lightningkite/mui-lightning-components"
 import {LoadingButton} from "@mui/lab"
-import {Alert, Stack, TextField} from "@mui/material"
+import {
+  Alert,
+  Checkbox,
+  FormControlLabel,
+  Stack,
+  TextField
+} from "@mui/material"
 import {User} from "api/sdk"
 import {useFormik} from "formik"
 import React, {FC, useContext, useState} from "react"
@@ -28,7 +37,8 @@ export const UserForm: FC<UserFormProps> = (props) => {
   // Formik is a library for managing form state. See: https://formik.org/docs/overview
   const formik = useFormik({
     initialValues: {
-      email: user.email
+      email: user.email,
+      isSuperUser: user.isSuperUser
     },
     validationSchema,
     // When the form is submitted, this function is called if the form values are valid
@@ -66,6 +76,14 @@ export const UserForm: FC<UserFormProps> = (props) => {
   return (
     <Stack gap={3}>
       <TextField label="Email" {...makeFormikTextFieldProps(formik, "email")} />
+
+      <FormControlLabel
+        control={
+          <Checkbox {...makeFormikCheckboxProps(formik, "isSuperUser")} />
+        }
+        label="Is Super User"
+        disabled={currentUser._id === user._id}
+      />
 
       {error && <Alert severity="error">{error}</Alert>}
 

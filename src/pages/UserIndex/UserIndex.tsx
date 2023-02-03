@@ -8,16 +8,18 @@ import {AddUserButton} from "./AddUserButton"
 
 export const UserIndex: FC = () => {
   const navigate = useNavigate()
-  const {session} = useContext(AuthContext)
+  const {session, currentUser} = useContext(AuthContext)
 
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   return (
     <Container maxWidth="md">
       <PageHeader title="Users List">
-        <AddUserButton
-          afterSubmit={() => setRefreshTrigger((prev) => prev + 1)}
-        />
+        {currentUser.isSuperUser && (
+          <AddUserButton
+            afterSubmit={() => setRefreshTrigger((prev) => prev + 1)}
+          />
+        )}
       </PageHeader>
 
       <RestDataTable

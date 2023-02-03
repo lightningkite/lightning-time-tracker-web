@@ -1,4 +1,5 @@
 import {createTheme} from "@mui/material"
+import {blue} from "@mui/material/colors"
 
 // https://mui.com/material-ui/customization/theming/
 export const theme = createTheme({
@@ -18,18 +19,6 @@ export const theme = createTheme({
       fontSize: 20,
       lineHeight: 1.6,
       fontWeight: 700
-    }
-  },
-
-  // https://mui.com/material-ui/customization/color/
-  palette: {
-    mode: "dark",
-    primary: {
-      // This is the primary color used throughout the app. See: https://mui.com/material-ui/customization/palette/#using-a-color-object
-      main: "#1c386b"
-    },
-    background: {
-      default: "#F6F6F6"
     }
   },
 

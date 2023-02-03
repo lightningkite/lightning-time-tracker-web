@@ -1,4 +1,4 @@
-import {Api, User, UserSession} from "api/sdk"
+import {Api, Organization, User, UserSession} from "api/sdk"
 import {createContext} from "react"
 
 export interface AuthContextType {
@@ -6,6 +6,9 @@ export interface AuthContextType {
   logout: () => void
   currentUser: User
   setCurrentUser: (newCurrentUser: User) => void
+  currentOrganization: Organization
+  mode: "light" | "dark"
+  setMode: (newMode: "light" | "dark") => void
 }
 
 export interface UnauthContextType {

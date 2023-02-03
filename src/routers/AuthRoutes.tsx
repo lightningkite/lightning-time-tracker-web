@@ -8,7 +8,8 @@ import {Navigate, Route, Routes} from "react-router-dom"
 const Home = React.lazy(() => import("pages/Home"))
 const UserIndex = React.lazy(() => import("pages/UserIndex"))
 const UserDetail = React.lazy(() => import("pages/UserDetail"))
-const FormikInputDemo = React.lazy(() => import("pages/FormikInputDemo"))
+const Settings = React.lazy(() => import("pages/Settings"))
+const Projects = React.lazy(() => import("pages/Projects"))
 
 const AuthRoutes: FC = () => {
   return (
@@ -20,7 +21,8 @@ const AuthRoutes: FC = () => {
           <Route path="/" element={<Home />} />
           <Route path="/users" element={<UserIndex />} />
           <Route path="/users/:userId" element={<UserDetail />} />
-          <Route path="/input-demo" element={<FormikInputDemo />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/settings" element={<Settings />} />
 
           {/* If page doesn't exist, redirect to home */}
           <Route path="*" element={<Navigate to="/" replace />} />

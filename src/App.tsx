@@ -1,6 +1,8 @@
+import {createTheme, CssBaseline, ThemeProvider} from "@mui/material"
+import {blue} from "@mui/material/colors"
 import {LocalizationProvider} from "@mui/x-date-pickers"
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs"
-import {User} from "api/sdk"
+import {Organization, User} from "api/sdk"
 import {useSessionManager} from "api/useSessionManager"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
@@ -9,6 +11,8 @@ import UnauthLayout from "layouts/UnauthLayout"
 import React, {FC, useEffect, useState} from "react"
 import {BrowserRouter} from "react-router-dom"
 import {AuthRoutes, UnauthRoutes} from "routers"
+import {theme} from "theme"
+import {LocalStorageKey} from "utils/constants"
 import {AuthContext, UnauthContext} from "utils/context"
 
 const App: FC = () => {
@@ -16,21 +20,42 @@ const App: FC = () => {
     useSessionManager()
 
   const [currentUser, setCurrentUser] = useState<User | null>()
+  const [currentOrganization, setCurrentOrganization] =
+    useState<Organization | null>()
+  const [mode, setMode] = useState(
+    (localStorage.getItem(LocalStorageKey.MODE) as "light" | "dark") ?? "dark"
+  )
 
   const isLoggedIn = !!session
 
   useEffect(() => {
     if (!session) {
       setCurrentUser(undefined)
+      return
     }
 
-    session?.auth
+    session.auth
       .getSelf()
       .then(setCurrentUser)
       .catch(() => setCurrentUser(null))
   }, [isLoggedIn])
 
-  if (isLoggedIn && currentUser === undefined) {
+  useEffect(() => {
+    if (!session || !currentUser) {
+      setCurrentOrganization(undefined)
+      return
+    }
+
+    session.organization
+      .detail(currentUser.organization)
+      .then(setCurrentOrganization)
+      .catch(() => setCurrentOrganization(null))
+  }, [currentUser])
+
+  if (
+    isLoggedIn &&
+    (currentUser === undefined || currentOrganization === undefined)
+  ) {
     return <Loading />
   }
 
@@ -38,26 +63,53 @@ const App: FC = () => {
     return <ErrorAlert>Error loading current user</ErrorAlert>
   }
 
+  if (currentOrganization === null) {
+    return <ErrorAlert>Error loading current organization</ErrorAlert>
+  }
+
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <BrowserRouter>
-        {session && currentUser ? (
-          <AuthContext.Provider
-            value={{session, logout, currentUser, setCurrentUser}}
-          >
-            <MainLayout>
-              <AuthRoutes />
-            </MainLayout>
-          </AuthContext.Provider>
-        ) : (
-          <UnauthContext.Provider value={{api, changeBackendURL, authenticate}}>
-            <UnauthLayout>
-              <UnauthRoutes />
-            </UnauthLayout>
-          </UnauthContext.Provider>
-        )}
-      </BrowserRouter>
-    </LocalizationProvider>
+    <ThemeProvider
+      theme={createTheme({
+        ...theme,
+        palette: {
+          mode,
+          primary: {
+            main: blue[500]
+          }
+        }
+      })}
+    >
+      <CssBaseline />
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <BrowserRouter>
+          {session && currentUser && currentOrganization ? (
+            <AuthContext.Provider
+              value={{
+                session,
+                logout,
+                currentUser,
+                setCurrentUser,
+                currentOrganization,
+                mode,
+                setMode
+              }}
+            >
+              <MainLayout>
+                <AuthRoutes />
+              </MainLayout>
+            </AuthContext.Provider>
+          ) : (
+            <UnauthContext.Provider
+              value={{api, changeBackendURL, authenticate}}
+            >
+              <UnauthLayout>
+                <UnauthRoutes />
+              </UnauthLayout>
+            </UnauthContext.Provider>
+          )}
+        </BrowserRouter>
+      </LocalizationProvider>
+    </ThemeProvider>
   )
 }
 

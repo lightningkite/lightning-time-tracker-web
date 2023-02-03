@@ -6,10 +6,7 @@ const UnauthLayout: FC<{children: ReactNode}> = ({children}) => {
     <Stack
       alignItems="center"
       justifyContent="space-evenly"
-      sx={{
-        height: "100vh",
-        bgcolor: "primary.main"
-      }}
+      sx={{height: "100vh"}}
     >
       <Container maxWidth="xs">
         <Card>

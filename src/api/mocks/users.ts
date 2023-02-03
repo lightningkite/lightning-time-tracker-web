@@ -1,4 +1,4 @@
-import {rand, randEmail, randFullName, randUuid} from "@ngneat/falso"
+import {rand, randEmail, randUuid} from "@ngneat/falso"
 import {Organization, User} from "api/sdk"
 import {dateToISO} from "utils/helpers"
 
@@ -12,7 +12,6 @@ export function generateUsers(
       const organization = rand(organizations)._id
       return {
         _id: randUuid(),
-        name: randFullName(),
         email: randEmail(),
         organization,
         currentTask: null,

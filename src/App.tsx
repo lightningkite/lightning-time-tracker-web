@@ -1,5 +1,4 @@
-import {createTheme, CssBaseline, ThemeProvider} from "@mui/material"
-import {blue} from "@mui/material/colors"
+import {colors, createTheme, CssBaseline, ThemeProvider} from "@mui/material"
 import {LocalizationProvider} from "@mui/x-date-pickers"
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs"
 import {Organization, User} from "api/sdk"
@@ -25,6 +24,17 @@ const App: FC = () => {
   const [mode, setMode] = useState(
     (localStorage.getItem(LocalStorageKey.MODE) as "light" | "dark") ?? "dark"
   )
+  const [color, setColor] = useState(
+    localStorage.getItem(LocalStorageKey.COLOR) ?? "blue"
+  )
+
+  useEffect(() => {
+    localStorage.setItem(LocalStorageKey.MODE, mode)
+  }, [mode])
+
+  useEffect(() => {
+    localStorage.setItem(LocalStorageKey.COLOR, color)
+  }, [color])
 
   const isLoggedIn = !!session
 
@@ -74,7 +84,7 @@ const App: FC = () => {
         palette: {
           mode,
           primary: {
-            main: blue[500]
+            main: (colors as any)[color][500]
           }
         }
       })}
@@ -91,7 +101,9 @@ const App: FC = () => {
                 setCurrentUser,
                 currentOrganization,
                 mode,
-                setMode
+                setMode,
+                color,
+                setColor
               }}
             >
               <MainLayout>

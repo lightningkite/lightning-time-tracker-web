@@ -14,12 +14,12 @@ export const FormSection: FC<PropsWithChildren<FormSectionProps>> = (props) => {
   return (
     <Box pt={disableTopPadding ? undefined : 6}>
       {title && (
-        <Typography variant="h3" color="primary.main">
+        <Typography variant="h3" color="text.secondary">
           {title}
         </Typography>
       )}
       {subtitle && (
-        <Typography variant="body2" sx={{color: "#888"}}>
+        <Typography variant="body2" color="text.disabled">
           {subtitle}
         </Typography>
       )}

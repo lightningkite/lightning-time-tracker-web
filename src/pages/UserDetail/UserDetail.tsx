@@ -7,7 +7,7 @@ import React, {FC, useContext, useEffect, useState} from "react"
 import {useParams} from "react-router-dom"
 import {AuthContext} from "utils/context"
 import {DeleteUserButton} from "./DeleteUserButton"
-import {UserForm} from "./UserForm"
+import {UserForm} from "../../components/UserForm"
 
 const UserDetail: FC = () => {
   const {userId} = useParams()

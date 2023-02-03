@@ -9,6 +9,8 @@ export interface AuthContextType {
   currentOrganization: Organization
   mode: "light" | "dark"
   setMode: (newMode: "light" | "dark") => void
+  color: string
+  setColor: (newColor: string) => void
 }
 
 export interface UnauthContextType {

@@ -8,7 +8,6 @@ import {
 import {
   AppBar,
   Box,
-  Divider,
   Drawer,
   IconButton,
   List,
@@ -21,7 +20,7 @@ import {
   useMediaQuery
 } from "@mui/material"
 import React, {FC, ReactNode, useContext, useState} from "react"
-import {matchPath, useLocation, useNavigate} from "react-router-dom"
+import {useLocation, useNavigate} from "react-router-dom"
 import {theme} from "theme"
 import {AuthContext} from "utils/context"
 
@@ -34,8 +33,8 @@ export interface NavItem {
 
 const navItems: NavItem[] = [
   {label: "Dashboard", to: "/", icon: Dashboard},
-  {label: "Users", to: "/users", icon: People},
   {label: "Projects", to: "/projects", icon: Assignment},
+  {label: "Users", to: "/users", icon: People},
   {label: "Settings", to: "/settings", icon: Settings}
 ]
 
@@ -80,8 +79,6 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
       <Drawer variant="persistent" anchor="left" open={!isMobile || open}>
         <Toolbar sx={{width: SIDEBAR_WIDTH}} />
 
-        <Divider sx={{my: 2}} />
-
         <List>
           {navItems.map(({label, to, icon: Icon, show}) => (
             <ListItem key={to} disablePadding sx={{display: "block"}}>
@@ -93,7 +90,9 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
                     px: 2.5
                   }}
                   onClick={() => navigate(to)}
-                  selected={!!matchPath(location.pathname, to)}
+                  selected={
+                    location.pathname.split("/")[1] === to.split("/")[1]
+                  }
                 >
                   <ListItemIcon
                     sx={{

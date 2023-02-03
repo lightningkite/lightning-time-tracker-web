@@ -2,5 +2,6 @@
 export enum LocalStorageKey {
   USER_TOKEN = "lk-time-userToken",
   BACKEND_URL = "lk-time-backendURL",
-  MODE = "lk-time-mode"
+  MODE = "lk-time-mode",
+  COLOR = "lk-time-color"
 }

@@ -9,7 +9,8 @@ const Home = React.lazy(() => import("pages/Home"))
 const UserIndex = React.lazy(() => import("pages/UserIndex"))
 const UserDetail = React.lazy(() => import("pages/UserDetail"))
 const Settings = React.lazy(() => import("pages/Settings"))
-const Projects = React.lazy(() => import("pages/Projects"))
+const ProjectIndex = React.lazy(() => import("pages/ProjectIndex"))
+const ProjectDetail = React.lazy(() => import("pages/ProjectDetail"))
 
 const AuthRoutes: FC = () => {
   return (
@@ -21,7 +22,8 @@ const AuthRoutes: FC = () => {
           <Route path="/" element={<Home />} />
           <Route path="/users" element={<UserIndex />} />
           <Route path="/users/:userId" element={<UserDetail />} />
-          <Route path="/projects" element={<Projects />} />
+          <Route path="/projects" element={<ProjectIndex />} />
+          <Route path="/projects/:projectId" element={<ProjectDetail />} />
           <Route path="/settings" element={<Settings />} />
 
           {/* If page doesn't exist, redirect to home */}

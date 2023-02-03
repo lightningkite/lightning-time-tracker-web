@@ -89,7 +89,10 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
                     justifyContent: "center",
                     px: 2.5
                   }}
-                  onClick={() => navigate(to)}
+                  onClick={() => {
+                    navigate(to)
+                    setOpen(false)
+                  }}
                   selected={
                     location.pathname.split("/")[1] === to.split("/")[1]
                   }

@@ -37,7 +37,7 @@ const PageHeader: FC<PropsWithChildren<PageHeaderProps>> = (props) => {
       )}
 
       <Stack direction="row" alignItems="center" justifyContent="start">
-        <Typography variant="h1" sx={{mr: "auto"}}>
+        <Typography variant="h1" sx={{mr: "auto", pr: 2}}>
           {title}
         </Typography>
         {children}

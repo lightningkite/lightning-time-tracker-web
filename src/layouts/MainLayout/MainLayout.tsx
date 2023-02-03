@@ -1,4 +1,5 @@
 import {
+  AccessTime,
   Assignment,
   Dashboard,
   Menu,
@@ -33,6 +34,7 @@ export interface NavItem {
 
 const navItems: NavItem[] = [
   {label: "Dashboard", to: "/", icon: Dashboard},
+  {label: "My Time", to: "/my-time", icon: AccessTime},
   {label: "Projects", to: "/projects", icon: Assignment},
   {label: "Users", to: "/users", icon: People},
   {label: "Settings", to: "/settings", icon: Settings}
@@ -46,7 +48,7 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
   const location = useLocation()
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
 
-  const [open, setOpen] = useState(isMobile)
+  const [open, setOpen] = useState(!isMobile)
 
   function toggleOpen() {
     setOpen((prev) => !prev)

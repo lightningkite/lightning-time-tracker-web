@@ -1,10 +1,15 @@
-import {rand, randNumber, randSentence, randUuid} from "@ngneat/falso"
+import {
+  rand,
+  randNumber,
+  randPastDate,
+  randSentence,
+  randUuid
+} from "@ngneat/falso"
 import {Task, TimeEntry, User} from "api/sdk"
 import dayjs from "dayjs"
 import {dateToISO} from "utils/helpers"
 
 import duration from "dayjs/plugin/duration"
-
 dayjs.extend(duration)
 
 export function generateTimeEntries(
@@ -30,7 +35,7 @@ export function generateTimeEntries(
           seconds: randNumber({min: 0, max: 59})
         })
         .toISOString(),
-      date: dateToISO(new Date())
+      date: dateToISO(randPastDate())
     }
   })
 }

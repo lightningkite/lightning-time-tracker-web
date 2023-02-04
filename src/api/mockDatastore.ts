@@ -17,7 +17,7 @@ export const generateMockDatastore = (): MockDatastore => {
   const organizations = generateOrganizations(1)
   const projects = generateProjects(5, organizations)
   const users = generateUsers(25, organizations)
-  const tasks = generateTasks(100, projects, users)
+  const tasks = generateTasks(30, projects, users)
   const timeEntries = generateTimeEntries(5, tasks, users)
 
   return {users, organizations, projects, tasks, timeEntries}

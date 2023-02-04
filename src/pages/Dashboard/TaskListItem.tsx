@@ -1,19 +1,5 @@
-import {
-  ArrowDownward,
-  ArrowDropDown,
-  PauseCircle,
-  PlayCircle,
-  Star
-} from "@mui/icons-material"
-import {
-  Box,
-  Chip,
-  IconButton,
-  ListItem,
-  ListItemButton,
-  Stack,
-  Typography
-} from "@mui/material"
+import {ArrowDropDown} from "@mui/icons-material"
+import {Chip, ListItem, Stack, Typography} from "@mui/material"
 import {Task, User} from "api/sdk"
 import dayjs from "dayjs"
 import React, {FC, useContext, useEffect, useState} from "react"
@@ -21,14 +7,16 @@ import {AuthContext, TimerContext} from "utils/context"
 import {getTimerSeconds} from "utils/helpers"
 
 import duration from "dayjs/plugin/duration"
+import {UserChip} from "./UserChip"
 dayjs.extend(duration)
 
 export interface TaskListItemProps {
   task: Task
+  setTask: (task: Task) => void
   users: User[]
 }
 
-export const TaskListItem: FC<TaskListItemProps> = ({task, users}) => {
+export const TaskListItem: FC<TaskListItemProps> = ({task, setTask, users}) => {
   const {session, currentUser} = useContext(AuthContext)
   const {timers, getTimerForTask, toggleTimer, newTimer} =
     useContext(TimerContext)
@@ -116,13 +104,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({task, users}) => {
           justifyContent="space-between"
           sx={{mb: 1}}
         >
-          <Chip
-            size="small"
-            color={isMine ? "primary" : undefined}
-            label={taskUser?.email ?? "Unknown"}
-            icon={<ArrowDropDown />}
-            onClick={() => console.log("click")}
-          />
+          <UserChip users={users} task={task} setTask={setTask} />
           <Typography
             variant="body2"
             color="primary.light"

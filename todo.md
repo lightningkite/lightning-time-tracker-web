@@ -1,2 +1,3 @@
 - Array of timers below each task item
-- Click the assignee on a chip to reassign
+- Click dashboard task to open details and edit
+- Click item in time entry table to edit

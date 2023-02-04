@@ -28,6 +28,7 @@ export const ProjectsTasks: FC = () => {
   const [projects, setProjects] = useState<Project[] | null>()
   const [tasks, setTasks] = useState<Task[] | null>()
   const [users, setUsers] = useState<User[] | null>()
+  const [initialSorting, setInitialSorting] = useState<string[]>()
 
   useEffect(() => {
     session.user
@@ -76,7 +77,22 @@ export const ProjectsTasks: FC = () => {
     return tasksByProject
   }, [tasks, projects])
 
-  if (projects === undefined || tasks === undefined || users === undefined) {
+  useEffect(() => {
+    if (!tasksByProject || initialSorting) return
+
+    setInitialSorting(
+      Object.entries(tasksByProject)
+        .sort((a, b) => b[1].myTasksCount - a[1].myTasksCount)
+        .map(([projectName]) => projectName)
+    )
+  }, [tasksByProject])
+
+  if (
+    projects === undefined ||
+    tasks === undefined ||
+    users === undefined ||
+    !initialSorting
+  ) {
     return <Loading />
   }
 
@@ -87,7 +103,9 @@ export const ProjectsTasks: FC = () => {
   return (
     <Box>
       {Object.entries(tasksByProject)
-        .sort((a, b) => b[1].myTasksCount - a[1].myTasksCount)
+        .sort(
+          (a, b) => initialSorting.indexOf(a[0]) - initialSorting.indexOf(b[0])
+        )
         .map(([projectName, {projectTasks, myTasksCount}]) => (
           <Accordion key={projectName} defaultExpanded={myTasksCount > 0}>
             <AccordionSummary expandIcon={<ExpandMore />}>
@@ -102,7 +120,18 @@ export const ProjectsTasks: FC = () => {
             <AccordionDetails>
               <List>
                 {projectTasks.sort(compareTasks).map((task) => (
-                  <TaskListItem task={task} users={users} key={task._id} />
+                  <TaskListItem
+                    task={task}
+                    setTask={(updatedTask) =>
+                      setTasks(
+                        tasks.map((t) =>
+                          t._id === updatedTask._id ? updatedTask : t
+                        )
+                      )
+                    }
+                    users={users}
+                    key={task._id}
+                  />
                 ))}
               </List>
             </AccordionDetails>

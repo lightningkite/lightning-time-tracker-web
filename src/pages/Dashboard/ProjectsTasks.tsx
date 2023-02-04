@@ -1,25 +1,21 @@
-import {ExpandMore, PauseCircle, PlayCircle} from "@mui/icons-material"
+import {ExpandMore} from "@mui/icons-material"
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
   Box,
-  IconButton,
   List,
-  ListItem,
-  ListItemButton,
   Typography
 } from "@mui/material"
 import {Project, Task, TaskState} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import React, {FC, useContext, useEffect, useMemo, useState} from "react"
-import {AuthContext, TimerContext} from "utils/context"
+import {AuthContext} from "utils/context"
+import {TaskListItem} from "./TaskListItem"
 
 export const ProjectsTasks: FC = () => {
   const {session} = useContext(AuthContext)
-  const {timers, getTimerForTask, toggleTimer, newTimer} =
-    useContext(TimerContext)
 
   const [projects, setProjects] = useState<Project[] | null>()
   const [tasks, setTasks] = useState<Task[] | null>()
@@ -54,19 +50,6 @@ export const ProjectsTasks: FC = () => {
     return tasksByProject
   }, [tasks, projects])
 
-  const handlePlay = (params: {project: string; task: string}) => {
-    const key = getTimerForTask(params.task)
-    if (key) {
-      toggleTimer(key)
-    } else {
-      newTimer({project: params.project, task: params.task})
-    }
-  }
-
-  const handlePause = (key: string) => {
-    toggleTimer(key)
-  }
-
   if (projects === undefined || tasks === undefined) {
     return <Loading />
   }
@@ -80,70 +63,13 @@ export const ProjectsTasks: FC = () => {
       {Object.entries(tasksByProject).map(([projectName, projectTasks]) => (
         <Accordion key={projectName}>
           <AccordionSummary expandIcon={<ExpandMore />}>
-            <Typography>{projectName}</Typography>
+            <Typography variant="h2">{projectName}</Typography>
           </AccordionSummary>
           <AccordionDetails>
             <List>
-              {projectTasks.map((task) => {
-                const timerKey = getTimerForTask(task._id)
-                const timer = timerKey ? timers[timerKey] : undefined
-                const isPlaying = !!timer?.lastStarted
-                const isPaused = timer && !isPlaying
-
-                return (
-                  <ListItem
-                    key={task._id}
-                    secondaryAction={
-                      isPlaying ? (
-                        <IconButton
-                          edge="end"
-                          onClick={() => handlePause(timerKey as string)}
-                          color="primary"
-                        >
-                          <PauseCircle fontSize="large" />
-                        </IconButton>
-                      ) : (
-                        <IconButton
-                          edge="end"
-                          onClick={() =>
-                            handlePlay({project: task.project, task: task._id})
-                          }
-                          sx={{
-                            color: "text.disabled",
-                            "&:hover": {color: "text.primary"}
-                          }}
-                        >
-                          <PlayCircle fontSize="large" />
-                        </IconButton>
-                      )
-                    }
-                    disablePadding
-                    sx={{
-                      "& > *:last-child": {
-                        display: isPlaying || isPaused ? "block" : "none"
-                      },
-                      "&:hover": {
-                        "& > *:last-child": {
-                          display: "block !important"
-                        }
-                      }
-                    }}
-                  >
-                    <ListItemButton sx={{py: 2}}>
-                      <Typography
-                        sx={{
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          mr: 2
-                        }}
-                      >
-                        {task.description}
-                      </Typography>
-                    </ListItemButton>
-                  </ListItem>
-                )
-              })}
+              {projectTasks.map((task) => (
+                <TaskListItem task={task} key={task._id} />
+              ))}
             </List>
           </AccordionDetails>
         </Accordion>

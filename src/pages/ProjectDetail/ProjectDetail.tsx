@@ -1,8 +1,9 @@
-import {Card, CardContent, Container} from "@mui/material"
+import {Card, CardContent, Container, Typography} from "@mui/material"
 import {Project} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import PageHeader from "components/PageHeader"
+import {TimeEntryTable} from "components/TimeEntryTable"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {useParams} from "react-router-dom"
 import {AuthContext} from "utils/context"
@@ -47,6 +48,15 @@ const ProjectDetail: FC = () => {
           <ProjectForm project={project} setProject={setProject} />
         </CardContent>
       </Card>
+
+      <Typography variant="h2" sx={{mt: 4, mb: 2}}>
+        Time Entries
+      </Typography>
+
+      <TimeEntryTable
+        additionalQueryConditions={[{project: {Equal: project._id}}]}
+        hiddenColumns={["project", "summary"]}
+      />
     </Container>
   )
 }

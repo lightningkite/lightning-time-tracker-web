@@ -6,8 +6,8 @@ import PageHeader from "components/PageHeader"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {useParams} from "react-router-dom"
 import {AuthContext} from "utils/context"
-import {DeleteUserButton} from "./DeleteUserButton"
 import {UserForm} from "../../components/UserForm"
+import {DeleteUserButton} from "./DeleteUserButton"
 
 const UserDetail: FC = () => {
   const {userId} = useParams()
@@ -31,7 +31,7 @@ const UserDetail: FC = () => {
   }
 
   return (
-    <Container maxWidth="sm">
+    <Container maxWidth="md">
       <PageHeader
         title={user.email}
         breadcrumbs={[

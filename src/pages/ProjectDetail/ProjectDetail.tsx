@@ -31,7 +31,7 @@ const ProjectDetail: FC = () => {
   }
 
   return (
-    <Container maxWidth="sm">
+    <Container maxWidth="md">
       <PageHeader
         title={project.name}
         breadcrumbs={[

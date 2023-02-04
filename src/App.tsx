@@ -12,7 +12,8 @@ import {BrowserRouter} from "react-router-dom"
 import {AuthRoutes, UnauthRoutes} from "routers"
 import {theme} from "theme"
 import {LocalStorageKey} from "utils/constants"
-import {AuthContext, UnauthContext} from "utils/context"
+import {AuthContext, TimerContext, UnauthContext} from "utils/context"
+import {useGlobalTimerManager} from "utils/useGlobalTimerManager"
 
 const App: FC = () => {
   const {api, changeBackendURL, session, authenticate, logout} =
@@ -27,6 +28,7 @@ const App: FC = () => {
   const [color, setColor] = useState(
     localStorage.getItem(LocalStorageKey.COLOR) ?? "blue"
   )
+  const timerManager = useGlobalTimerManager()
 
   useEffect(() => {
     localStorage.setItem(LocalStorageKey.MODE, mode)
@@ -106,9 +108,11 @@ const App: FC = () => {
                 setColor
               }}
             >
-              <MainLayout>
-                <AuthRoutes />
-              </MainLayout>
+              <TimerContext.Provider value={timerManager}>
+                <MainLayout>
+                  <AuthRoutes />
+                </MainLayout>
+              </TimerContext.Provider>
             </AuthContext.Provider>
           ) : (
             <UnauthContext.Provider

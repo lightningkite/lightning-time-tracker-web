@@ -1,4 +1,4 @@
-import {ExpandMore, PlayCircle} from "@mui/icons-material"
+import {ExpandMore, PauseCircle, PlayCircle} from "@mui/icons-material"
 import {
   Accordion,
   AccordionDetails,
@@ -8,17 +8,18 @@ import {
   List,
   ListItem,
   ListItemButton,
-  ListItemText,
   Typography
 } from "@mui/material"
 import {Project, Task, TaskState} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import React, {FC, useContext, useEffect, useMemo, useState} from "react"
-import {AuthContext} from "utils/context"
+import {AuthContext, TimerContext} from "utils/context"
 
 export const ProjectsTasks: FC = () => {
   const {session} = useContext(AuthContext)
+  const {timers, getTimerForTask, toggleTimer, newTimer} =
+    useContext(TimerContext)
 
   const [projects, setProjects] = useState<Project[] | null>()
   const [tasks, setTasks] = useState<Task[] | null>()
@@ -53,6 +54,19 @@ export const ProjectsTasks: FC = () => {
     return tasksByProject
   }, [tasks, projects])
 
+  const handlePlay = (params: {project: string; task: string}) => {
+    const key = getTimerForTask(params.task)
+    if (key) {
+      toggleTimer(key)
+    } else {
+      newTimer({project: params.project, task: params.task})
+    }
+  }
+
+  const handlePause = (key: string) => {
+    toggleTimer(key)
+  }
+
   if (projects === undefined || tasks === undefined) {
     return <Loading />
   }
@@ -70,43 +84,66 @@ export const ProjectsTasks: FC = () => {
           </AccordionSummary>
           <AccordionDetails>
             <List>
-              {projectTasks.map((task) => (
-                <ListItem
-                  key={task._id}
-                  secondaryAction={
-                    <IconButton
-                      edge="end"
-                      aria-label="comments"
-                      className="play-button"
-                    >
-                      <PlayCircle />
-                    </IconButton>
-                  }
-                  disablePadding
-                  sx={{
-                    "& > *:last-child": {
-                      display: "none"
-                    },
-                    "&:hover": {
-                      "& > *:last-child": {
-                        display: "inline !important"
-                      }
+              {projectTasks.map((task) => {
+                const timerKey = getTimerForTask(task._id)
+                const timer = timerKey ? timers[timerKey] : undefined
+                const isPlaying = !!timer?.lastStarted
+                const isPaused = timer && !isPlaying
+
+                return (
+                  <ListItem
+                    key={task._id}
+                    secondaryAction={
+                      isPlaying ? (
+                        <IconButton
+                          edge="end"
+                          onClick={() => handlePause(timerKey as string)}
+                          color="primary"
+                        >
+                          <PauseCircle fontSize="large" />
+                        </IconButton>
+                      ) : (
+                        <IconButton
+                          edge="end"
+                          onClick={() =>
+                            handlePlay({project: task.project, task: task._id})
+                          }
+                          sx={{
+                            color: "text.disabled",
+                            "&:hover": {color: "text.primary"}
+                          }}
+                        >
+                          <PlayCircle fontSize="large" />
+                        </IconButton>
+                      )
                     }
-                  }}
-                >
-                  <ListItemButton sx={{py: 2}}>
-                    <Typography
-                      sx={{
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis"
-                      }}
-                    >
-                      {task.description}
-                    </Typography>
-                  </ListItemButton>
-                </ListItem>
-              ))}
+                    disablePadding
+                    sx={{
+                      "& > *:last-child": {
+                        display: isPlaying || isPaused ? "block" : "none"
+                      },
+                      "&:hover": {
+                        "& > *:last-child": {
+                          display: "block !important"
+                        }
+                      }
+                    }}
+                  >
+                    <ListItemButton sx={{py: 2}}>
+                      <Typography
+                        sx={{
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          mr: 2
+                        }}
+                      >
+                        {task.description}
+                      </Typography>
+                    </ListItemButton>
+                  </ListItem>
+                )
+              })}
             </List>
           </AccordionDetails>
         </Accordion>

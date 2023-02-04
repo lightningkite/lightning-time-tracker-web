@@ -5,20 +5,26 @@ export function camelCaseToTitleCase(str: string) {
 }
 
 /**
- * Converts a Date to an ISO string without the time component.
- * This function correctly ignores timezones. Do not use `date.toISOString()`.
+ * Converts a Date to an ISO string.
+ * This function corrects for timezones. Do not use `date.toISOString()`.
  */
-export const dateToISO = (date: Date): string => {
-  return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-    .toISOString()
-    .split("T")[0]
+export function dateToISO(date: Date, includeTime: boolean = false): string {
+  const isoString = new Date(
+    date.getTime() - date.getTimezoneOffset() * 60000
+  ).toISOString()
+
+  return includeTime ? isoString : isoString.split("T")[0]
 }
 
 /**
- * Converts an ISO string to a Date without the time component.
- * This function correctly ignores timezones. Do not use `new Date(dateString)`.
+ * Converts an ISO string to a Date.
+ * This function corrects for timezones. Do not use `new Date(dateString)`.
  */
-export const dateFromISO = (dateString: string): Date => {
-  const [year, month, day] = dateString.split("-")
-  return new Date(Number(year), Number(month) - 1, Number(day))
+export function dateFromISO(dateString: string): Date {
+  if (dateString.includes("T")) {
+    return new Date(dateString)
+  } else {
+    const [year, month, day] = dateString.split("-")
+    return new Date(Number(year), Number(month) - 1, Number(day))
+  }
 }

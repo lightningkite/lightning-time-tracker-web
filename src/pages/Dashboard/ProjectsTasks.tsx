@@ -4,76 +4,110 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
+  Chip,
   List,
   Typography
 } from "@mui/material"
-import {Project, Task, TaskState} from "api/sdk"
+import {Project, Task, TaskState, User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import React, {FC, useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext} from "utils/context"
+import {compareTasks} from "utils/helpers"
 import {TaskListItem} from "./TaskListItem"
 
+const dashboardTaskStates: TaskState[] = [
+  TaskState.Active,
+  TaskState.Completed,
+  TaskState.Tested
+]
+
 export const ProjectsTasks: FC = () => {
-  const {session} = useContext(AuthContext)
+  const {session, currentOrganization, currentUser} = useContext(AuthContext)
 
   const [projects, setProjects] = useState<Project[] | null>()
   const [tasks, setTasks] = useState<Task[] | null>()
+  const [users, setUsers] = useState<User[] | null>()
 
   useEffect(() => {
+    session.user
+      .query({condition: {organization: {Equal: currentOrganization._id}}})
+      .then(setUsers)
+      .catch(() => setUsers(null))
+
     session.project
-      .query({})
+      .query({condition: {organization: {Equal: currentOrganization._id}}})
       .then(setProjects)
       .catch(() => setProjects(null))
-  }, [])
 
-  useEffect(() => {
     session.task
-      .query({condition: {state: {Inside: [TaskState.Active]}}})
+      .query({
+        condition: {
+          And: [
+            {organization: {Equal: currentOrganization._id}},
+            {state: {Inside: dashboardTaskStates}}
+          ]
+        }
+      })
       .then(setTasks)
       .catch(() => setTasks(null))
   }, [])
 
-  const tasksByProject: Record<string, Task[]> = useMemo(() => {
+  const tasksByProject = useMemo(() => {
     if (!tasks || !projects) return {}
 
-    const tasksByProject: Record<string, Task[]> = {}
+    const tasksByProject: Record<
+      string,
+      {projectTasks: Task[]; myTasksCount: number}
+    > = {}
 
     projects.forEach((project) => {
       const projectTasks = tasks
         .filter((task) => task.project === project._id)
         .sort((a, b) => a.description.localeCompare(b.description))
 
-      tasksByProject[project.name] = projectTasks
+      const myTasksCount = projectTasks.filter(
+        (task) => task.user === currentUser._id
+      ).length
+
+      tasksByProject[project.name] = {projectTasks, myTasksCount}
     })
 
     return tasksByProject
   }, [tasks, projects])
 
-  if (projects === undefined || tasks === undefined) {
+  if (projects === undefined || tasks === undefined || users === undefined) {
     return <Loading />
   }
 
-  if (projects === null || tasks === null) {
+  if (projects === null || tasks === null || users === null) {
     return <ErrorAlert>Error loading tasks</ErrorAlert>
   }
 
   return (
     <Box>
-      {Object.entries(tasksByProject).map(([projectName, projectTasks]) => (
-        <Accordion key={projectName}>
-          <AccordionSummary expandIcon={<ExpandMore />}>
-            <Typography variant="h2">{projectName}</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <List>
-              {projectTasks.map((task) => (
-                <TaskListItem task={task} key={task._id} />
-              ))}
-            </List>
-          </AccordionDetails>
-        </Accordion>
-      ))}
+      {Object.entries(tasksByProject)
+        .sort((a, b) => b[1].myTasksCount - a[1].myTasksCount)
+        .map(([projectName, {projectTasks, myTasksCount}]) => (
+          <Accordion key={projectName} defaultExpanded={myTasksCount > 0}>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Chip
+                label={myTasksCount}
+                size="small"
+                color="primary"
+                sx={{mr: 2, visibility: myTasksCount ? "visible" : "hidden"}}
+              />
+              <Typography variant="h2">{projectName}</Typography>{" "}
+            </AccordionSummary>
+            <AccordionDetails>
+              <List>
+                {projectTasks.sort(compareTasks).map((task) => (
+                  <TaskListItem task={task} users={users} key={task._id} />
+                ))}
+              </List>
+            </AccordionDetails>
+          </Accordion>
+        ))}
     </Box>
   )
 }

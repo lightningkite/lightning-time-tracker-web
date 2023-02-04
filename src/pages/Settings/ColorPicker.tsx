@@ -4,7 +4,6 @@ import {AuthContext} from "utils/context"
 
 export const ColorPicker: FC = () => {
   const {color: currentColor, setColor} = useContext(AuthContext)
-  console.log(Object.entries(colors))
 
   return (
     <Box>

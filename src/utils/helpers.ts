@@ -1,3 +1,4 @@
+import {Task, TaskState} from "api/sdk"
 import dayjs from "dayjs"
 import {Timer} from "./context"
 
@@ -38,4 +39,16 @@ export function getTimerSeconds(timer: Timer): number {
     : 0
 
   return elapsedSeconds + timer.accumulatedSeconds
+}
+
+const taskStateOrder: Record<TaskState, number> = {
+  [TaskState.Hold]: 0,
+  [TaskState.Active]: 1,
+  [TaskState.Completed]: 2,
+  [TaskState.Tested]: 3,
+  [TaskState.Done]: 4
+}
+
+export function compareTasks(a: Task, b: Task): number {
+  return taskStateOrder[a.state] - taskStateOrder[b.state]
 }

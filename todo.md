@@ -1,0 +1,2 @@
+- Array of timers below each task item
+- Click the assignee on a chip to reassign

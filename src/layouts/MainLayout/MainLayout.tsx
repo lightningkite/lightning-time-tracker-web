@@ -1,7 +1,8 @@
 import {
   AccessTime,
-  Assignment,
+  AccountTree,
   Dashboard,
+  Insights,
   Menu,
   People,
   Settings
@@ -35,7 +36,8 @@ export interface NavItem {
 const navItems: NavItem[] = [
   {label: "Dashboard", to: "/", icon: Dashboard},
   {label: "My Time", to: "/my-time", icon: AccessTime},
-  {label: "Projects", to: "/projects", icon: Assignment},
+  {label: "Projects", to: "/projects", icon: AccountTree},
+  {label: "Reports", to: "/reports", icon: Insights},
   {label: "Users", to: "/users", icon: People},
   {label: "Settings", to: "/settings", icon: Settings}
 ]

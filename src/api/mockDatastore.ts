@@ -16,8 +16,8 @@ export interface MockDatastore {
 export const generateMockDatastore = (): MockDatastore => {
   const organizations = generateOrganizations(1)
   const projects = generateProjects(5, organizations)
-  const users = generateUsers(25, organizations)
-  const tasks = generateTasks(30, projects, users)
+  const users = generateUsers(7, organizations)
+  const tasks = generateTasks(10, projects, users)
   const timeEntries = generateTimeEntries(5, tasks, users)
 
   return {users, organizations, projects, tasks, timeEntries}

@@ -11,6 +11,7 @@ import {Task} from "api/sdk"
 import dayjs from "dayjs"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
+import {getTimerSeconds} from "utils/helpers"
 
 import duration from "dayjs/plugin/duration"
 dayjs.extend(duration)
@@ -33,16 +34,14 @@ export const TaskListItem: FC<TaskListItemProps> = ({task}) => {
   const [userName, setUserName] = useState("...")
 
   const updateRunningSeconds = () => {
-    console.log("updateRunningSeconds")
     if (!timer) return
-    const elapsedSeconds = timer.lastStarted
-      ? dayjs().diff(dayjs(timer.lastStarted), "second")
-      : 0
-    setRunningSeconds(elapsedSeconds + timer.accumulatedSeconds)
+    setRunningSeconds(getTimerSeconds(timer))
   }
 
   useEffect(() => {
+    updateRunningSeconds()
     if (!isPlaying) return
+
     const interval = setInterval(updateRunningSeconds, 1000)
     return () => clearInterval(interval)
   }, [isPlaying])
@@ -107,10 +106,23 @@ export const TaskListItem: FC<TaskListItemProps> = ({task}) => {
     >
       <ListItemButton sx={{py: 2}}>
         <Stack direction="row" alignItems="center" sx={{width: "100%"}}>
-          <Box sx={{width: "100%", borderRight: "1px solid #333", mr: 2}}>
-            <Typography variant="body2" color="text.disabled" sx={{mb: 0.5}}>
+          <Stack sx={{width: "100%", borderRight: "1px solid #333", mr: 2}}>
+            <Typography
+              variant="body2"
+              color="primary.light"
+              fontWeight="bold"
+              sx={{opacity: 0.6}}
+            >
+              {task.state.toUpperCase()}
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.disabled"
+              sx={{mb: 1, display: "inline"}}
+            >
               {userName}
             </Typography>
+
             <Typography
               variant="body1"
               sx={{
@@ -123,7 +135,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({task}) => {
             >
               {task.description}
             </Typography>
-          </Box>
+          </Stack>
 
           <Box sx={{flexBasis: "6rem", mr: 2}}>
             <Typography textAlign="right">

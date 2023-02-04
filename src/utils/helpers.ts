@@ -1,3 +1,6 @@
+import dayjs from "dayjs"
+import {Timer} from "./context"
+
 export function camelCaseToTitleCase(str: string) {
   return str.replace(/([A-Z])/g, " $1").replace(/^./, function (str) {
     return str.toUpperCase()
@@ -27,4 +30,12 @@ export function dateFromISO(dateString: string): Date {
     const [year, month, day] = dateString.split("-")
     return new Date(Number(year), Number(month) - 1, Number(day))
   }
+}
+
+export function getTimerSeconds(timer: Timer): number {
+  const elapsedSeconds = timer.lastStarted
+    ? dayjs().diff(dayjs(timer.lastStarted), "second")
+    : 0
+
+  return elapsedSeconds + timer.accumulatedSeconds
 }

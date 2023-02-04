@@ -59,12 +59,13 @@ export const useGlobalTimerManager = (): TimerContextType => {
     const timer = timers[key]
 
     setTimers((prev) => {
+      if (!timer.lastStarted) return prev
+
       const newTimers = {...prev}
 
       newTimers[key].accumulatedSeconds =
         timer.accumulatedSeconds + dayjs().diff(timer.lastStarted, "second")
       newTimers[key].lastStarted = null
-
       return newTimers
     })
   }
@@ -72,15 +73,9 @@ export const useGlobalTimerManager = (): TimerContextType => {
   function toggleTimer(keyToToggle: string) {
     Object.keys(timers).forEach((key) => {
       const timer = timers[key]
-      if (key === keyToToggle) {
-        if (timer.lastStarted) {
-          stopTimer(key)
-        } else {
-          startTimer(key)
-        }
-      } else if (timer.lastStarted) {
-        stopTimer(key)
-      }
+
+      if (key === keyToToggle && !timer.lastStarted) startTimer(key)
+      else if (timer.lastStarted) stopTimer(key)
     })
   }
 

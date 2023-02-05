@@ -78,11 +78,11 @@ export const ProjectsTasks: FC = () => {
   }, [tasks, projects])
 
   useEffect(() => {
-    if (!tasksByProject || initialSorting) return
+    if (!tasks || !projects || initialSorting) return
 
     setInitialSorting(
       Object.entries(tasksByProject)
-        .sort((a, b) => b[1].myTasksCount - a[1].myTasksCount)
+        .sort((a, b) => a[1].myTasksCount - b[1].myTasksCount)
         .map(([projectName]) => projectName)
     )
   }, [tasksByProject])
@@ -104,7 +104,7 @@ export const ProjectsTasks: FC = () => {
     <Box>
       {Object.entries(tasksByProject)
         .sort(
-          (a, b) => initialSorting.indexOf(a[0]) - initialSorting.indexOf(b[0])
+          (a, b) => initialSorting.indexOf(b[0]) - initialSorting.indexOf(a[0])
         )
         .map(([projectName, {projectTasks, myTasksCount}]) => (
           <Accordion key={projectName} defaultExpanded={myTasksCount > 0}>

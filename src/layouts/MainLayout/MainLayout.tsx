@@ -61,7 +61,6 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
             {currentOrganization.name}
           </Typography>
 
-          {/* {isMobile && ( */}
           <IconButton
             color="inherit"
             onClick={toggleOpenTimers}
@@ -72,7 +71,6 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
               {openTimers ? <Timer /> : <TimerOutlined />}
             </Badge>
           </IconButton>
-          {/* )} */}
         </Toolbar>
       </AppBar>
 

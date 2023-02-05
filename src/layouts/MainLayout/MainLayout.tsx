@@ -1,6 +1,7 @@
 import {Menu, Timer, TimerOutlined} from "@mui/icons-material"
 import {
   AppBar,
+  Badge,
   Box,
   IconButton,
   Toolbar,
@@ -9,7 +10,7 @@ import {
 } from "@mui/material"
 import React, {FC, ReactNode, useContext, useState} from "react"
 import {theme} from "theme"
-import {AuthContext} from "utils/context"
+import {AuthContext, TimerContext} from "utils/context"
 import {NavigationDrawer, NAVIGATION_DRAWER_WIDTH} from "./NavigationDrawer"
 import {TimerDrawer, TIMER_DRAWER_WIDTH} from "./TimerDrawer"
 
@@ -22,6 +23,7 @@ export interface NavItem {
 
 const MainLayout: FC<{children: ReactNode}> = ({children}) => {
   const {currentOrganization} = useContext(AuthContext)
+  const {timers} = useContext(TimerContext)
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
 
   const [openNavigation, setOpenNavigation] = useState(!isMobile)
@@ -66,7 +68,9 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
             edge="start"
             sx={{ml: "auto"}}
           >
-            {openTimers ? <Timer /> : <TimerOutlined />}
+            <Badge badgeContent={Object.keys(timers).length} color="primary">
+              {openTimers ? <Timer /> : <TimerOutlined />}
+            </Badge>
           </IconButton>
           {/* )} */}
         </Toolbar>

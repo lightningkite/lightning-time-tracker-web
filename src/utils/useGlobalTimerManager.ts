@@ -8,12 +8,39 @@ import {dateToISO} from "./helpers"
 import duration from "dayjs/plugin/duration"
 dayjs.extend(duration)
 
+type ParsedTimer = Omit<Timer, "lastStarted"> & {
+  lastStarted: string | null
+}
+
 export const useGlobalTimerManager = (): TimerContextType => {
   const {session, currentUser} = useContext(AuthContext)
 
-  const [timers, setTimers] = useState<Record<string, Timer>>(
-    JSON.parse(localStorage.getItem(LocalStorageKey.TIMERS) ?? "{}")
-  )
+  const [timers, setTimers] = useState<Record<string, Timer>>(() => {
+    try {
+      const storedTimers = localStorage.getItem(LocalStorageKey.TIMERS)
+      const parsedTimers = JSON.parse(storedTimers ?? "{}") as Record<
+        string,
+        ParsedTimer
+      >
+
+      const formattedTimers: Record<string, Timer> = Object.entries(
+        parsedTimers
+      ).reduce(
+        (acc, [key, value]) => ({
+          ...acc,
+          [key]: {
+            ...value,
+            lastStarted: value.lastStarted ? dayjs(value.lastStarted) : null
+          }
+        }),
+        {}
+      )
+
+      return formattedTimers
+    } catch {
+      return {}
+    }
+  })
 
   const debouncedTimers = useThrottle(timers, 500)
 

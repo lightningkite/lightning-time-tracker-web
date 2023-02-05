@@ -1,4 +1,4 @@
-import {Menu} from "@mui/icons-material"
+import {Menu, Timer, TimerOutlined} from "@mui/icons-material"
 import {
   AppBar,
   Box,
@@ -10,7 +10,8 @@ import {
 import React, {FC, ReactNode, useContext, useState} from "react"
 import {theme} from "theme"
 import {AuthContext} from "utils/context"
-import {NavigationDrawer, SIDEBAR_WIDTH} from "./NavigationDrawer"
+import {NavigationDrawer, NAVIGATION_DRAWER_WIDTH} from "./NavigationDrawer"
+import {TimerDrawer, TIMER_DRAWER_WIDTH} from "./TimerDrawer"
 
 export interface NavItem {
   label: string
@@ -23,10 +24,17 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
   const {currentOrganization} = useContext(AuthContext)
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
 
-  const [open, setOpen] = useState(!isMobile)
+  const [openNavigation, setOpenNavigation] = useState(!isMobile)
+  const [openTimers, setOpenTimers] = useState(false)
 
-  function toggleOpen() {
-    setOpen((prev) => !prev)
+  function toggleOpenNavigation() {
+    isMobile && setOpenTimers(false)
+    setOpenNavigation((prev) => !prev)
+  }
+
+  function toggleOpenTimers() {
+    setOpenNavigation(false)
+    setOpenTimers((prev) => !prev)
   }
 
   return (
@@ -39,26 +47,56 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
           {isMobile && (
             <IconButton
               color="inherit"
-              aria-label="open drawer"
-              onClick={toggleOpen}
+              onClick={toggleOpenNavigation}
               edge="start"
               sx={{mr: 2}}
             >
               <Menu />
             </IconButton>
           )}
+
           <Typography variant="h6" noWrap component="div">
             {currentOrganization.name}
           </Typography>
+
+          {/* {isMobile && ( */}
+          <IconButton
+            color="inherit"
+            onClick={toggleOpenTimers}
+            edge="start"
+            sx={{ml: "auto"}}
+          >
+            {openTimers ? <Timer /> : <TimerOutlined />}
+          </IconButton>
+          {/* )} */}
         </Toolbar>
       </AppBar>
 
-      <NavigationDrawer open={open} setOpen={setOpen} isMobile={isMobile} />
+      <NavigationDrawer
+        open={openNavigation}
+        toggleOpen={toggleOpenNavigation}
+        isMobile={isMobile}
+      />
+
+      <TimerDrawer
+        open={openTimers}
+        toggleOpen={toggleOpenTimers}
+        isMobile={isMobile}
+      />
       <Box
         pt={3}
         pb={7}
-        pl={isMobile ? undefined : SIDEBAR_WIDTH}
+        pl={isMobile ? undefined : NAVIGATION_DRAWER_WIDTH}
+        pr={isMobile || !openTimers ? undefined : TIMER_DRAWER_WIDTH}
         minHeight="100vh"
+        sx={{
+          // Transition paddingRight
+          transition: (theme) =>
+            theme.transitions.create("padding-right", {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.leavingScreen
+            })
+        }}
       >
         <Toolbar />
 

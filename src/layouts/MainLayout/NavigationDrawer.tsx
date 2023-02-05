@@ -35,13 +35,13 @@ const navItems: NavItem[] = [
   {label: "Settings", to: "/settings", icon: Settings}
 ]
 
-export const SIDEBAR_WIDTH = "4rem"
+export const NAVIGATION_DRAWER_WIDTH = "4rem"
 
 export const NavigationDrawer: FC<{
   open: boolean
-  setOpen: (open: boolean) => void
+  toggleOpen: () => void
   isMobile: boolean
-}> = ({open, setOpen, isMobile}) => {
+}> = ({open, toggleOpen, isMobile}) => {
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -50,9 +50,9 @@ export const NavigationDrawer: FC<{
       variant={isMobile ? "temporary" : "persistent"}
       anchor="left"
       open={!isMobile || open}
-      onClose={() => setOpen(false)}
+      onClose={toggleOpen}
     >
-      <Toolbar sx={{width: isMobile ? undefined : SIDEBAR_WIDTH}} />
+      <Toolbar sx={{width: isMobile ? undefined : NAVIGATION_DRAWER_WIDTH}} />
 
       <List>
         {navItems.map(({label, to, icon: Icon, show}) => (
@@ -66,7 +66,7 @@ export const NavigationDrawer: FC<{
                 }}
                 onClick={() => {
                   navigate(to)
-                  setOpen(false)
+                  toggleOpen()
                 }}
                 selected={location.pathname.split("/")[1] === to.split("/")[1]}
               >

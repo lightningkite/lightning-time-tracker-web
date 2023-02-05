@@ -1,4 +1,7 @@
-- Click dashboard task status to change status
-- Array of timers below each task item
+- Manage and submit timers in right sidebar
+- Start a timer by clicking button on dashboard item
 - Click dashboard task to open details and edit
 - Click item in time entry table to edit
+- Show daily or weekly total time at top bar, customize in settings
+- ? Click dashboard task status to change status
+- ? Settings for when timers are automatically hidden or shown

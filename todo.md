@@ -1,3 +1,4 @@
+- Click dashboard task status to change status
 - Array of timers below each task item
 - Click dashboard task to open details and edit
 - Click item in time entry table to edit

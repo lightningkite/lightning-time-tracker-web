@@ -1,30 +1,16 @@
-import {
-  AccessTime,
-  AccountTree,
-  Dashboard,
-  Insights,
-  Menu,
-  People,
-  Settings
-} from "@mui/icons-material"
+import {Menu} from "@mui/icons-material"
 import {
   AppBar,
   Box,
-  Drawer,
   IconButton,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
   Toolbar,
-  Tooltip,
   Typography,
   useMediaQuery
 } from "@mui/material"
 import React, {FC, ReactNode, useContext, useState} from "react"
-import {useLocation, useNavigate} from "react-router-dom"
 import {theme} from "theme"
 import {AuthContext} from "utils/context"
+import {NavigationDrawer, SIDEBAR_WIDTH} from "./NavigationDrawer"
 
 export interface NavItem {
   label: string
@@ -33,22 +19,9 @@ export interface NavItem {
   show?: boolean
 }
 
-const navItems: NavItem[] = [
-  {label: "Dashboard", to: "/", icon: Dashboard},
-  {label: "My Time", to: "/my-time", icon: AccessTime},
-  {label: "Projects", to: "/projects", icon: AccountTree},
-  {label: "Reports", to: "/reports", icon: Insights},
-  {label: "Users", to: "/users", icon: People},
-  {label: "Settings", to: "/settings", icon: Settings}
-]
-
-const SIDEBAR_WIDTH = "4rem"
-
 const MainLayout: FC<{children: ReactNode}> = ({children}) => {
   const {currentOrganization} = useContext(AuthContext)
-  const navigate = useNavigate()
-  const location = useLocation()
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"))
 
   const [open, setOpen] = useState(!isMobile)
 
@@ -80,41 +53,7 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
         </Toolbar>
       </AppBar>
 
-      <Drawer variant="persistent" anchor="left" open={!isMobile || open}>
-        <Toolbar sx={{width: SIDEBAR_WIDTH}} />
-
-        <List>
-          {navItems.map(({label, to, icon: Icon, show}) => (
-            <ListItem key={to} disablePadding sx={{display: "block"}}>
-              <Tooltip title={label} placement="right" arrow>
-                <ListItemButton
-                  sx={{
-                    minHeight: 48,
-                    justifyContent: "center",
-                    px: 2.5
-                  }}
-                  onClick={() => {
-                    navigate(to)
-                    setOpen(false)
-                  }}
-                  selected={
-                    location.pathname.split("/")[1] === to.split("/")[1]
-                  }
-                >
-                  <ListItemIcon
-                    sx={{
-                      minWidth: 0,
-                      justifyContent: "center"
-                    }}
-                  >
-                    <Icon />
-                  </ListItemIcon>
-                </ListItemButton>
-              </Tooltip>
-            </ListItem>
-          ))}
-        </List>
-      </Drawer>
+      <NavigationDrawer open={open} setOpen={setOpen} isMobile={isMobile} />
       <Box
         pt={3}
         pb={7}

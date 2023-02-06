@@ -26,7 +26,7 @@ export const TimerDrawer: FC<{
       <Box p={2}>
         <Typography variant="h2">Timers</Typography>
 
-        <Stack spacing={2} sx={{mt: 3}}>
+        <Stack spacing={3} sx={{mt: 3}}>
           {Object.keys(timers).map((timerKey) => (
             <TimerItem key={timerKey} timerKey={timerKey} />
           ))}

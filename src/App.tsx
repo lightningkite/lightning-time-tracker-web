@@ -12,7 +12,7 @@ import {BrowserRouter} from "react-router-dom"
 import {AuthRoutes, UnauthRoutes} from "routers"
 import {theme} from "theme"
 import {LocalStorageKey} from "utils/constants"
-import {AuthContext, TimerContext, UnauthContext} from "utils/context"
+import {AuthContext, TimerContextProvider, UnauthContext} from "utils/context"
 import {useGlobalTimerManager} from "utils/useGlobalTimerManager"
 
 const App: FC = () => {
@@ -108,11 +108,11 @@ const App: FC = () => {
                 setColor
               }}
             >
-              <TimerContext.Provider value={timerManager}>
+              <TimerContextProvider>
                 <MainLayout>
                   <AuthRoutes />
                 </MainLayout>
-              </TimerContext.Provider>
+              </TimerContextProvider>
             </AuthContext.Provider>
           ) : (
             <UnauthContext.Provider

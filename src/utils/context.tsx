@@ -1,6 +1,7 @@
 import {Api, Organization, User, UserSession} from "api/sdk"
 import {Dayjs} from "dayjs"
-import {createContext} from "react"
+import React, {createContext, FC, ReactElement} from "react"
+import {useGlobalTimerManager} from "./useGlobalTimerManager"
 
 export interface AuthContextType {
   session: UserSession
@@ -45,3 +46,9 @@ export const AuthContext = createContext({} as AuthContextType)
 export const UnauthContext = createContext({} as UnauthContextType)
 
 export const TimerContext = createContext({} as TimerContextType)
+
+export const TimerContextProvider: FC<{children: ReactElement}> = (props) => (
+  <TimerContext.Provider value={useGlobalTimerManager()}>
+    {props.children}
+  </TimerContext.Provider>
+)

@@ -1,19 +1,45 @@
-import {Delete, DeleteOutline} from "@mui/icons-material"
-import {Alert, Box, Button, IconButton, Skeleton} from "@mui/material"
+import {
+  RestAutocompleteInput,
+  useThrottle
+} from "@lightningkite/mui-lightning-components"
+import {DeleteOutline} from "@mui/icons-material"
+import {
+  Alert,
+  IconButton,
+  Paper,
+  Skeleton,
+  Stack,
+  TextField,
+  useTheme
+} from "@mui/material"
 import {Project, Task} from "api/sdk"
+import {AutoLoadingButton} from "components/AutoLoadingButton"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
 
 export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
   const {session} = useContext(AuthContext)
-  const {timers, removeTimer} = useContext(TimerContext)
+  const {timers, removeTimer, submitTimer, updateTimer} =
+    useContext(TimerContext)
+  const theme = useTheme()
 
   const timer = timers[timerKey]
 
   const [task, setTask] = useState<Task | null>(null)
   const [project, setProject] = useState<Project | null>(null)
+  const [summary, setSummary] = useState(timer.summary)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+
+  const throttledSummary = useThrottle(summary, 1000)
+
+  useEffect(() => {
+    updateTimer(timerKey, {
+      project: project?._id,
+      task: task?._id,
+      summary: throttledSummary
+    })
+  }, [task, project, throttledSummary])
 
   useEffect(() => {
     Promise.all([
@@ -27,6 +53,12 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
       .catch(() => setError("Project or task not found"))
       .finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => {
+    if (task?.project !== project?._id) {
+      setTask(null)
+    }
+  }, [project])
 
   if (loading) return <Skeleton variant="rounded" height={60} />
 
@@ -46,10 +78,52 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
   }
 
   return (
-    <Box>
-      <p>
-        {timer.accumulatedSeconds} - {timer.lastStarted?.toISOString()}
-      </p>
-    </Box>
+    <Paper component={Stack} spacing={2} sx={{p: 1}}>
+      <RestAutocompleteInput
+        label="Project"
+        restEndpoint={session.project}
+        value={project}
+        onChange={setProject}
+        getOptionLabel={(project) => project.name}
+        searchProperties={["name"]}
+      />
+      <RestAutocompleteInput
+        label="Task"
+        restEndpoint={session.task}
+        value={task}
+        onChange={setTask}
+        getOptionLabel={(task) => task.description}
+        searchProperties={["description"]}
+        additionalQueryConditions={[{project: {Equal: project?._id ?? ""}}]}
+        dependencies={[project?._id]}
+        disabled={!project}
+      />
+      <TextField
+        label="Summary"
+        value={summary}
+        onChange={(e) => setSummary(e.target.value)}
+        multiline
+      />
+      <Stack direction="row" spacing={1}>
+        <AutoLoadingButton
+          onClick={() => submitTimer(timerKey)}
+          variant="contained"
+          disabled={!project || !task || !summary}
+          fullWidth
+        >
+          Submit
+        </AutoLoadingButton>
+        <IconButton
+          onClick={() => removeTimer(timerKey)}
+          sx={{
+            "&:hover": {
+              color: theme.palette.error.main
+            }
+          }}
+        >
+          <DeleteOutline />
+        </IconButton>
+      </Stack>
+    </Paper>
   )
 }

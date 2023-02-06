@@ -13,7 +13,6 @@ import {AuthRoutes, UnauthRoutes} from "routers"
 import {theme} from "theme"
 import {LocalStorageKey} from "utils/constants"
 import {AuthContext, TimerContextProvider, UnauthContext} from "utils/context"
-import {useGlobalTimerManager} from "utils/useGlobalTimerManager"
 
 const App: FC = () => {
   const {api, changeBackendURL, session, authenticate, logout} =
@@ -28,7 +27,6 @@ const App: FC = () => {
   const [color, setColor] = useState(
     localStorage.getItem(LocalStorageKey.COLOR) ?? "blue"
   )
-  const timerManager = useGlobalTimerManager()
 
   useEffect(() => {
     localStorage.setItem(LocalStorageKey.MODE, mode)

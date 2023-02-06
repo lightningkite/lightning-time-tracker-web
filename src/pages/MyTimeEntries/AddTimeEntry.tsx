@@ -13,13 +13,24 @@ import dayjs from "dayjs"
 import {useFormik} from "formik"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
-import {dateToISO} from "utils/helpers"
+import {dateToISO, stringToDuration} from "utils/helpers"
 import * as yup from "yup"
 
-import duration from "dayjs/plugin/duration"
+import duration, {Duration} from "dayjs/plugin/duration"
 dayjs.extend(duration)
 
-const validationSchema = yup.object().shape({})
+const validationSchema = yup.object().shape({
+  summary: yup.string().required("Required"),
+  date: yup.date().required("Required"),
+  duration: yup
+    .string()
+    .required("Required")
+    .test(
+      "is-valid-duration",
+      "Invalid duration",
+      (value) => value !== undefined && stringToDuration(value) !== null
+    )
+})
 
 export interface AddTimeEntryButtonProps {
   afterSubmit: () => void
@@ -40,7 +51,7 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
       task: null as Task | null,
       project: null as Project | null,
       summary: "",
-      duration: dayjs.duration(0, "minutes"),
+      duration: "",
       date: new Date()
     },
     validationSchema,
@@ -51,7 +62,7 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
         task: values.task?._id,
         project: values.project?._id,
         organization: currentUser.organization,
-        duration: values.duration.toISOString(),
+        duration: (stringToDuration(values.duration) as Duration).toISOString(),
         date: dateToISO(values.date),
         user: currentUser._id
       })
@@ -109,6 +120,12 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
             {...makeFormikDateTimePickerProps(formik, "date")}
             minDate={dayjs().subtract(1, "month")}
             maxDate={dayjs()}
+          />
+
+          <TextField
+            label="Duration"
+            placeholder="hh:mm:ss"
+            {...makeFormikTextFieldProps(formik, "duration")}
           />
 
           <TextField

@@ -1,5 +1,3 @@
-- Manage and submit timers in right sidebar
-- Set duration when submitting timer
 - Start a timer by clicking button on dashboard item
 - Click dashboard task to open details and edit
 - Click item in time entry table to edit

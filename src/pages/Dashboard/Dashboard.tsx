@@ -1,45 +1,41 @@
-import {Container, Typography} from "@mui/material"
+import {Container} from "@mui/material"
 import PageHeader from "components/PageHeader"
 import dayjs from "dayjs"
-import React, {FC, useContext, useEffect, useState} from "react"
-import {TimerContext} from "utils/context"
-import {getTimerSeconds} from "utils/helpers"
+import React, {FC} from "react"
 import {ProjectsTasks} from "./ProjectsTasks"
 
 import duration from "dayjs/plugin/duration"
 dayjs.extend(duration)
 
 const Dashboard: FC = () => {
-  const {timers} = useContext(TimerContext)
+  // const [runningSeconds, setRunningSeconds] = useState(0)
 
-  const [runningSeconds, setRunningSeconds] = useState(0)
+  // const updateRunningSeconds = () => {
+  //   const totalSeconds = Object.values(timers).reduce(
+  //     (acc, timer) => acc + getTimerSeconds(timer),
+  //     0
+  //   )
+  //   setRunningSeconds(totalSeconds)
+  // }
 
-  const updateRunningSeconds = () => {
-    const totalSeconds = Object.values(timers).reduce(
-      (acc, timer) => acc + getTimerSeconds(timer),
-      0
-    )
-    setRunningSeconds(totalSeconds)
-  }
+  // useEffect(() => {
+  //   updateRunningSeconds()
 
-  useEffect(() => {
-    updateRunningSeconds()
+  //   const anyTimersRunning = Object.values(timers).some(
+  //     (timer) => !!timer.lastStarted
+  //   )
+  //   if (!anyTimersRunning) return
 
-    const anyTimersRunning = Object.values(timers).some(
-      (timer) => !!timer.lastStarted
-    )
-    if (!anyTimersRunning) return
-
-    const interval = setInterval(updateRunningSeconds, 1000)
-    return () => clearInterval(interval)
-  }, [timers])
+  //   const interval = setInterval(updateRunningSeconds, 1000)
+  //   return () => clearInterval(interval)
+  // }, [timers])
 
   return (
     <Container maxWidth="md">
       <PageHeader title="Dashboard">
-        <Typography variant="h2" sx={{mr: 1}}>
+        {/* <Typography variant="h2" sx={{mr: 1}}>
           {dayjs.duration(runningSeconds, "second").format("HH:mm:ss")}
-        </Typography>
+        </Typography> */}
       </PageHeader>
       <ProjectsTasks />
     </Container>

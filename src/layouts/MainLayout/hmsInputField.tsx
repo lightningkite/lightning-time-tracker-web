@@ -1,28 +1,34 @@
 import {TextField} from "@mui/material"
-import React, {FC} from "react"
+import React, {FC, useEffect, useState} from "react"
 
 const HmsInputField: FC<{
   value: number
   onChange: (value: number) => void
   handlePause: () => void
-}> = ({value, onChange, handlePause}) => {
-  const [hasFocus, setHasFocus] = React.useState(false)
+}> = (props) => {
+  const {onChange, handlePause} = props
+
+  const [stringValue, setStringValue] = useState(
+    props.value.toString().padStart(2, "0")
+  )
+
+  useEffect(
+    () => setStringValue(props.value.toString().padStart(2, "0")),
+    [props.value]
+  )
 
   return (
     <TextField
       type="number"
-      value={value}
-      // formatter={(value) =>
-      //   value && !hasFocus ? value.padStart(2, "0") : value
-      // }
+      value={stringValue}
       placeholder="--"
       onBlur={(v) => {
-        setHasFocus(false)
-        onChange(Number(v.currentTarget.value) || 0)
+        const n = Number(v.currentTarget.value)
+        onChange(isNaN(n) ? 0 : n)
       }}
-      onFocus={() => {
-        setHasFocus(true)
-        handlePause()
+      onFocus={() => handlePause()}
+      onChange={(v) => {
+        setStringValue(v.currentTarget.value)
       }}
       // Hide the up/down arrows
       sx={{

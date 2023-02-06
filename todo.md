@@ -1,4 +1,9 @@
+- Create and edit tasks
+- Show task list in project detail page, tab for tasks and time entries
+- Show time spent out of estimate on dashboard items
 - Start a timer by clicking button on dashboard item
+- Task attachments
+- Task emergency
 - Click dashboard task to open details and edit
 - Click item in time entry table to edit
 - Show daily or weekly total time at top bar, customize in settings

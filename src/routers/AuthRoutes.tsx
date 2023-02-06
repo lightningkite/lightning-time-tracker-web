@@ -11,6 +11,7 @@ const UserDetail = React.lazy(() => import("pages/UserDetail"))
 const Settings = React.lazy(() => import("pages/Settings"))
 const ProjectIndex = React.lazy(() => import("pages/ProjectIndex"))
 const ProjectDetail = React.lazy(() => import("pages/ProjectDetail"))
+const TaskDetail = React.lazy(() => import("pages/TaskDetail"))
 const MyTimeEntries = React.lazy(() => import("pages/MyTimeEntries"))
 const Reports = React.lazy(() => import("pages/Reports"))
 
@@ -21,7 +22,8 @@ const AuthRoutes: FC = () => {
     <Suspense fallback={<Loading />}>
       <Routes>
         <Route>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/tasks/:taskId" element={<TaskDetail />} />
           <Route path="/users" element={<UserIndex />} />
           <Route path="/users/:userId" element={<UserDetail />} />
           <Route path="/projects" element={<ProjectIndex />} />
@@ -31,7 +33,7 @@ const AuthRoutes: FC = () => {
           <Route path="/reports" element={<Reports />} />
 
           {/* If page doesn't exist, redirect to home */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Routes>
     </Suspense>

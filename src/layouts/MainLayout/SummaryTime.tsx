@@ -1,6 +1,6 @@
 import {Condition} from "@lightningkite/lightning-server-simplified"
+import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {Typography, useMediaQuery, useTheme} from "@mui/material"
-import {TimeEntry} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import React, {FC, useContext, useEffect, useState} from "react"
@@ -60,12 +60,18 @@ export const SummaryTime: FC = () => {
   }, [timers, applicationSettings.summaryTime])
 
   return (
-    <Typography fontSize={isMobile ? undefined : "1.2rem"}>
-      {submittedSeconds !== undefined
-        ? dayjs
-            .duration(submittedSeconds + unsubmittedSeconds, "seconds")
-            .format("H : mm : ss")
-        : "00 : 00 : 00"}
-    </Typography>
+    <HoverHelp
+      description={
+        applicationSettings.summaryTime === "day" ? "Today" : "This Week"
+      }
+    >
+      <Typography fontSize={isMobile ? undefined : "1.2rem"}>
+        {submittedSeconds !== undefined
+          ? dayjs
+              .duration(submittedSeconds + unsubmittedSeconds, "seconds")
+              .format("H : mm : ss")
+          : "00 : 00 : 00"}
+      </Typography>
+    </HoverHelp>
   )
 }

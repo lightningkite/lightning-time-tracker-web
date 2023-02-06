@@ -9,10 +9,10 @@ import {
 } from "@lightningkite/mui-lightning-components"
 import {Project, Task, TimeEntry, User} from "api/sdk"
 import dayjs from "dayjs"
+import duration from "dayjs/plugin/duration"
 import React, {FC, useContext} from "react"
 import {AuthContext} from "utils/context"
 
-import duration from "dayjs/plugin/duration"
 dayjs.extend(duration)
 
 export type AnnotatedTimeEntry = WithAnnotations<
@@ -27,7 +27,6 @@ export interface TimeEntryTableProps
 
 export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
   const {hiddenColumns = [], ...restProps} = props
-
   const {session} = useContext(AuthContext)
 
   const annotatedTimeEntryEndpoint: SessionRestEndpoint<AnnotatedTimeEntry> =

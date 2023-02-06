@@ -2,9 +2,10 @@ import {
   RestAutocompleteInput,
   useThrottle
 } from "@lightningkite/mui-lightning-components"
-import {DeleteOutline} from "@mui/icons-material"
+import {DeleteOutline, Pause, PlayArrow} from "@mui/icons-material"
 import {
   Alert,
+  Button,
   IconButton,
   Paper,
   Skeleton,
@@ -16,10 +17,11 @@ import {Project, Task} from "api/sdk"
 import {AutoLoadingButton} from "components/AutoLoadingButton"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
+import HmsInputGroup from "./hmsInputGroup"
 
 export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
   const {session} = useContext(AuthContext)
-  const {timers, removeTimer, submitTimer, updateTimer} =
+  const {timers, removeTimer, submitTimer, updateTimer, toggleTimer} =
     useContext(TimerContext)
   const theme = useTheme()
 
@@ -79,6 +81,22 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
 
   return (
     <Paper component={Stack} spacing={2} sx={{p: 1}}>
+      <Stack
+        direction="row"
+        spacing={2}
+        alignItems="center"
+        justifyContent="space-between"
+      >
+        <HmsInputGroup timerKey={timerKey} />
+        <Button
+          variant={timer.lastStarted ? "contained" : "outlined"}
+          // fullWidth
+          onClick={() => toggleTimer(timerKey)}
+          sx={{height: 56, px: 3}}
+        >
+          {timer.lastStarted ? <Pause /> : <PlayArrow />}
+        </Button>
+      </Stack>
       <RestAutocompleteInput
         label="Project"
         restEndpoint={session.project}

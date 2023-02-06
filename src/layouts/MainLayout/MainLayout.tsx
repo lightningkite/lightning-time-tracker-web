@@ -4,6 +4,7 @@ import {
   Badge,
   Box,
   IconButton,
+  Stack,
   Toolbar,
   Typography,
   useMediaQuery
@@ -12,6 +13,7 @@ import React, {FC, ReactNode, useContext, useState} from "react"
 import {theme} from "theme"
 import {AuthContext, TimerContext} from "utils/context"
 import {NavigationDrawer, NAVIGATION_DRAWER_WIDTH} from "./NavigationDrawer"
+import {SummaryTime} from "./SummaryTime"
 import {TimerDrawer, TIMER_DRAWER_WIDTH} from "./TimerDrawer"
 
 export interface NavItem {
@@ -61,16 +63,15 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
             {currentOrganization.name}
           </Typography>
 
-          <IconButton
-            color="inherit"
-            onClick={toggleOpenTimers}
-            edge="start"
-            sx={{ml: "auto"}}
-          >
-            <Badge badgeContent={Object.keys(timers).length} color="primary">
-              {openTimers ? <Timer /> : <TimerOutlined />}
-            </Badge>
-          </IconButton>
+          <Stack direction="row" alignItems="center" spacing={1} ml="auto">
+            <SummaryTime />
+
+            <IconButton color="inherit" onClick={toggleOpenTimers} edge="start">
+              <Badge badgeContent={Object.keys(timers).length} color="primary">
+                {openTimers ? <Timer /> : <TimerOutlined />}
+              </Badge>
+            </IconButton>
+          </Stack>
         </Toolbar>
       </AppBar>
 

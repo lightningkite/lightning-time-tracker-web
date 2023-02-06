@@ -12,7 +12,12 @@ import {BrowserRouter} from "react-router-dom"
 import {AuthRoutes, UnauthRoutes} from "routers"
 import {theme} from "theme"
 import {LocalStorageKey} from "utils/constants"
-import {AuthContext, TimerContextProvider, UnauthContext} from "utils/context"
+import {
+  ApplicationSettings,
+  AuthContext,
+  TimerContextProvider,
+  UnauthContext
+} from "utils/context"
 
 const App: FC = () => {
   const {api, changeBackendURL, session, authenticate, logout} =
@@ -21,20 +26,25 @@ const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>()
   const [currentOrganization, setCurrentOrganization] =
     useState<Organization | null>()
-  const [mode, setMode] = useState(
-    (localStorage.getItem(LocalStorageKey.MODE) as "light" | "dark") ?? "dark"
-  )
-  const [color, setColor] = useState(
-    localStorage.getItem(LocalStorageKey.COLOR) ?? "blue"
-  )
+  const [applicationSettings, setApplicationSettings] =
+    useState<ApplicationSettings>(() => {
+      const partialSettings = JSON.parse(
+        localStorage.getItem(LocalStorageKey.SETTINGS) ?? "{}"
+      ) as Partial<ApplicationSettings>
+
+      return {
+        mode: partialSettings.mode === "light" ? "light" : "dark",
+        color: partialSettings.color ?? "lightBlue",
+        summaryTime: partialSettings.summaryTime ?? "week"
+      }
+    })
 
   useEffect(() => {
-    localStorage.setItem(LocalStorageKey.MODE, mode)
-  }, [mode])
-
-  useEffect(() => {
-    localStorage.setItem(LocalStorageKey.COLOR, color)
-  }, [color])
+    localStorage.setItem(
+      LocalStorageKey.SETTINGS,
+      JSON.stringify(applicationSettings)
+    )
+  }, [applicationSettings])
 
   const isLoggedIn = !!session
 
@@ -82,9 +92,9 @@ const App: FC = () => {
       theme={createTheme({
         ...theme,
         palette: {
-          mode,
+          mode: applicationSettings.mode,
           primary: {
-            main: (colors as any)[color][500]
+            main: (colors as any)[applicationSettings.color][500]
           }
         }
       })}
@@ -100,10 +110,9 @@ const App: FC = () => {
                 currentUser,
                 setCurrentUser,
                 currentOrganization,
-                mode,
-                setMode,
-                color,
-                setColor
+                applicationSettings,
+                updateApplicationSettings: (s) =>
+                  setApplicationSettings((prev) => ({...prev, ...s}))
               }}
             >
               <TimerContextProvider>

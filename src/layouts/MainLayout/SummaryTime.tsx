@@ -1,0 +1,71 @@
+import {Condition} from "@lightningkite/lightning-server-simplified"
+import {Typography, useMediaQuery, useTheme} from "@mui/material"
+import {TimeEntry} from "api/sdk"
+import dayjs from "dayjs"
+import duration from "dayjs/plugin/duration"
+import React, {FC, useContext, useEffect, useState} from "react"
+import {AuthContext, TimerContext} from "utils/context"
+import {dateToISO, getTimerSeconds} from "utils/helpers"
+
+dayjs.extend(duration)
+
+export const SummaryTime: FC = () => {
+  const {session, currentUser, applicationSettings} = useContext(AuthContext)
+  const {timers} = useContext(TimerContext)
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
+
+  const [submittedSeconds, setSubmittedSeconds] = useState<number>()
+  const [unsubmittedSeconds, setUnsubmittedSeconds] = useState(0)
+
+  const calculateUnsubmittedSeconds = () => {
+    const seconds = Object.values(timers).reduce(
+      (acc, timer) => acc + getTimerSeconds(timer),
+      0
+    )
+
+    setUnsubmittedSeconds(seconds)
+  }
+
+  useEffect(() => {
+    const interval = setInterval(calculateUnsubmittedSeconds, 1000)
+    return () => clearInterval(interval)
+  }, [timers])
+
+  useEffect(() => {
+    const dateCondition: Condition<string> =
+      applicationSettings.summaryTime === "day"
+        ? {Equal: dateToISO(new Date(), false)}
+        : {
+            GreaterThanOrEqual: dateToISO(
+              dayjs().startOf("week").toDate(),
+              false
+            )
+          }
+
+    session.timeEntry
+      .query({
+        condition: {
+          And: [{user: {Equal: currentUser._id}}, {date: dateCondition}]
+        }
+      })
+      .then((entries) => {
+        const accumulatedSeconds = entries.reduce(
+          (acc, entry) => acc + dayjs.duration(entry.duration).asSeconds(),
+          0
+        )
+        setSubmittedSeconds(accumulatedSeconds)
+      })
+      .catch(console.error)
+  }, [timers, applicationSettings.summaryTime])
+
+  return (
+    <Typography fontSize={isMobile ? undefined : "1.2rem"}>
+      {submittedSeconds !== undefined
+        ? dayjs
+            .duration(submittedSeconds + unsubmittedSeconds, "seconds")
+            .format("H : mm : ss")
+        : "00 : 00 : 00"}
+    </Typography>
+  )
+}

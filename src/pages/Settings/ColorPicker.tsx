@@ -3,7 +3,7 @@ import React, {FC, useContext} from "react"
 import {AuthContext} from "utils/context"
 
 export const ColorPicker: FC = () => {
-  const {color: currentColor, setColor} = useContext(AuthContext)
+  const {applicationSettings, updateApplicationSettings} = useContext(AuthContext)
 
   return (
     <Box>
@@ -12,8 +12,8 @@ export const ColorPicker: FC = () => {
         .map(([name, color]) => (
           <Radio
             key={name}
-            checked={currentColor === name}
-            onChange={() => setColor(name)}
+            checked={applicationSettings.color === name}
+            onChange={() => updateApplicationSettings({color: name})}
             sx={{
               color: (color as any)[800],
               "&.Mui-checked": {

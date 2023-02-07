@@ -10,7 +10,14 @@ import {
   Typography,
   useMediaQuery
 } from "@mui/material"
-import React, {FC, ReactNode, useContext, useEffect, useState} from "react"
+import React, {
+  FC,
+  ReactNode,
+  useContext,
+  useEffect,
+  useRef,
+  useState
+} from "react"
 import {theme} from "theme"
 import {AuthContext, TimerContext} from "utils/context"
 import {NavigationDrawer, NAVIGATION_DRAWER_WIDTH} from "./NavigationDrawer"
@@ -32,8 +39,13 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
   const [openNavigation, setOpenNavigation] = useState(!isMobile)
   const [openTimers, setOpenTimers] = useState(false)
 
+  const isInitialRender = useRef(true)
+
   useEffect(() => {
-    if (!openTimers) setOpenTimers(true)
+    if (!openTimers && !isInitialRender.current) {
+      setOpenTimers(true)
+      isInitialRender.current = false
+    }
   }, [timers])
 
   function toggleOpenNavigation() {

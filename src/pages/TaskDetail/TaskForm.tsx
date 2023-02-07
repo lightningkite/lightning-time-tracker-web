@@ -66,6 +66,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
     <Stack gap={3}>
       <TextField
         label="Description"
+        multiline
         {...makeFormikTextFieldProps(formik, "description")}
       />
       <TextField

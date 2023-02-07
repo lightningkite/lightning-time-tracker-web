@@ -28,6 +28,7 @@ const AuthRoutes: FC = () => {
           <Route path="/users/:userId" element={<UserDetail />} />
           <Route path="/projects" element={<ProjectIndex />} />
           <Route path="/projects/:projectId" element={<ProjectDetail />} />
+          <Route path="/projects/:projectId/tasks/:taskId" element={<TaskDetail />} />
           <Route path="/my-time" element={<MyTimeEntries />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/reports" element={<Reports />} />

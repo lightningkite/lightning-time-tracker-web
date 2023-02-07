@@ -22,7 +22,6 @@ dayjs.extend(duration)
 const validationSchema = yup.object().shape({
   summary: yup.string().required("Required"),
   date: yup.date().required("Required"),
-  user: yup.object().required("Required").nullable(),
   duration: yup
     .string()
     .required("Required")

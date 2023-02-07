@@ -1,23 +1,20 @@
 import {TabContext, TabList, TabPanel} from "@mui/lab"
-import {Button, Card, CardContent, Container, Paper, Tab} from "@mui/material"
+import {Card, CardContent, Container, Paper, Tab} from "@mui/material"
 import {Project} from "api/sdk"
-import {AddTimeEntryButton} from "components/AddTimeEntryButton"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import PageHeader from "components/PageHeader"
-import {TaskTable} from "components/TaskTable"
-import {TimeEntryTable} from "components/TimeEntryTable"
 import React, {FC, useContext, useEffect, useState} from "react"
-import {useNavigate, useParams} from "react-router-dom"
+import {useParams} from "react-router-dom"
 import {AuthContext} from "utils/context"
 import {DeleteProjectButton} from "./DeleteProjectButton"
 import {ProjectForm} from "./ProjectForm"
+import {TaskTab} from "./TaskTab"
 import {TimeEntryTab} from "./TimeEntryTab"
 
 const ProjectDetail: FC = () => {
   const {projectId} = useParams()
   const {session} = useContext(AuthContext)
-  const navigate = useNavigate()
 
   const [project, setProject] = useState<Project | null>()
   const [tab, setTab] = useState("1")
@@ -64,11 +61,7 @@ const ProjectDetail: FC = () => {
         </Paper>
 
         <TabPanel value="1" sx={{p: 0}}>
-          <TaskTable
-            onRowClick={(task) =>
-              navigate(`/projects/${project._id}/tasks/${task._id}`)
-            }
-          />
+          <TaskTab project={project} />
         </TabPanel>
         <TabPanel value="2" sx={{p: 0}}>
           <TimeEntryTab project={project} />

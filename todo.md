@@ -1,10 +1,8 @@
-- Create tasks
+- Click item in time entry table to edit
 - Show time spent out of estimate on dashboard items
+- context function to trigger refresh of toolbar timer
 - Start a timer by clicking button on dashboard item
 - Task attachments
 - Task emergency
-- Click item in time entry table to edit
-- Show daily or weekly total time at top bar, customize in settings
 - ? Click dashboard task status to change status
 - ? Settings for when timers are automatically hidden or shown
-- context function to trigger refresh of toolbar timer

@@ -7,7 +7,7 @@ import {
 import {Add} from "@mui/icons-material"
 import {Button, Stack, SxProps, TextField} from "@mui/material"
 import {DatePicker} from "@mui/x-date-pickers"
-import {Project, Task, User} from "api/sdk"
+import {Project, Task} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import dayjs from "dayjs"
 import duration, {Duration} from "dayjs/plugin/duration"
@@ -35,13 +35,12 @@ const validationSchema = yup.object().shape({
 
 export interface AddTimeEntryButtonProps {
   afterSubmit: () => void
-  user?: User
   project?: Project
   sx?: SxProps
 }
 
 export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
-  const {afterSubmit, user, project, sx} = props
+  const {afterSubmit, project, sx} = props
   const {session, currentUser} = useContext(AuthContext)
 
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -55,7 +54,6 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
     initialValues: {
       task: null as Task | null,
       project: project ?? null,
-      user: user ?? null,
       summary: "",
       duration: "",
       date: new Date()
@@ -72,7 +70,7 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
           stringToDuration(values.duration) as Duration
         ).asMilliseconds(),
         date: dateToISO(values.date, false),
-        user: (values.user as User)?._id
+        user: currentUser._id
       })
 
       afterSubmit()
@@ -106,19 +104,6 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
         }}
       >
         <Stack gap={3}>
-          {!user && (
-            <RestAutocompleteInput
-              label="User"
-              restEndpoint={session.user}
-              getOptionLabel={(user) => user.email}
-              searchProperties={["email"]}
-              additionalQueryConditions={[
-                {organization: {Equal: currentUser.organization}}
-              ]}
-              {...makeFormikAutocompleteProps(formik, "user")}
-            />
-          )}
-
           {!project && (
             <RestAutocompleteInput
               label="Project"

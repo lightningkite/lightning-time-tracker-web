@@ -32,7 +32,7 @@ export const MyTimeEntries: FC = () => {
       })
       .then((timeEntries) => {
         const durations = timeEntries.map((timeEntry) =>
-          dayjs.duration(timeEntry.duration)
+          dayjs.duration(timeEntry.durationMilliseconds, "millisecond")
         )
         const totalTime = durations.reduce(
           (prev, curr) => prev.add(curr),

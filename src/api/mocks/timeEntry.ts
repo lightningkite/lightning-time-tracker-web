@@ -28,16 +28,14 @@ export function generateTimeEntries(
       organization: task.organization,
       user: user._id,
       summary: randSentence(),
-      duration: dayjs
+      durationMilliseconds: dayjs
         .duration({
           hours: randNumber({min: 0, max: 2}),
           minutes: randNumber({min: 0, max: 59}),
           seconds: randNumber({min: 0, max: 59})
         })
-        .toISOString(),
+        .asMilliseconds(),
       date: dateToISO(randPastDate())
     }
   })
 }
-
-// dayjs.duration("P1Y2M3DT4H5M6S")

@@ -147,9 +147,9 @@ export const useGlobalTimerManager = (): TimerContextType => {
         organization: currentUser.organization,
         user: currentUser._id,
         summary: timer.summary,
-        duration: dayjs
+        durationMilliseconds: dayjs
           .duration(timer.accumulatedSeconds, "second")
-          .toISOString(),
+          .asMilliseconds(),
         date: dateToISO(new Date(), false)
       })
       .then(() => removeTimer(key))

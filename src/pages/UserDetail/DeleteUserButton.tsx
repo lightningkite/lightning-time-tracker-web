@@ -8,9 +8,9 @@ import {
   DialogTitle
 } from "@mui/material"
 import {User} from "api/sdk"
-import {AuthContext} from "utils/context"
 import React, {FC, useContext, useState} from "react"
 import {useNavigate} from "react-router-dom"
+import {AuthContext} from "utils/context"
 import {AutoLoadingButton} from "../../components/AutoLoadingButton"
 
 export const DeleteUserButton: FC<{user: User}> = ({user}) => {
@@ -31,7 +31,7 @@ export const DeleteUserButton: FC<{user: User}> = ({user}) => {
 
   return (
     <>
-      <HoverHelp description={`Delete ${user.name}`}>
+      <HoverHelp description={`Delete ${user.email}`}>
         <Button onClick={handleOpen} color="error">
           Delete
         </Button>
@@ -44,12 +44,12 @@ export const DeleteUserButton: FC<{user: User}> = ({user}) => {
         aria-describedby={`alert-dialog-description-${user._id}`}
       >
         <DialogTitle id={`alert-dialog-title-${user._id}`}>
-          Delete {user.name}?
+          Delete {user.email}?
         </DialogTitle>
 
         <DialogContent>
           <DialogContentText id={`alert-dialog-description-${user._id}`}>
-            Are you sure you want to delete {user.name}? This action cannot be
+            Are you sure you want to delete {user.email}? This action cannot be
             undone.
           </DialogContentText>
         </DialogContent>

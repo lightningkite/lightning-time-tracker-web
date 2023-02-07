@@ -51,7 +51,11 @@ export const SummaryTime: FC = () => {
       })
       .then((entries) => {
         const accumulatedSeconds = entries.reduce(
-          (acc, entry) => acc + dayjs.duration(entry.duration).asSeconds(),
+          (acc, entry) =>
+            acc +
+            dayjs
+              .duration(entry.durationMilliseconds, "millisecond")
+              .asSeconds(),
           0
         )
         setSubmittedSeconds(accumulatedSeconds)

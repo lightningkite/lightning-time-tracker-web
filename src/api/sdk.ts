@@ -76,7 +76,7 @@ export interface TimeEntry {
   organization: string | null | undefined
   user: string
   summary: string
-  duration: string
+  durationMilliseconds: number
   date: string
 }
 export interface UploadInformation {

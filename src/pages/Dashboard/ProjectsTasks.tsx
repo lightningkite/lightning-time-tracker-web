@@ -115,7 +115,7 @@ export const ProjectsTasks: FC = () => {
                 color="primary"
                 sx={{mr: 2, visibility: myTasksCount ? "visible" : "hidden"}}
               />
-              <Typography variant="h2">{projectName}</Typography>{" "}
+              <Typography variant="h2">{projectName}</Typography>
             </AccordionSummary>
             <AccordionDetails>
               <List>

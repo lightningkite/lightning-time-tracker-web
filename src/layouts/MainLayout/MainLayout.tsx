@@ -1,4 +1,5 @@
-import {Menu, Timer, TimerOutlined} from "@mui/icons-material"
+import {HoverHelp} from "@lightningkite/mui-lightning-components"
+import {Close, Menu, Timer, TimerOutlined} from "@mui/icons-material"
 import {
   AppBar,
   Badge,
@@ -9,7 +10,7 @@ import {
   Typography,
   useMediaQuery
 } from "@mui/material"
-import React, {FC, ReactNode, useContext, useState} from "react"
+import React, {FC, ReactNode, useContext, useEffect, useState} from "react"
 import {theme} from "theme"
 import {AuthContext, TimerContext} from "utils/context"
 import {NavigationDrawer, NAVIGATION_DRAWER_WIDTH} from "./NavigationDrawer"
@@ -30,6 +31,10 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
 
   const [openNavigation, setOpenNavigation] = useState(!isMobile)
   const [openTimers, setOpenTimers] = useState(false)
+
+  useEffect(() => {
+    if (!openTimers) setOpenTimers(true)
+  }, [timers])
 
   function toggleOpenNavigation() {
     isMobile && setOpenTimers(false)
@@ -66,11 +71,20 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
           <Stack direction="row" alignItems="center" spacing={1} ml="auto">
             <SummaryTime />
 
-            <IconButton color="inherit" onClick={toggleOpenTimers} edge="start">
-              <Badge badgeContent={Object.keys(timers).length} color="primary">
-                {openTimers ? <Timer /> : <TimerOutlined />}
-              </Badge>
-            </IconButton>
+            <HoverHelp description={openTimers ? "Hide timers" : "Show timers"}>
+              <IconButton
+                color="inherit"
+                onClick={toggleOpenTimers}
+                edge="start"
+              >
+                <Badge
+                  badgeContent={openTimers ? null : Object.keys(timers).length}
+                  color="primary"
+                >
+                  {!openTimers ? <TimerOutlined /> : <Close />}
+                </Badge>
+              </IconButton>
+            </HoverHelp>
           </Stack>
         </Toolbar>
       </AppBar>

@@ -1,4 +1,5 @@
 import {
+  HoverHelp,
   RestAutocompleteInput,
   useThrottle
 } from "@lightningkite/mui-lightning-components"
@@ -131,16 +132,18 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
         >
           Submit
         </AutoLoadingButton>
-        <IconButton
-          onClick={() => removeTimer(timerKey)}
-          sx={{
-            "&:hover": {
-              color: theme.palette.error.main
-            }
-          }}
-        >
-          <DeleteOutline />
-        </IconButton>
+        <HoverHelp description="Delete timer">
+          <IconButton
+            onClick={() => removeTimer(timerKey)}
+            sx={{
+              "&:hover": {
+                color: theme.palette.error.main
+              }
+            }}
+          >
+            <DeleteOutline />
+          </IconButton>
+        </HoverHelp>
       </Stack>
     </Paper>
   )

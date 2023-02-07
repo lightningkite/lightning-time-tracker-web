@@ -1,11 +1,14 @@
-import {ListItem, Stack, Typography} from "@mui/material"
+import {HoverHelp} from "@lightningkite/mui-lightning-components"
+import {MoreTime} from "@mui/icons-material"
+import {Box, IconButton, ListItem, Stack, Typography} from "@mui/material"
 import {Task, User} from "api/sdk"
 import dayjs from "dayjs"
-import React, {FC} from "react"
+import duration from "dayjs/plugin/duration"
+import React, {FC, useContext} from "react"
 import {useNavigate} from "react-router-dom"
+import {TimerContext} from "utils/context"
 import {UserChip} from "./UserChip"
 
-import duration from "dayjs/plugin/duration"
 dayjs.extend(duration)
 
 export interface TaskListItemProps {
@@ -16,6 +19,7 @@ export interface TaskListItemProps {
 
 export const TaskListItem: FC<TaskListItemProps> = ({task, setTask, users}) => {
   const navigate = useNavigate()
+  const {newTimer} = useContext(TimerContext)
 
   return (
     <ListItem
@@ -36,14 +40,18 @@ export const TaskListItem: FC<TaskListItemProps> = ({task, setTask, users}) => {
           sx={{mb: 1}}
         >
           <UserChip users={users} task={task} setTask={setTask} />
-          <Typography
-            variant="body2"
-            color="primary.light"
-            fontWeight="bold"
-            sx={{opacity: 0.6}}
-          >
+
+          <Typography variant="body2" sx={{opacity: 0.6, ml: "auto", mr: 1}}>
             {task.state.toUpperCase()}
           </Typography>
+
+          <HoverHelp description="New timer">
+            <IconButton
+              onClick={() => newTimer({project: task.project, task: task._id})}
+            >
+              <MoreTime />
+            </IconButton>
+          </HoverHelp>
         </Stack>
 
         <Typography

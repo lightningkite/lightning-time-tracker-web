@@ -1,4 +1,4 @@
-import {Add} from "@mui/icons-material"
+import {Add, MoreTime} from "@mui/icons-material"
 import {Box, Button, Drawer, Stack, Toolbar, Typography} from "@mui/material"
 import React, {FC, useContext} from "react"
 import {TimerContext} from "utils/context"
@@ -33,7 +33,7 @@ export const TimerDrawer: FC<{
 
           <Button
             variant="outlined"
-            startIcon={<Add />}
+            startIcon={<MoreTime />}
             onClick={() => newTimer()}
           >
             Add Timer

@@ -71,7 +71,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({task, setTask, users}) => {
           }}
           onClick={() => navigate(`/dashboard/tasks/${task._id}`)}
         >
-          {task.description}
+          {task.summary}
         </Typography>
       </Stack>
     </ListItem>

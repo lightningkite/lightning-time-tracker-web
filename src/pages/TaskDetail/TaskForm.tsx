@@ -12,7 +12,7 @@ import {AuthContext} from "utils/context"
 import * as yup from "yup"
 
 const validationSchema = yup.object().shape({
-  description: yup.string().required("Required"),
+  summary: yup.string().required("Required"),
   estimate: yup.number().min(0, "Must be positive").nullable()
 })
 
@@ -30,6 +30,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
 
   const formik = useFormik({
     initialValues: {
+      summary: task.summary,
       description: task.description,
       estimate: task.estimate?.toString() ?? ""
     },
@@ -64,6 +65,10 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
 
   return (
     <Stack gap={3}>
+      <TextField
+        label="Summary"
+        {...makeFormikTextFieldProps(formik, "summary")}
+      />
       <TextField
         label="Description"
         multiline

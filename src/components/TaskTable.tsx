@@ -63,7 +63,8 @@ export const TaskTable: FC<TaskTableProps> = (props) => {
     <RestDataTable
       {...restProps}
       restEndpoint={annotatedTaskEndpoint}
-      searchFields={["description"]}
+      searchFields={["summary"]}
+      defaultSorting={[{field: "createdAt", sort: "desc"}]}
       columns={[
         {
           field: "state",
@@ -71,14 +72,21 @@ export const TaskTable: FC<TaskTableProps> = (props) => {
           minWidth: 100
         },
         {
+          field: "createdAt",
+          headerName: "Created",
+          type: "date",
+          width: 130,
+          valueFormatter: ({value}) => dayjs(value).fromNow()
+        },
+        {
           field: "user",
           headerName: "User",
-          minWidth: 250,
+          minWidth: 200,
           valueGetter: (params) => params.row.annotations.user?.email
         },
         {
-          field: "description",
-          headerName: "Description",
+          field: "summary",
+          headerName: "Summary",
           flex: 1,
           minWidth: 200
         },

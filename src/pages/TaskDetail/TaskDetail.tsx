@@ -38,25 +38,23 @@ const TaskDetail: FC = () => {
     return <ErrorAlert>Error loading task</ErrorAlert>
   }
 
-  const shortDescription =
-    task.description.length > 20
-      ? task.description.slice(0, 30) + "..."
-      : task.description
+  const shortSummary =
+    task.summary.length > 20 ? task.summary.slice(0, 30) + "..." : task.summary
 
   return (
     <Container maxWidth="md">
       <PageHeader
-        title={shortDescription}
+        title={shortSummary}
         breadcrumbs={
           project
             ? [
                 ["All Projects", "/projects"],
                 [project.name, `/projects/${project._id}`],
-                [shortDescription, ""]
+                [shortSummary, ""]
               ]
             : [
                 ["Dashboard", "/dashboard"],
-                [shortDescription, ""]
+                [shortSummary, ""]
               ]
         }
       >

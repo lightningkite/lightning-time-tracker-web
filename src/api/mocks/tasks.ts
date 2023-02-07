@@ -1,5 +1,15 @@
-import {rand, randNumber, randSentence, randUuid} from "@ngneat/falso"
+import {capitalize} from "@mui/material"
+import {
+  rand,
+  randCatchPhrase,
+  randNumber,
+  randParagraph,
+  randPastDate,
+  randUuid,
+  randVerb
+} from "@ngneat/falso"
 import {Project, Task, TaskState, User} from "api/sdk"
+import {dateToISO} from "utils/helpers"
 
 export function generateTasks(
   totalPerProject: number,
@@ -18,10 +28,12 @@ export function generateTasks(
       organization: project.organization,
       user: user._id,
       state: rand(Object.values(TaskState)),
-      description: randSentence(),
+      summary: capitalize(randVerb() + " " + randCatchPhrase().toLowerCase()),
+      description: randParagraph(),
       attachments: [],
       estimate: randNumber({min: 0, max: 20}),
-      emergency: false
+      emergency: false,
+      createdAt: dateToISO(randPastDate(), true)
     }
   })
 }

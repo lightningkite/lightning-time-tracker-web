@@ -111,8 +111,8 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
         restEndpoint={session.task}
         value={task}
         onChange={setTask}
-        getOptionLabel={(task) => task.description}
-        searchProperties={["description"]}
+        getOptionLabel={(task) => task.summary}
+        searchProperties={["summary"]}
         additionalQueryConditions={[{project: {Equal: project?._id ?? ""}}]}
         dependencies={[project?._id]}
         disabled={!project}

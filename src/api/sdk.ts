@@ -43,6 +43,7 @@ export interface Project {
   organization: string
   name: string
   rate: number | null | undefined
+  createdAt: string
 }
 export interface ServerHealth {
   serverId: string
@@ -57,10 +58,12 @@ export interface Task {
   organization: string
   user: string
   state: TaskState
+  summary: string
   description: string
   attachments: Array<string>
   estimate: number | null | undefined
   emergency: boolean
+  createdAt: string
 }
 export enum TaskState {
   Hold = "Hold",

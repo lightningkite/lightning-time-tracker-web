@@ -8,6 +8,7 @@ import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import {useFormik} from "formik"
 import React, {FC, useContext, useState} from "react"
 import {AuthContext} from "utils/context"
+import {dateToISO} from "utils/helpers"
 import * as yup from "yup"
 
 // Form validation schema. See: https://www.npmjs.com/package/yup#object
@@ -41,7 +42,8 @@ export const AddProjectButton: FC<AddProjectButtonProps> = (props) => {
         ...values,
         _id: crypto.randomUUID(),
         organization: currentUser.organization,
-        rate: values.rate ? +values.rate : undefined
+        rate: values.rate ? +values.rate : undefined,
+        createdAt: dateToISO(new Date())
       })
 
       props.afterSubmit()

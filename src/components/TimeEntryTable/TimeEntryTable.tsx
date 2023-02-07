@@ -93,7 +93,7 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
       headerName: "Task",
       flex: 2,
       minWidth: 200,
-      valueGetter: (params) => params.row.annotations.task?.description
+      valueGetter: (params) => params.row.annotations.task?.summary
     },
     {
       field: "user",

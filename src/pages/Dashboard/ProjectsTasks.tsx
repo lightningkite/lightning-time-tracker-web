@@ -65,7 +65,7 @@ export const ProjectsTasks: FC = () => {
     projects.forEach((project) => {
       const projectTasks = tasks
         .filter((task) => task.project === project._id)
-        .sort((a, b) => a.description.localeCompare(b.description))
+        .sort((a, b) => a.summary.localeCompare(b.summary))
 
       const myTasksCount = projectTasks.filter(
         (task) => task.user === currentUser._id

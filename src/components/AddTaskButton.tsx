@@ -11,11 +11,12 @@ import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import {useFormik} from "formik"
 import React, {FC, useContext, useState} from "react"
 import {AuthContext} from "utils/context"
+import {dateToISO} from "utils/helpers"
 import * as yup from "yup"
 
 const validationSchema = yup.object().shape({
   user: yup.object().required("Required").nullable(),
-  description: yup.string().required("Required"),
+  summary: yup.string().required("Required"),
   estimate: yup.number().integer().min(0).nullable()
 })
 
@@ -39,6 +40,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
   const formik = useFormik({
     initialValues: {
       user: currentUser,
+      summary: "",
       description: "",
       estimate: ""
     },
@@ -53,7 +55,8 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
         state: TaskState.Active,
         attachments: [],
         estimate: values.estimate ? +values.estimate : null,
-        emergency: false
+        emergency: false,
+        createdAt: dateToISO(new Date())
       })
 
       afterSubmit()
@@ -92,6 +95,11 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
               {organization: {Equal: currentUser.organization}}
             ]}
             {...makeFormikAutocompleteProps(formik, "user")}
+          />
+
+          <TextField
+            label="Summary"
+            {...makeFormikTextFieldProps(formik, "summary")}
           />
 
           <TextField

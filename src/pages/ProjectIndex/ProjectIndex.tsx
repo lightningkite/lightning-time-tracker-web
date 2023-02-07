@@ -1,6 +1,7 @@
 import {RestDataTable} from "@lightningkite/mui-lightning-components"
 import {Container} from "@mui/material"
 import PageHeader from "components/PageHeader"
+import dayjs from "dayjs"
 import React, {FC, useContext, useState} from "react"
 import {useNavigate} from "react-router-dom"
 import {AuthContext} from "utils/context"
@@ -30,9 +31,16 @@ export const ProjectIndex: FC = () => {
         columns={[
           {field: "name", headerName: "Name", flex: 1},
           {
+            field: "createdAt",
+            headerName: "Created",
+            width: 130,
+            type: "date",
+            valueFormatter: ({value}) => dayjs(value).format("MMM D, YYYY")
+          },
+          {
             field: "rate",
             headerName: "Rate",
-            width: 120,
+            width: 80,
             type: "number",
             valueFormatter: ({value}) => `$${value as number}`
           }

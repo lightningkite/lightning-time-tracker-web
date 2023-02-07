@@ -1,5 +1,6 @@
-import {rand, randCompanyName, randUuid} from "@ngneat/falso"
+import {rand, randCompanyName, randPastDate, randUuid} from "@ngneat/falso"
 import {Organization, Project} from "api/sdk"
+import {dateToISO} from "utils/helpers"
 
 export function generateProjects(
   totalPerOrganization: number,
@@ -12,7 +13,8 @@ export function generateProjects(
         _id: randUuid(),
         name: randCompanyName(),
         organization: rand(organizations)._id,
-        rate: 100
+        rate: 100,
+        createdAt: dateToISO(randPastDate(), true)
       }
     }
   )

@@ -53,7 +53,7 @@ const ProjectDetail: FC = () => {
       </Card>
 
       <TabContext value={tab}>
-        <Paper sx={{mt: 4, mb: 2}}>
+        <Paper sx={{mt: 4, mb: 1}}>
           <TabList onChange={(_e, v) => setTab(v as string)}>
             <Tab label="Tasks" value="1" />
             <Tab label="Time Entries" value="2" />

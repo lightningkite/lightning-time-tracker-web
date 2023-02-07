@@ -1,6 +1,5 @@
 - Show time spent out of estimate on dashboard items
 - context function to trigger refresh of toolbar timer
-- Start a timer by clicking button on dashboard item
 - Task attachments
 - Task emergency
 - ? Click dashboard task status to change status

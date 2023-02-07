@@ -76,7 +76,7 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
       valueGetter: (params) =>
         dayjs
           .duration(params.row.durationMilliseconds, "millisecond")
-          .format("HH:mm")
+          .format("H : mm : ss")
     },
     {
       field: "project",

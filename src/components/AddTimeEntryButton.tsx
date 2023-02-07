@@ -5,23 +5,24 @@ import {
   RestAutocompleteInput
 } from "@lightningkite/mui-lightning-components"
 import {Add} from "@mui/icons-material"
-import {Button, Stack, TextField} from "@mui/material"
+import {Button, Stack, SxProps, TextField} from "@mui/material"
 import {DatePicker} from "@mui/x-date-pickers"
-import {Project, Task} from "api/sdk"
+import {Project, Task, User} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import dayjs from "dayjs"
+import duration, {Duration} from "dayjs/plugin/duration"
 import {useFormik} from "formik"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO, stringToDuration} from "utils/helpers"
 import * as yup from "yup"
 
-import duration, {Duration} from "dayjs/plugin/duration"
 dayjs.extend(duration)
 
 const validationSchema = yup.object().shape({
   summary: yup.string().required("Required"),
   date: yup.date().required("Required"),
+  user: yup.object().required("Required").nullable(),
   duration: yup
     .string()
     .required("Required")
@@ -34,9 +35,13 @@ const validationSchema = yup.object().shape({
 
 export interface AddTimeEntryButtonProps {
   afterSubmit: () => void
+  user?: User
+  project?: Project
+  sx?: SxProps
 }
 
 export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
+  const {afterSubmit, user, project, sx} = props
   const {session, currentUser} = useContext(AuthContext)
 
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -49,7 +54,8 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
   const formik = useFormik({
     initialValues: {
       task: null as Task | null,
-      project: null as Project | null,
+      project: project ?? null,
+      user: user ?? null,
       summary: "",
       duration: "",
       date: new Date()
@@ -66,10 +72,10 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
           stringToDuration(values.duration) as Duration
         ).asMilliseconds(),
         date: dateToISO(values.date, false),
-        user: currentUser._id
+        user: (values.user as User)?._id
       })
 
-      props.afterSubmit()
+      afterSubmit()
       onClose()
     }
   })
@@ -80,7 +86,11 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
 
   return (
     <>
-      <Button onClick={() => setShowCreateForm(true)} startIcon={<Add />}>
+      <Button
+        onClick={() => setShowCreateForm(true)}
+        startIcon={<Add />}
+        sx={sx}
+      >
         Add Time Entry
       </Button>
 
@@ -96,13 +106,28 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
         }}
       >
         <Stack gap={3}>
-          <RestAutocompleteInput
-            label="Project"
-            restEndpoint={session.project}
-            getOptionLabel={(project) => project.name}
-            searchProperties={["name"]}
-            {...makeFormikAutocompleteProps(formik, "project")}
-          />
+          {!user && (
+            <RestAutocompleteInput
+              label="User"
+              restEndpoint={session.user}
+              getOptionLabel={(user) => user.email}
+              searchProperties={["email"]}
+              additionalQueryConditions={[
+                {organization: {Equal: currentUser.organization}}
+              ]}
+              {...makeFormikAutocompleteProps(formik, "user")}
+            />
+          )}
+
+          {!project && (
+            <RestAutocompleteInput
+              label="Project"
+              restEndpoint={session.project}
+              getOptionLabel={(project) => project.name}
+              searchProperties={["name"]}
+              {...makeFormikAutocompleteProps(formik, "project")}
+            />
+          )}
 
           <RestAutocompleteInput
             label="Task"

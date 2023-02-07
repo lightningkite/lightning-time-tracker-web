@@ -1,12 +1,12 @@
 import {Container} from "@mui/material"
+import {AddTimeEntryButton} from "components/AddTimeEntryButton"
 import PageHeader from "components/PageHeader"
 import {TimeEntryTable} from "components/TimeEntryTable"
 import dayjs from "dayjs"
+import duration from "dayjs/plugin/duration"
 import React, {FC, useContext, useState} from "react"
 import {AuthContext} from "utils/context"
-import {AddTimeEntryButton} from "./AddTimeEntry"
 
-import duration from "dayjs/plugin/duration"
 dayjs.extend(duration)
 
 export const MyTimeEntries: FC = () => {
@@ -19,6 +19,7 @@ export const MyTimeEntries: FC = () => {
       <PageHeader title="My Time Entries">
         <AddTimeEntryButton
           afterSubmit={() => setRefreshTrigger((prev) => prev + 1)}
+          user={currentUser}
         />
       </PageHeader>
 

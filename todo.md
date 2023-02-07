@@ -1,6 +1,5 @@
 - Create tasks
 - Show time spent out of estimate on dashboard items
-- Task table, show time spent out of estimate
 - Start a timer by clicking button on dashboard item
 - Task attachments
 - Task emergency
@@ -8,3 +7,4 @@
 - Show daily or weekly total time at top bar, customize in settings
 - ? Click dashboard task status to change status
 - ? Settings for when timers are automatically hidden or shown
+- context function to trigger refresh of toolbar timer

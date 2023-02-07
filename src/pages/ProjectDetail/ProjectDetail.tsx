@@ -1,14 +1,7 @@
 import {TabContext, TabList, TabPanel} from "@mui/lab"
-import {
-  Box,
-  Card,
-  CardContent,
-  Container,
-  Paper,
-  Tab,
-  Typography
-} from "@mui/material"
+import {Button, Card, CardContent, Container, Paper, Tab} from "@mui/material"
 import {Project} from "api/sdk"
+import {AddTimeEntryButton} from "components/AddTimeEntryButton"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import PageHeader from "components/PageHeader"
@@ -19,6 +12,7 @@ import {useNavigate, useParams} from "react-router-dom"
 import {AuthContext} from "utils/context"
 import {DeleteProjectButton} from "./DeleteProjectButton"
 import {ProjectForm} from "./ProjectForm"
+import {TimeEntryTab} from "./TimeEntryTab"
 
 const ProjectDetail: FC = () => {
   const {projectId} = useParams()
@@ -77,10 +71,7 @@ const ProjectDetail: FC = () => {
           />
         </TabPanel>
         <TabPanel value="2" sx={{p: 0}}>
-          <TimeEntryTable
-            additionalQueryConditions={[{project: {Equal: project._id}}]}
-            hiddenColumns={["project", "summary"]}
-          />
+          <TimeEntryTab project={project} />
         </TabPanel>
       </TabContext>
     </Container>

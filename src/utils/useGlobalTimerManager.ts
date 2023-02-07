@@ -3,7 +3,7 @@ import dayjs from "dayjs"
 import {useContext, useEffect, useState} from "react"
 import {LocalStorageKey} from "./constants"
 import {AuthContext, Timer, TimerContextType} from "./context"
-import {dateToISO} from "./helpers"
+import {dateToISO, getTimerSeconds} from "./helpers"
 
 import duration from "dayjs/plugin/duration"
 dayjs.extend(duration)
@@ -148,7 +148,7 @@ export const useGlobalTimerManager = (): TimerContextType => {
         user: currentUser._id,
         summary: timer.summary,
         durationMilliseconds: dayjs
-          .duration(timer.accumulatedSeconds, "second")
+          .duration(getTimerSeconds(timer), "second")
           .asMilliseconds(),
         date: dateToISO(new Date(), false)
       })

@@ -39,13 +39,15 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
   const [openNavigation, setOpenNavigation] = useState(!isMobile)
   const [openTimers, setOpenTimers] = useState(false)
 
-  const isInitialRender = useRef(true)
+  const isInitialRenders = useRef(true)
 
   useEffect(() => {
-    if (!openTimers && !isInitialRender.current) {
+    if (!openTimers && !isInitialRenders.current) {
       setOpenTimers(true)
-      isInitialRender.current = false
     }
+
+    isInitialRenders.current &&
+      setTimeout(() => (isInitialRenders.current = false), 500)
   }, [timers])
 
   function toggleOpenNavigation() {

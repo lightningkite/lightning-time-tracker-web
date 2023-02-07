@@ -127,7 +127,7 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
         <AutoLoadingButton
           onClick={() => submitTimer(timerKey)}
           variant="contained"
-          disabled={!project || !task || !summary}
+          disabled={!project || !summary}
           fullWidth
         >
           Submit

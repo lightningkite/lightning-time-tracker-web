@@ -117,11 +117,12 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
           (column) => !hiddenColumns.includes(column.field)
         )}
         onRowClick={setSelectedTimeEntry}
+        dependencies={[refreshTrigger, ...(props.dependencies ?? [])]}
       />
       <TimeEntryModal
         timeEntry={selectedTimeEntry}
         onClose={() => {
-          setRefreshTrigger(refreshTrigger + 1)
+          setRefreshTrigger((prev) => prev + 1)
           setSelectedTimeEntry(null)
         }}
       />

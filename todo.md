@@ -1,4 +1,3 @@
-- Click item in time entry table to edit
 - Show time spent out of estimate on dashboard items
 - context function to trigger refresh of toolbar timer
 - Start a timer by clicking button on dashboard item

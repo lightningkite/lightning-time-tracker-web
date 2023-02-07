@@ -10,8 +10,9 @@ import {
 import {Project, Task, TimeEntry, User} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
-import React, {FC, useContext} from "react"
+import React, {FC, useContext, useState} from "react"
 import {AuthContext} from "utils/context"
+import {TimeEntryModal} from "./TimeEntryModal"
 
 dayjs.extend(duration)
 
@@ -28,6 +29,11 @@ export interface TimeEntryTableProps
 export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
   const {hiddenColumns = [], ...restProps} = props
   const {session} = useContext(AuthContext)
+
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [selectedTimeEntry, setSelectedTimeEntry] = useState<TimeEntry | null>(
+    null
+  )
 
   const annotatedTimeEntryEndpoint: SessionRestEndpoint<AnnotatedTimeEntry> =
     annotateEndpoint(session.timeEntry, async (timeEntries) => {
@@ -102,13 +108,23 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
   ]
 
   return (
-    <RestDataTable
-      {...restProps}
-      restEndpoint={annotatedTimeEntryEndpoint}
-      defaultSorting={[{field: "date", sort: "desc"}]}
-      columns={columns.filter(
-        (column) => !hiddenColumns.includes(column.field)
-      )}
-    />
+    <>
+      <RestDataTable
+        {...restProps}
+        restEndpoint={annotatedTimeEntryEndpoint}
+        defaultSorting={[{field: "date", sort: "desc"}]}
+        columns={columns.filter(
+          (column) => !hiddenColumns.includes(column.field)
+        )}
+        onRowClick={setSelectedTimeEntry}
+      />
+      <TimeEntryModal
+        timeEntry={selectedTimeEntry}
+        onClose={() => {
+          setRefreshTrigger(refreshTrigger + 1)
+          setSelectedTimeEntry(null)
+        }}
+      />
+    </>
   )
 }

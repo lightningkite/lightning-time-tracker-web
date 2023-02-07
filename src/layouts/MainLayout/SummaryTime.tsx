@@ -1,4 +1,4 @@
-import {Condition} from "@lightningkite/lightning-server-simplified"
+import {Aggregate, Condition} from "@lightningkite/lightning-server-simplified"
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {Typography, useMediaQuery, useTheme} from "@mui/material"
 import dayjs from "dayjs"
@@ -44,22 +44,14 @@ export const SummaryTime: FC = () => {
           }
 
     session.timeEntry
-      .query({
+      .aggregate({
+        aggregate: Aggregate.Sum,
         condition: {
           And: [{user: {Equal: currentUser._id}}, {date: dateCondition}]
-        }
+        },
+        property: "durationMilliseconds"
       })
-      .then((entries) => {
-        const accumulatedSeconds = entries.reduce(
-          (acc, entry) =>
-            acc +
-            dayjs
-              .duration(entry.durationMilliseconds, "millisecond")
-              .asSeconds(),
-          0
-        )
-        setSubmittedSeconds(accumulatedSeconds)
-      })
+      .then((milliseconds) => setSubmittedSeconds((milliseconds ?? 0) / 1000))
       .catch(console.error)
   }, [timers, applicationSettings.summaryTime])
 

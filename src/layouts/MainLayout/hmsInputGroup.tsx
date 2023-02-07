@@ -41,7 +41,7 @@ const HmsInputGroup: FC<{timerKey: string}> = ({timerKey}) => {
 
   const pause = () => timer.lastStarted && toggleTimer(timerKey)
 
-  if (!hms) return null
+  if (!hms) return <div></div>
 
   return (
     <Stack

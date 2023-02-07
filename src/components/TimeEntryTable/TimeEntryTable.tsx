@@ -10,10 +10,12 @@ import {
 import {Project, Task, TimeEntry, User} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
+import relativeTime from "dayjs/plugin/relativeTime"
 import React, {FC, useContext, useState} from "react"
 import {AuthContext} from "utils/context"
 import {TimeEntryModal} from "./TimeEntryModal"
 
+dayjs.extend(relativeTime)
 dayjs.extend(duration)
 
 export type AnnotatedTimeEntry = WithAnnotations<
@@ -67,8 +69,9 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
     {
       field: "date",
       headerName: "Date",
-      valueGetter: (params) => dayjs(params.row.date).format("MM/DD/YYYY"),
-      type: "date"
+      type: "date",
+      width: 130,
+      valueFormatter: ({value}) => dayjs(value).fromNow()
     },
     {
       field: "duration",

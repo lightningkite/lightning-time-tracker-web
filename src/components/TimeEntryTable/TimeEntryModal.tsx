@@ -39,7 +39,7 @@ const validationSchema = yup.object().shape({
 
 export const TimeEntryModal: FC<TimeEntryModalProps> = (props) => {
   const {timeEntry, onClose} = props
-  const {session, currentUser} = useContext(AuthContext)
+  const {session} = useContext(AuthContext)
 
   const [loadedInitialAsyncValues, setLoadedInitialAsyncValues] =
     useState(false)
@@ -61,7 +61,7 @@ export const TimeEntryModal: FC<TimeEntryModalProps> = (props) => {
         durationMilliseconds: (
           stringToDuration(values.duration) as Duration
         ).asMilliseconds(),
-        date: dateToISO(values.date as Date, false)
+        date: dateToISO(values.date as Date)
       }
 
       const modification = makeObjectModification(timeEntry, formattedValues)

@@ -1,17 +1,21 @@
 import {makeObjectModification} from "@lightningkite/lightning-server-simplified"
 import {
+  makeFormikAutocompleteProps,
   makeFormikNumericTextFieldProps,
-  makeFormikTextFieldProps
+  makeFormikTextFieldProps,
+  RestAutocompleteInput
 } from "@lightningkite/mui-lightning-components"
 import {LoadingButton} from "@mui/lab"
-import {Alert, InputAdornment, Stack, TextField} from "@mui/material"
-import {Task} from "api/sdk"
+import {Alert, InputAdornment, MenuItem, Stack, TextField} from "@mui/material"
+import {Task, TaskState, User} from "api/sdk"
 import {useFormik} from "formik"
-import React, {FC, useContext, useState} from "react"
+import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import * as yup from "yup"
 
 const validationSchema = yup.object().shape({
+  user: yup.object().required("Required"),
+  state: yup.string().required("Required"),
   summary: yup.string().required("Required"),
   estimate: yup.number().min(0, "Must be positive").nullable()
 })
@@ -27,9 +31,13 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
   const {session} = useContext(AuthContext)
 
   const [error, setError] = useState("")
+  const [loadedInitialAsyncValues, setLoadedInitialAsyncValues] =
+    useState(false)
 
   const formik = useFormik({
     initialValues: {
+      user: null as User | null,
+      state: task.state,
       summary: task.summary,
       description: task.description,
       estimate: task.estimate?.toString() ?? ""
@@ -41,6 +49,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
 
       const formattedValues: Partial<Task> = {
         ...values,
+        user: values.user?._id,
         estimate: values.estimate ? +values.estimate : null
       }
 
@@ -63,8 +72,23 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
     }
   })
 
+  useEffect(() => {
+    session.user.detail(task.user).then((user) => {
+      formik.resetForm({values: {...formik.values, user}})
+      setLoadedInitialAsyncValues(true)
+    })
+  }, [])
+
   return (
     <Stack gap={3}>
+      <RestAutocompleteInput
+        label="User"
+        restEndpoint={session.user}
+        getOptionLabel={(user) => user.email}
+        searchProperties={["email"]}
+        disabled={!loadedInitialAsyncValues}
+        {...makeFormikAutocompleteProps(formik, "user")}
+      />
       <TextField
         label="Summary"
         {...makeFormikTextFieldProps(formik, "summary")}
@@ -74,6 +98,17 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
         multiline
         {...makeFormikTextFieldProps(formik, "description")}
       />
+      <TextField
+        select
+        label="State"
+        {...makeFormikTextFieldProps(formik, "state")}
+      >
+        {Object.values(TaskState).map((option) => (
+          <MenuItem key={option} value={option}>
+            {option}
+          </MenuItem>
+        ))}
+      </TextField>
       <TextField
         label="Estimate (hours)"
         {...makeFormikNumericTextFieldProps(formik, "estimate")}

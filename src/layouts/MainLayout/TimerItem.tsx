@@ -136,7 +136,10 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
         </AutoLoadingButton>
         <HoverHelp description="Delete timer">
           <IconButton
-            onClick={() => removeTimer(timerKey)}
+            onClick={() =>
+              confirm("Are you sure you want to delete this timer?") &&
+              removeTimer(timerKey)
+            }
             sx={{
               "&:hover": {
                 color: theme.palette.error.main

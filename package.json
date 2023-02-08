@@ -7,7 +7,6 @@
     "start": "vite",
     "build": "npm run build:prod",
     "build:prod": "tsc --noEmit && vite build --mode production",
-    "build:stage": "tsc --noEmit && vite build --mode staging",
     "serve": "vite preview",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix"

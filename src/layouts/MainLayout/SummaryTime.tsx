@@ -53,7 +53,7 @@ export const SummaryTime: FC = () => {
       })
       .then((milliseconds) => setSubmittedSeconds((milliseconds ?? 0) / 1000))
       .catch(console.error)
-  }, [timers, applicationSettings.summaryTime])
+  }, [Object.keys(timers).length, applicationSettings.summaryTime])
 
   return (
     <HoverHelp

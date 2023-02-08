@@ -1,5 +1,5 @@
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
-import {Close, Menu, Timer, TimerOutlined} from "@mui/icons-material"
+import {Close, Menu, TimerOutlined} from "@mui/icons-material"
 import {
   AppBar,
   Badge,
@@ -47,7 +47,7 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
     }
 
     isInitialRenders.current &&
-      setTimeout(() => (isInitialRenders.current = false), 500)
+      setTimeout(() => (isInitialRenders.current = false), 2000)
   }, [timers])
 
   function toggleOpenNavigation() {

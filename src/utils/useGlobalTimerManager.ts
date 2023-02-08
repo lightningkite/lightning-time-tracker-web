@@ -153,7 +153,10 @@ export const useGlobalTimerManager = (): TimerContextType => {
         date: dateToISO(new Date(), false)
       })
       .then(() => removeTimer(key))
-      .catch((e) => alert(e.join("\n")))
+      .catch((e) => {
+        alert("Error submitting timer")
+        console.error(e)
+      })
   }
 
   function getTimerForTask(taskId: string): string | null {

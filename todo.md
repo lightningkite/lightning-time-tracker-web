@@ -1,3 +1,6 @@
+- user states cared about set of task states sdk change
+- web preferences on user model
+- Confirm on delete timer
 - Show time spent out of estimate on dashboard items
 - context function to trigger refresh of toolbar timer
 - Task attachments

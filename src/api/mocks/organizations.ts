@@ -8,7 +8,7 @@ export function generateOrganizations(total: number): Organization[] {
       _id: randUuid(),
       name: "Lightning Kite",
       owner: "",
-      createdAt: dateToISO(new Date())
+      createdAt: dateToISO(new Date(), true)
     }
   })
 }

@@ -15,12 +15,12 @@ export function camelCaseToTitleCase(str: string) {
  * Converts a Date to an ISO string.
  * This function corrects for timezones. Do not use `date.toISOString()`.
  */
-export function dateToISO(date: Date, includeTime: boolean = false): string {
+export function dateToISO(date: Date): string {
   const isoString = new Date(
     date.getTime() - date.getTimezoneOffset() * 60000
   ).toISOString()
 
-  return includeTime ? isoString : isoString.split("T")[0]
+  return isoString.split("T")[0]
 }
 
 /**

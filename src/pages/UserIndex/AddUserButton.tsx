@@ -48,7 +48,9 @@ export const AddUserButton: FC<AddUserProps> = (props) => {
         organization: currentUser.organization,
         currentTask: undefined,
         limitToProjects: undefined,
-        termsAgreed: ""
+        termsAgreed: "",
+        statesCaredAbout: [],
+        webPreferences: ""
       })
 
       props.afterSubmit()

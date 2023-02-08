@@ -17,7 +17,9 @@ export function generateUsers(
         currentTask: null,
         limitToProjects: null,
         isSuperUser: true,
-        termsAgreed: dateToISO(new Date())
+        termsAgreed: dateToISO(new Date()),
+        statesCaredAbout: [],
+        webPreferences: ""
       }
     }
   )

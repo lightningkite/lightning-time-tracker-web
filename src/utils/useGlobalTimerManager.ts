@@ -134,29 +134,24 @@ export const useGlobalTimerManager = (): TimerContextType => {
   async function submitTimer(key: string) {
     const timer = timers[key]
 
-    if (!timer) {
-      alert("Timer not found")
-      return
+    if (!timer.project) {
+      throw new Error("Timer not found")
     }
 
-    await session.timeEntry
-      .insert({
-        _id: crypto.randomUUID(),
-        task: timer.task,
-        project: timer.project,
-        organization: currentUser.organization,
-        user: currentUser._id,
-        summary: timer.summary,
-        durationMilliseconds: dayjs
-          .duration(getTimerSeconds(timer), "second")
-          .asMilliseconds(),
-        date: dateToISO(new Date(), false)
-      })
-      .then(() => removeTimer(key))
-      .catch((e) => {
-        alert("Error submitting timer")
-        console.error(e)
-      })
+    await session.timeEntry.insert({
+      _id: crypto.randomUUID(),
+      task: timer.task,
+      project: timer.project,
+      organization: currentUser.organization,
+      user: currentUser._id,
+      summary: timer.summary,
+      durationMilliseconds: dayjs
+        .duration(getTimerSeconds(timer), "second")
+        .asMilliseconds(),
+      date: dateToISO(new Date(), false)
+    })
+
+    removeTimer(key)
   }
 
   function getTimerForTask(taskId: string): string | null {

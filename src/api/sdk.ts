@@ -75,8 +75,8 @@ export enum TaskState {
 export interface TimeEntry {
   _id: string
   task: string | null | undefined
-  project: string | null | undefined
-  organization: string | null | undefined
+  project: string
+  organization: string
   user: string
   summary: string
   durationMilliseconds: number
@@ -92,6 +92,8 @@ export interface User {
   organization: string
   currentTask: string | null | undefined
   limitToProjects: Array<string> | null | undefined
+  statesCaredAbout: Array<TaskState>
+  webPreferences: string
   isSuperUser: boolean
   termsAgreed: string
 }

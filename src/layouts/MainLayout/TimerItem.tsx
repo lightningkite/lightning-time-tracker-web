@@ -125,7 +125,9 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
       />
       <Stack direction="row" spacing={1}>
         <AutoLoadingButton
-          onClick={() => submitTimer(timerKey)}
+          onClick={() =>
+            submitTimer(timerKey).catch((e) => alert("Error submitting timer"))
+          }
           variant="contained"
           disabled={!project || !summary}
           fullWidth

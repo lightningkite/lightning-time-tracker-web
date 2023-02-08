@@ -21,6 +21,7 @@ dayjs.extend(duration)
 
 const validationSchema = yup.object().shape({
   summary: yup.string().required("Required"),
+  project: yup.object().required("Required").nullable(),
   date: yup.date().required("Required"),
   duration: yup
     .string()
@@ -63,7 +64,7 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
         ...values,
         _id: crypto.randomUUID(),
         task: values.task?._id,
-        project: values.project?._id,
+        project: (values.project as Project)?._id,
         organization: currentUser.organization,
         durationMilliseconds: (
           stringToDuration(values.duration) as Duration

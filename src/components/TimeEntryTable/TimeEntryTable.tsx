@@ -38,7 +38,7 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
   )
 
   const annotatedTimeEntryEndpoint: SessionRestEndpoint<AnnotatedTimeEntry> =
-    annotateEndpoint(session.timeEntry, async (timeEntries) => {
+    annotateEndpoint(session.timeEntry, async (timeEntries: TimeEntry[]) => {
       const taskIds = new Set<string>()
       const projectIds = new Set<string>()
       const userIds = new Set<string>()
@@ -46,7 +46,7 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
       timeEntries.forEach((timeEntry) => {
         userIds.add(timeEntry.user)
         timeEntry.task && taskIds.add(timeEntry.task)
-        timeEntry.project && projectIds.add(timeEntry.project)
+        projectIds.add(timeEntry.project)
       })
 
       const [tasks, projects, users] = await Promise.all([

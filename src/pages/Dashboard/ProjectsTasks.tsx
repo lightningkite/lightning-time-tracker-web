@@ -8,12 +8,13 @@ import {
   List,
   Typography
 } from "@mui/material"
-import {Project, Task, TaskState, User} from "api/sdk"
+import {Project, TaskState} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import React, {FC, useContext, useEffect, useMemo, useState} from "react"
-import {AuthContext} from "utils/context"
+import {AuthContext, TimerContext} from "utils/context"
 import {compareTasks} from "utils/helpers"
+import {AnnotatedTask, useAnnotatedEndpoints} from "utils/useAnnotatedEndpoints"
 import {TaskListItem} from "./TaskListItem"
 
 const dashboardTaskStates: TaskState[] = [
@@ -24,24 +25,20 @@ const dashboardTaskStates: TaskState[] = [
 
 export const ProjectsTasks: FC = () => {
   const {session, currentOrganization, currentUser} = useContext(AuthContext)
+  const {timers} = useContext(TimerContext)
+  const {annotatedTaskEndpoint} = useAnnotatedEndpoints()
 
   const [projects, setProjects] = useState<Project[] | null>()
-  const [tasks, setTasks] = useState<Task[] | null>()
-  const [users, setUsers] = useState<User[] | null>()
+  const [annotatedTasks, setAnnotatedTasks] = useState<AnnotatedTask[] | null>()
   const [initialSorting, setInitialSorting] = useState<string[]>()
 
   useEffect(() => {
-    session.user
-      .query({condition: {organization: {Equal: currentOrganization._id}}})
-      .then(setUsers)
-      .catch(() => setUsers(null))
-
     session.project
       .query({condition: {organization: {Equal: currentOrganization._id}}})
       .then(setProjects)
       .catch(() => setProjects(null))
 
-    session.task
+    annotatedTaskEndpoint
       .query({
         condition: {
           And: [
@@ -50,20 +47,20 @@ export const ProjectsTasks: FC = () => {
           ]
         }
       })
-      .then(setTasks)
-      .catch(() => setTasks(null))
-  }, [])
+      .then(setAnnotatedTasks)
+      .catch(() => setAnnotatedTasks(null))
+  }, [Object.values(timers).length])
 
   const tasksByProject = useMemo(() => {
-    if (!tasks || !projects) return {}
+    if (!annotatedTasks || !projects) return {}
 
     const tasksByProject: Record<
       string,
-      {projectTasks: Task[]; myTasksCount: number}
+      {projectTasks: AnnotatedTask[]; myTasksCount: number}
     > = {}
 
     projects.forEach((project) => {
-      const projectTasks = tasks
+      const projectTasks = annotatedTasks
         .filter((task) => task.project === project._id)
         .sort((a, b) => a.summary.localeCompare(b.summary))
 
@@ -75,10 +72,10 @@ export const ProjectsTasks: FC = () => {
     })
 
     return tasksByProject
-  }, [tasks, projects])
+  }, [annotatedTasks, projects])
 
   useEffect(() => {
-    if (!tasks || !projects || initialSorting) return
+    if (!annotatedTasks || !projects || initialSorting) return
 
     setInitialSorting(
       Object.entries(tasksByProject)
@@ -89,14 +86,13 @@ export const ProjectsTasks: FC = () => {
 
   if (
     projects === undefined ||
-    tasks === undefined ||
-    users === undefined ||
+    annotatedTasks === undefined ||
     !initialSorting
   ) {
     return <Loading />
   }
 
-  if (projects === null || tasks === null || users === null) {
+  if (projects === null || annotatedTasks === null) {
     return <ErrorAlert>Error loading tasks</ErrorAlert>
   }
 
@@ -117,14 +113,10 @@ export const ProjectsTasks: FC = () => {
               />
               <Typography variant="h2">{projectName}</Typography>
             </AccordionSummary>
-            <AccordionDetails>
+            <AccordionDetails sx={{p: 0}}>
               <List>
                 {projectTasks.sort(compareTasks).map((task) => (
-                  <TaskListItem
-                    task={task}
-                    users={users}
-                    key={task._id}
-                  />
+                  <TaskListItem annotatedTask={task} key={task._id} />
                 ))}
               </List>
             </AccordionDetails>

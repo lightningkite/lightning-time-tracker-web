@@ -1,5 +1,5 @@
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
-import {MoreTime, Person} from "@mui/icons-material"
+import {Add, Pause, Person, PlayArrow} from "@mui/icons-material"
 import {
   Box,
   IconButton,
@@ -30,11 +30,16 @@ export interface TaskListItemProps {
 export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
   const navigate = useNavigate()
   const {currentUser} = useContext(AuthContext)
-  const {newTimer} = useContext(TimerContext)
+  const {newTimer, timers, toggleTimer} = useContext(TimerContext)
   const theme = useTheme()
 
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
   const isMine = currentUser._id === annotatedTask.user
+
+  const [timerKey] = Object.entries(timers).find(
+    ([_key, timer]) => timer.task === annotatedTask._id
+  ) ?? [undefined]
+  const isPlaying = !!timerKey && !!timers[timerKey].lastStarted
 
   const taskPercentBudget = annotatedTask.estimate
     ? (annotatedTask.annotations.totalTaskHours / annotatedTask.estimate) * 100
@@ -53,16 +58,37 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
       disablePadding
       secondaryAction={
         <HoverHelp description="New timer">
-          <IconButton
-            onClick={() =>
-              newTimer({
-                project: annotatedTask.project,
-                task: annotatedTask._id
-              })
+          {(() => {
+            if (!timerKey) {
+              return (
+                <IconButton
+                  onClick={() =>
+                    newTimer({
+                      project: annotatedTask.project,
+                      task: annotatedTask._id
+                    })
+                  }
+                  sx={{color: "text.disabled"}}
+                >
+                  <Add />
+                </IconButton>
+              )
             }
-          >
-            <MoreTime />
-          </IconButton>
+
+            if (isPlaying) {
+              return (
+                <IconButton onClick={() => toggleTimer(timerKey)}>
+                  <Pause color="success" />
+                </IconButton>
+              )
+            }
+
+            return (
+              <IconButton onClick={() => toggleTimer(timerKey)}>
+                <PlayArrow />
+              </IconButton>
+            )
+          })()}
         </HoverHelp>
       }
       sx={
@@ -85,7 +111,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
             </ListItemIcon>
           </HoverHelp>
         )}
-        <ListItemText sx={{width: "100%", mr: 2}} inset={!isMine}>
+        <ListItemText sx={{width: "100%", mr: 3}} inset={!isMine}>
           <Stack
             direction="row"
             alignItems="flex-end"

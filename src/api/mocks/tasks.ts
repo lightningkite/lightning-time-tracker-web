@@ -9,7 +9,6 @@ import {
   randVerb
 } from "@ngneat/falso"
 import {Project, Task, TaskState, User} from "api/sdk"
-import {dateToISO} from "utils/helpers"
 
 export function generateTasks(
   totalPerProject: number,
@@ -33,7 +32,7 @@ export function generateTasks(
       attachments: [],
       estimate: randNumber({min: 0, max: 20}),
       emergency: false,
-      createdAt: dateToISO(randPastDate(), true)
+      createdAt: randPastDate().toISOString()
     }
   })
 }

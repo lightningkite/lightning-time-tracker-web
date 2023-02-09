@@ -148,7 +148,7 @@ export const useGlobalTimerManager = (): TimerContextType => {
       durationMilliseconds: dayjs
         .duration(getTimerSeconds(timer), "second")
         .asMilliseconds(),
-      date: dateToISO(new Date(), false)
+      date: dateToISO(new Date())
     })
 
     removeTimer(key)

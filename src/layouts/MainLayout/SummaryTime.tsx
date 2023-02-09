@@ -35,12 +35,9 @@ export const SummaryTime: FC = () => {
   useEffect(() => {
     const dateCondition: Condition<string> =
       applicationSettings.summaryTime === "day"
-        ? {Equal: dateToISO(new Date(), false)}
+        ? {Equal: dateToISO(new Date())}
         : {
-            GreaterThanOrEqual: dateToISO(
-              dayjs().startOf("week").toDate(),
-              false
-            )
+            GreaterThanOrEqual: dateToISO(dayjs().startOf("week").toDate())
           }
 
     session.timeEntry

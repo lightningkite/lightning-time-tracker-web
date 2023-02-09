@@ -69,7 +69,7 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
         durationMilliseconds: (
           stringToDuration(values.duration) as Duration
         ).asMilliseconds(),
-        date: dateToISO(values.date, false),
+        date: dateToISO(values.date),
         user: currentUser._id
       })
 

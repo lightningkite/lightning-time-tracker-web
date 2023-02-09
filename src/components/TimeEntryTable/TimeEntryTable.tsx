@@ -36,7 +36,11 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
       headerName: "Date",
       type: "date",
       width: 130,
-      valueFormatter: ({value}) => dayjs(value).fromNow()
+      valueFormatter: ({value}) => {
+        if (dayjs().isSame(value, "day")) return "Today"
+        if (dayjs().subtract(1, "day").isSame(value, "day")) return "Yesterday"
+        return dayjs(value).fromNow()
+      }
     },
     {
       field: "duration",

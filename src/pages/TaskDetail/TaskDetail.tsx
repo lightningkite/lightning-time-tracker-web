@@ -10,6 +10,8 @@ import {AuthContext} from "utils/context"
 import {DeleteTaskButton} from "./DeleteTaskButton"
 import {TaskForm} from "./TaskForm"
 
+const MAX_TITLE_LENGTH = 40
+
 const TaskDetail: FC = () => {
   const {taskId, projectId} = useParams()
   const {session} = useContext(AuthContext)
@@ -39,7 +41,9 @@ const TaskDetail: FC = () => {
   }
 
   const shortSummary =
-    task.summary.length > 30 ? task.summary.slice(0, 30) + "..." : task.summary
+    task.summary.length > MAX_TITLE_LENGTH
+      ? task.summary.slice(0, MAX_TITLE_LENGTH) + "..."
+      : task.summary
 
   return (
     <Container maxWidth="md">

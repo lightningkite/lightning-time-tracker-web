@@ -30,7 +30,7 @@ export function generateTimeEntries(
       summary: randSentence(),
       durationMilliseconds: dayjs
         .duration({
-          hours: randNumber({min: 0, max: 2}),
+          hours: randNumber({min: 0, max: 1}),
           minutes: randNumber({min: 0, max: 59}),
           seconds: randNumber({min: 0, max: 59})
         })

@@ -1,6 +1,7 @@
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {MoreTime, Person} from "@mui/icons-material"
 import {
+  Box,
   IconButton,
   LinearProgress,
   LinearProgressProps,
@@ -8,7 +9,10 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Typography
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme
 } from "@mui/material"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
@@ -27,7 +31,9 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
   const navigate = useNavigate()
   const {currentUser} = useContext(AuthContext)
   const {newTimer} = useContext(TimerContext)
+  const theme = useTheme()
 
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"))
   const isMine = currentUser._id === annotatedTask.user
 
   const taskPercentBudget = annotatedTask.estimate
@@ -38,7 +44,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
     if (!annotatedTask.estimate) return "inherit"
     if (taskPercentBudget > 100) return "error"
     if (taskPercentBudget > 75) return "warning"
-    return "primary"
+    return "inherit"
   })()
 
   return (
@@ -70,7 +76,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
     >
       <ListItemButton
         onClick={() => navigate(`/dashboard/tasks/${annotatedTask._id}`)}
-        sx={{py: 3}}
+        sx={{py: 1}}
       >
         {isMine && (
           <HoverHelp description="Assigned to me">
@@ -79,11 +85,45 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
             </ListItemIcon>
           </HoverHelp>
         )}
-        <ListItemText sx={{width: "100%"}} inset={!isMine}>
-          <Typography variant="body2" color="text.secondary">
-            {annotatedTask.state.toUpperCase()} &nbsp;&#x2022;&nbsp;{" "}
-            {annotatedTask.annotations.user?.email ?? "Unknown user"}
-          </Typography>
+        <ListItemText sx={{width: "100%", mr: 2}} inset={!isMine}>
+          <Stack
+            direction="row"
+            alignItems="flex-end"
+            justifyContent="space-between"
+            spacing={1}
+          >
+            <Typography variant="body2" color="text.secondary">
+              {annotatedTask.state.toUpperCase()} &nbsp;&#x2022;&nbsp;{" "}
+              {annotatedTask.annotations.user?.email ?? "Unknown user"}
+            </Typography>
+            {!isMobile && (
+              <Box sx={{width: "8rem"}}>
+                <Typography
+                  sx={{mt: 1, mb: 0.25}}
+                  variant="body2"
+                  color={
+                    budgetColor === "inherit"
+                      ? "text.disabled"
+                      : `${budgetColor}.dark`
+                  }
+                >
+                  {annotatedTask.estimate
+                    ? `${annotatedTask.annotations.totalTaskHours.toFixed(
+                        1
+                      )} of ${annotatedTask.estimate} hours`
+                    : `${annotatedTask.annotations.totalTaskHours.toFixed(
+                        1
+                      )} hours – no estimate`}
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={Math.min(100, taskPercentBudget)}
+                  color={budgetColor}
+                  sx={{borderRadius: 2, height: 2, width: "100%"}}
+                />
+              </Box>
+            )}
+          </Stack>
           <Typography
             variant="h3"
             sx={{
@@ -95,28 +135,6 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
           >
             {annotatedTask.summary}
           </Typography>
-
-          <Typography
-            sx={{mt: 1, mb: 0.25}}
-            variant="body2"
-            color={
-              annotatedTask.estimate ? `${budgetColor}.dark` : "text.disabled"
-            }
-          >
-            {annotatedTask.estimate
-              ? `${annotatedTask.annotations.totalTaskHours.toFixed(1)} of ${
-                  annotatedTask.estimate
-                } hours`
-              : `${annotatedTask.annotations.totalTaskHours.toFixed(
-                  1
-                )} hours – no estimate`}
-          </Typography>
-          <LinearProgress
-            variant="determinate"
-            value={Math.min(100, taskPercentBudget)}
-            color={budgetColor}
-            sx={{borderRadius: 2, height: 2}}
-          />
         </ListItemText>
       </ListItemButton>
     </ListItem>

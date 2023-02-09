@@ -39,7 +39,7 @@ const TaskDetail: FC = () => {
   }
 
   const shortSummary =
-    task.summary.length > 20 ? task.summary.slice(0, 30) + "..." : task.summary
+    task.summary.length > 30 ? task.summary.slice(0, 30) + "..." : task.summary
 
   return (
     <Container maxWidth="md">

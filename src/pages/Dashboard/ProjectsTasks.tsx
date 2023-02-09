@@ -120,7 +120,11 @@ export const ProjectsTasks: FC = () => {
             <AccordionDetails>
               <List>
                 {projectTasks.sort(compareTasks).map((task) => (
-                  <TaskListItem task={task} users={users} key={task._id} />
+                  <TaskListItem
+                    task={task}
+                    users={users}
+                    key={task._id}
+                  />
                 ))}
               </List>
             </AccordionDetails>

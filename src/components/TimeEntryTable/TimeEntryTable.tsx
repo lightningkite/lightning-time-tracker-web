@@ -1,27 +1,20 @@
 import {
-  annotateEndpoint,
-  SessionRestEndpoint,
-  WithAnnotations
-} from "@lightningkite/lightning-server-simplified"
-import {
   RestDataTable,
   RestDataTableProps
 } from "@lightningkite/mui-lightning-components"
-import {Project, Task, TimeEntry, User} from "api/sdk"
+import {TimeEntry} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import relativeTime from "dayjs/plugin/relativeTime"
-import React, {FC, useContext, useState} from "react"
-import {AuthContext} from "utils/context"
+import React, {FC, useState} from "react"
+import {
+  AnnotatedTimeEntry,
+  useAnnotatedEndpoints
+} from "utils/useAnnotatedEndpoints"
 import {TimeEntryModal} from "./TimeEntryModal"
 
 dayjs.extend(relativeTime)
 dayjs.extend(duration)
-
-export type AnnotatedTimeEntry = WithAnnotations<
-  TimeEntry,
-  {task?: Task; project?: Project; user?: User}
->
 
 export interface TimeEntryTableProps
   extends Partial<RestDataTableProps<AnnotatedTimeEntry>> {
@@ -30,40 +23,12 @@ export interface TimeEntryTableProps
 
 export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
   const {hiddenColumns = [], ...restProps} = props
-  const {session} = useContext(AuthContext)
+  const {annotatedTimeEntryEndpoint} = useAnnotatedEndpoints()
 
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [selectedTimeEntry, setSelectedTimeEntry] = useState<TimeEntry | null>(
     null
   )
-
-  const annotatedTimeEntryEndpoint: SessionRestEndpoint<AnnotatedTimeEntry> =
-    annotateEndpoint(session.timeEntry, async (timeEntries: TimeEntry[]) => {
-      const taskIds = new Set<string>()
-      const projectIds = new Set<string>()
-      const userIds = new Set<string>()
-
-      timeEntries.forEach((timeEntry) => {
-        userIds.add(timeEntry.user)
-        timeEntry.task && taskIds.add(timeEntry.task)
-        projectIds.add(timeEntry.project)
-      })
-
-      const [tasks, projects, users] = await Promise.all([
-        session.task.query({condition: {_id: {Inside: [...taskIds]}}}),
-        session.project.query({condition: {_id: {Inside: [...projectIds]}}}),
-        session.user.query({condition: {_id: {Inside: [...userIds]}}})
-      ])
-
-      return timeEntries.map((timeEntry) => ({
-        ...timeEntry,
-        annotations: {
-          user: users.find((user) => user._id === timeEntry.user),
-          task: tasks.find((task) => task._id === timeEntry.task),
-          project: projects.find((project) => project._id === timeEntry.project)
-        }
-      }))
-    })
 
   const columns: RestDataTableProps<AnnotatedTimeEntry>["columns"] = [
     {

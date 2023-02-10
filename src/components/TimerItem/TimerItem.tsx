@@ -3,9 +3,10 @@ import {
   RestAutocompleteInput,
   useThrottle
 } from "@lightningkite/mui-lightning-components"
-import {DeleteOutline, Pause, PlayArrow} from "@mui/icons-material"
+import {DeleteOutline, Pause, PlayArrow, UnfoldLess} from "@mui/icons-material"
 import {
   Alert,
+  Box,
   Button,
   IconButton,
   Paper,
@@ -18,6 +19,7 @@ import {Project, Task} from "api/sdk"
 import {AutoLoadingButton} from "components/AutoLoadingButton"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
+import {ContentCollapsed} from "./ContentCollapsed"
 import HmsInputGroup from "./hmsInputGroup"
 
 export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
@@ -33,10 +35,13 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
   const [summary, setSummary] = useState(timer.summary)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [expanded, setExpanded] = useState(!timer.project || !timer.task)
 
   const throttledSummary = useThrottle(summary, 1000)
 
   useEffect(() => {
+    expanded && task && project && setExpanded(false)
+
     updateTimer(timerKey, {
       project: project?._id,
       task: task?._id,
@@ -81,47 +86,72 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
   }
 
   return (
-    <Paper component={Stack} spacing={2} sx={{p: 1}}>
-      <Stack
-        direction="row"
-        spacing={2}
-        alignItems="center"
-        justifyContent="space-between"
-      >
-        <HmsInputGroup timerKey={timerKey} />
-        <Button
-          variant={timer.lastStarted ? "contained" : "outlined"}
-          // fullWidth
-          onClick={() => toggleTimer(timerKey)}
-          sx={{height: 56, px: 3}}
-        >
-          {timer.lastStarted ? <Pause /> : <PlayArrow />}
-        </Button>
-      </Stack>
-      <RestAutocompleteInput
-        label="Project"
-        restEndpoint={session.project}
-        value={project}
-        onChange={setProject}
-        getOptionLabel={(project) => project.name}
-        searchProperties={["name"]}
-      />
-      <RestAutocompleteInput
-        label="Task"
-        restEndpoint={session.task}
-        value={task}
-        onChange={setTask}
-        getOptionLabel={(task) => task.summary}
-        searchProperties={["summary"]}
-        additionalQueryConditions={[{project: {Equal: project?._id ?? ""}}]}
-        dependencies={[project?._id]}
-        disabled={!project}
-      />
+    <Paper sx={{p: 1}}>
+      {expanded ? (
+        <Stack spacing={2}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            // justifyContent="space-between"
+          >
+            <HmsInputGroup timerKey={timerKey} />
+
+            {project && (
+              <HoverHelp description="Collapse">
+                <IconButton onClick={() => setExpanded(false)}>
+                  <UnfoldLess />
+                </IconButton>
+              </HoverHelp>
+            )}
+
+            <HoverHelp description="Delete timer">
+              <IconButton
+                onClick={() =>
+                  confirm("Are you sure you want to delete this timer?") &&
+                  removeTimer(timerKey)
+                }
+                sx={{
+                  "&:hover": {
+                    color: theme.palette.error.main
+                  }
+                }}
+              >
+                <DeleteOutline />
+              </IconButton>
+            </HoverHelp>
+          </Stack>
+          <RestAutocompleteInput
+            label="Project"
+            restEndpoint={session.project}
+            value={project}
+            onChange={setProject}
+            getOptionLabel={(project) => project.name}
+            searchProperties={["name"]}
+          />
+          <RestAutocompleteInput
+            label="Task"
+            restEndpoint={session.task}
+            value={task}
+            onChange={setTask}
+            getOptionLabel={(task) => task.summary}
+            searchProperties={["summary"]}
+            additionalQueryConditions={[{project: {Equal: project?._id ?? ""}}]}
+            dependencies={[project?._id]}
+            disabled={!project}
+          />
+        </Stack>
+      ) : (
+        <Box sx={{cursor: "pointer"}} onClick={() => setExpanded(true)}>
+          <ContentCollapsed task={task} project={project} timer={timer} />
+        </Box>
+      )}
       <TextField
         label="Summary"
         value={summary}
         onChange={(e) => setSummary(e.target.value)}
         multiline
+        sx={{my: 2}}
+        fullWidth
       />
       <Stack direction="row" spacing={1}>
         <AutoLoadingButton
@@ -134,21 +164,12 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
         >
           Submit
         </AutoLoadingButton>
-        <HoverHelp description="Delete timer">
-          <IconButton
-            onClick={() =>
-              confirm("Are you sure you want to delete this timer?") &&
-              removeTimer(timerKey)
-            }
-            sx={{
-              "&:hover": {
-                color: theme.palette.error.main
-              }
-            }}
-          >
-            <DeleteOutline />
-          </IconButton>
-        </HoverHelp>
+        <Button
+          variant={timer.lastStarted ? "contained" : "outlined"}
+          onClick={() => toggleTimer(timerKey)}
+        >
+          {timer.lastStarted ? <Pause /> : <PlayArrow />}
+        </Button>
       </Stack>
     </Paper>
   )

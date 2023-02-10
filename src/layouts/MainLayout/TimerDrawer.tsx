@@ -1,8 +1,8 @@
-import {Add, MoreTime} from "@mui/icons-material"
+import {MoreTime} from "@mui/icons-material"
 import {Box, Button, Drawer, Stack, Toolbar, Typography} from "@mui/material"
+import {TimerItem} from "components/TimerItem"
 import React, {FC, useContext} from "react"
 import {TimerContext} from "utils/context"
-import {TimerItem} from "./TimerItem"
 
 export const TIMER_DRAWER_WIDTH = "25rem"
 
@@ -20,8 +20,11 @@ export const TimerDrawer: FC<{
       open={open}
       onClose={toggleOpen}
       keepMounted={true}
+      PaperProps={{
+        sx: {width: isMobile ? "100vw" : TIMER_DRAWER_WIDTH}
+      }}
     >
-      <Toolbar sx={{width: isMobile ? "100vw" : TIMER_DRAWER_WIDTH}} />
+      <Toolbar />
 
       <Box p={2}>
         <Typography variant="h2">Timers</Typography>

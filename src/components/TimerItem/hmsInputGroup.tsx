@@ -49,6 +49,7 @@ const HmsInputGroup: FC<{timerKey: string}> = ({timerKey}) => {
       divider={<Typography>:</Typography>}
       alignItems="center"
       spacing={1}
+      mr="auto"
     >
       <HmsInputField
         value={hms.hours}

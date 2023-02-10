@@ -1,6 +1,4 @@
 - Give clients access to the app
-- Add new tasks from the dashboard
-- Shrink timers vertically, don't edit task after creation
 - user states cared about set of task states sdk change
 - web preferences on user model
 - Task attachments

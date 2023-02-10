@@ -56,41 +56,37 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
     <ListItem
       key={annotatedTask._id}
       disablePadding
-      secondaryAction={
-        <HoverHelp description="New timer">
-          {(() => {
-            if (!timerKey) {
-              return (
-                <IconButton
-                  onClick={() =>
-                    newTimer({
-                      project: annotatedTask.project,
-                      task: annotatedTask._id
-                    })
-                  }
-                  sx={{color: "text.disabled"}}
-                >
-                  <Add />
-                </IconButton>
-              )
-            }
+      secondaryAction={(() => {
+        if (!timerKey) {
+          return (
+            <IconButton
+              onClick={() =>
+                newTimer({
+                  project: annotatedTask.project,
+                  task: annotatedTask._id
+                })
+              }
+              sx={{color: "text.disabled"}}
+            >
+              <Add />
+            </IconButton>
+          )
+        }
 
-            if (isPlaying) {
-              return (
-                <IconButton onClick={() => toggleTimer(timerKey)}>
-                  <Pause color="success" />
-                </IconButton>
-              )
-            }
+        if (isPlaying) {
+          return (
+            <IconButton onClick={() => toggleTimer(timerKey)}>
+              <Pause color="success" />
+            </IconButton>
+          )
+        }
 
-            return (
-              <IconButton onClick={() => toggleTimer(timerKey)}>
-                <PlayArrow />
-              </IconButton>
-            )
-          })()}
-        </HoverHelp>
-      }
+        return (
+          <IconButton onClick={() => toggleTimer(timerKey)}>
+            <PlayArrow />
+          </IconButton>
+        )
+      })()}
       sx={
         {
           // Divider between items

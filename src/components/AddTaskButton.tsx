@@ -11,6 +11,7 @@ import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import {useFormik} from "formik"
 import React, {FC, useContext, useState} from "react"
 import {AuthContext} from "utils/context"
+import {AnnotatedTask} from "utils/useAnnotatedEndpoints"
 import * as yup from "yup"
 
 const validationSchema = yup.object().shape({
@@ -20,7 +21,7 @@ const validationSchema = yup.object().shape({
 })
 
 export interface AddTaskButtonProps {
-  afterSubmit: () => void
+  afterSubmit: (task: AnnotatedTask) => void
   projectId: string
   sx?: SxProps
 }
@@ -45,7 +46,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
     },
     validationSchema,
     onSubmit: async (values) => {
-      await session.task.insert({
+      const task = await session.task.insert({
         ...values,
         _id: crypto.randomUUID(),
         user: values.user._id,
@@ -58,7 +59,13 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
         createdAt: new Date().toISOString()
       })
 
-      afterSubmit()
+      afterSubmit({
+        ...task,
+        annotations: {
+          user: values.user,
+          totalTaskHours: 0
+        }
+      })
       onClose()
     }
   })

@@ -117,8 +117,13 @@ export const ProjectsTasks: FC = () => {
                 projectId={
                   projects.find((p) => p.name === projectName)?._id ?? ""
                 }
-                afterSubmit={() => console.log("hello")}
-                sx={{ml:'auto', mr: 2}}
+                afterSubmit={(newAnnotatedTask) =>
+                  setAnnotatedTasks([
+                    ...(annotatedTasks ?? []),
+                    newAnnotatedTask
+                  ])
+                }
+                sx={{ml: "auto", mr: 2}}
               />
             </AccordionSummary>
             <AccordionDetails sx={{p: 0}}>

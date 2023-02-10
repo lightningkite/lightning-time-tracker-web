@@ -23,7 +23,7 @@ export const DeleteUserButton: FC<{user: User}> = ({user}) => {
   const handleClose = () => setOpenDialog(false)
 
   async function deleteUser() {
-    session.user
+    await session.user
       .delete(user._id)
       .then(() => navigate("/users"))
       .catch(() => alert("Failed to delete user"))

@@ -23,7 +23,7 @@ export const DeleteProjectButton: FC<{project: Project}> = ({project}) => {
   const handleClose = () => setOpenDialog(false)
 
   async function deleteProject() {
-    session.project
+    await session.project
       .delete(project._id)
       .then(() => navigate("/projects"))
       .catch(() => alert("Failed to delete project"))

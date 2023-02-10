@@ -9,9 +9,10 @@ import {Button, Stack, SxProps, TextField} from "@mui/material"
 import {TaskState} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import {useFormik} from "formik"
-import React, {FC, useContext, useState} from "react"
+import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {AnnotatedTask} from "utils/useAnnotatedEndpoints"
+import {useFocus} from "utils/useFocus"
 import * as yup from "yup"
 
 const validationSchema = yup.object().shape({
@@ -31,11 +32,16 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
   const {session, currentUser} = useContext(AuthContext)
 
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [inputRef, setInputFocus] = useFocus()
 
   function onClose() {
     setShowCreateForm(false)
     formik.resetForm()
   }
+
+  useEffect(() => {
+    setTimeout(setInputFocus, 100)
+  }, [showCreateForm])
 
   const formik = useFormik({
     initialValues: {
@@ -108,6 +114,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
 
           <TextField
             label="Summary"
+            inputRef={inputRef}
             {...makeFormikTextFieldProps(formik, "summary")}
           />
 

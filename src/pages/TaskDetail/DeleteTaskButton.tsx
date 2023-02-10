@@ -25,7 +25,7 @@ export const DeleteTaskButton: FC<{task: Task}> = ({task}) => {
   const isFromDashboard = location.pathname.includes("/dashboard")
 
   async function deleteTask() {
-    session.task
+    await session.task
       .delete(task._id)
       .then(() => navigate(isFromDashboard ? "/dashboard" : "/tasks"))
       .catch(() => alert("Failed to delete task"))

@@ -18,7 +18,7 @@ import * as yup from "yup"
 
 // Form validation schema. See: https://www.npmjs.com/package/yup#object
 const validationSchema = yup.object().shape({
-  name: yup.string().required("Required")
+  email: yup.string().required("Required")
 })
 
 export interface AddUserProps {
@@ -48,7 +48,7 @@ export const AddUserButton: FC<AddUserProps> = (props) => {
         organization: currentUser.organization,
         currentTask: undefined,
         limitToProjects: undefined,
-        termsAgreed: "",
+        termsAgreed: new Date().toISOString(),
         statesCaredAbout: [],
         webPreferences: ""
       })

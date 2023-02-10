@@ -3,6 +3,4 @@
 - web preferences on user model
 - Task attachments
 - Task emergency
-- ? Click dashboard task status to change status
-- ? Settings for when timers are automatically hidden or shown
 - Mobile navigation tabs across the bottom

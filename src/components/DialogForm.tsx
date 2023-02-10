@@ -13,7 +13,7 @@ import {
   IconButton,
   Tooltip
 } from "@mui/material"
-import { useFormik } from "formik"
+import {useFormik} from "formik"
 import React, {FC, useState} from "react"
 
 export interface DialogFormProps extends DialogProps {
@@ -68,6 +68,7 @@ export const DialogForm: FC<DialogFormProps> = (props) => {
       aria-labelledby="customized-modal-title"
       fullWidth={fullWidth}
       {...rest}
+      onClick={(e) => e.stopPropagation()}
     >
       <form
         onSubmit={(e) => {

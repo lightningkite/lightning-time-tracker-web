@@ -139,7 +139,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
                       )} of ${annotatedTask.estimate} hours`
                     : `${annotatedTask.annotations.totalTaskHours.toFixed(
                         1
-                      )} hours – no estimate`}
+                      )} hours`}
                 </Typography>
                 <LinearProgress
                   variant="determinate"

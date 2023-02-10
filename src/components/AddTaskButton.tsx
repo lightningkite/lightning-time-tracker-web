@@ -11,7 +11,6 @@ import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import {useFormik} from "formik"
 import React, {FC, useContext, useState} from "react"
 import {AuthContext} from "utils/context"
-import {dateToISO} from "utils/helpers"
 import * as yup from "yup"
 
 const validationSchema = yup.object().shape({
@@ -67,7 +66,10 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
   return (
     <>
       <Button
-        onClick={() => setShowCreateForm(true)}
+        onClick={(e) => {
+          e.stopPropagation()
+          setShowCreateForm(true)
+        }}
         startIcon={<Add />}
         sx={sx}
       >

@@ -9,6 +9,7 @@ import {
   Typography
 } from "@mui/material"
 import {Project, TaskState} from "api/sdk"
+import {AddTaskButton} from "components/AddTaskButton"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import React, {FC, useContext, useEffect, useMemo, useState} from "react"
@@ -112,6 +113,13 @@ export const ProjectsTasks: FC = () => {
                 sx={{mr: 2, visibility: myTasksCount ? "visible" : "hidden"}}
               />
               <Typography variant="h2">{projectName}</Typography>
+              <AddTaskButton
+                projectId={
+                  projects.find((p) => p.name === projectName)?._id ?? ""
+                }
+                afterSubmit={() => console.log("hello")}
+                sx={{ml:'auto', mr: 2}}
+              />
             </AccordionSummary>
             <AccordionDetails sx={{p: 0}}>
               <List>

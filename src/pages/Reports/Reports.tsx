@@ -36,6 +36,7 @@ const Reports: FC = () => {
   const [users, setUsers] = useState<User[]>()
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>()
 
+  const [expanded, setExpanded] = useState<string | null>(null)
   const [error, setError] = useState("")
 
   useEffect(() => {
@@ -149,8 +150,13 @@ const Reports: FC = () => {
             const project = projects.find((p) => p._id === projectId)
 
             return (
-              <Accordion key={projectId} defaultExpanded={false}>
-                <AccordionSummary expandIcon={<ExpandMore />}>
+              <Accordion key={projectId} expanded={projectId === expanded}>
+                <AccordionSummary
+                  expandIcon={<ExpandMore />}
+                  onClick={() =>
+                    setExpanded(expanded === projectId ? null : projectId)
+                  }
+                >
                   <Typography variant="h2">
                     {project?.name ?? "Not found"}
                   </Typography>

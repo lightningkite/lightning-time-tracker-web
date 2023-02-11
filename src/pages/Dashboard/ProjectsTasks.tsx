@@ -69,7 +69,7 @@ export const ProjectsTasks: FC = () => {
         (task) => task.user === currentUser._id
       ).length
 
-      tasksByProject[project.name] = {projectTasks, myTasksCount}
+      tasksByProject[project._id] = {projectTasks, myTasksCount}
     })
 
     return tasksByProject
@@ -103,8 +103,8 @@ export const ProjectsTasks: FC = () => {
         .sort(
           (a, b) => initialSorting.indexOf(b[0]) - initialSorting.indexOf(a[0])
         )
-        .map(([projectName, {projectTasks, myTasksCount}]) => (
-          <Accordion key={projectName} defaultExpanded={myTasksCount > 0}>
+        .map(([projectId, {projectTasks, myTasksCount}]) => (
+          <Accordion key={projectId} defaultExpanded={myTasksCount > 0}>
             <AccordionSummary expandIcon={<ExpandMore />}>
               <Chip
                 label={myTasksCount}
@@ -112,11 +112,11 @@ export const ProjectsTasks: FC = () => {
                 color="primary"
                 sx={{mr: 2, visibility: myTasksCount ? "visible" : "hidden"}}
               />
-              <Typography variant="h2">{projectName}</Typography>
+              <Typography variant="h2">
+                {projects.find((p) => p._id === projectId)?.name ?? "Not found"}
+              </Typography>
               <AddTaskButton
-                projectId={
-                  projects.find((p) => p.name === projectName)?._id ?? ""
-                }
+                projectId={projectId}
                 afterSubmit={(newAnnotatedTask) =>
                   setAnnotatedTasks([
                     ...(annotatedTasks ?? []),

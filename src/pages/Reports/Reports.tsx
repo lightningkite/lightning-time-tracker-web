@@ -4,7 +4,7 @@ import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import PageHeader from "components/PageHeader"
 import dayjs from "dayjs"
-import React, {FC, useContext, useEffect, useState} from "react"
+import React, {FC, useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO} from "utils/helpers"
 
@@ -22,7 +22,7 @@ const Reports: FC = () => {
   const [projects, setProjects] = useState<Project[]>()
   const [tasks, setTasks] = useState<Task[]>()
   const [users, setUsers] = useState<User[]>()
-  const [timerEntries, setTimeEntries] = useState<TimeEntry[]>()
+  const [timeEntries, setTimeEntries] = useState<TimeEntry[]>()
 
   const [error, setError] = useState("")
 
@@ -52,11 +52,11 @@ const Reports: FC = () => {
   }, [selectedMonth])
 
   useEffect(() => {
-    if (!timerEntries) return
+    if (!timeEntries) return
 
     const uniqueTaskIds = new Set(
-      timerEntries.reduce<string[]>((acc, timerEntry) => {
-        timerEntry.task && acc.push(timerEntry.task)
+      timeEntries.reduce<string[]>((acc, timeEntry) => {
+        timeEntry.task && acc.push(timeEntry.task)
         return acc
       }, [])
     )
@@ -67,13 +67,59 @@ const Reports: FC = () => {
       })
       .then(setTasks)
       .catch(() => setError("Error fetching tasks"))
-  }, [timerEntries])
+  }, [timeEntries])
+
+  const timeEntriesByTask = useMemo(() => {
+    if (!timeEntries || !tasks) return {}
+
+    const timeEntriesByTask: Record<
+      string,
+      {taskTimeEntries: TimeEntry[]; totalHours: number}
+    > = {}
+
+    tasks.forEach((task) => {
+      const taskTimeEntries = timeEntries.filter(
+        (timeEntry) => timeEntry.task === task._id
+      )
+
+      const totalHours = taskTimeEntries.reduce((acc, timeEntry) => {
+        const milliseconds = timeEntry.durationMilliseconds
+        const hours = milliseconds / 1000 / 60 / 60
+        return acc + hours
+      }, 0)
+
+      timeEntriesByTask[task._id] = {taskTimeEntries, totalHours}
+    })
+
+    return timeEntriesByTask
+  }, [timeEntries, tasks])
+
+  const tasksByProject = useMemo(() => {
+    if (!tasks || !projects) return {}
+
+    const tasksByProject: Record<
+      string,
+      {projectTasks: Task[]; totalHours: number}
+    > = {}
+
+    projects.forEach((project) => {
+      const projectTasks = tasks.filter((task) => task.project === project._id)
+      const totalHours = projectTasks.reduce((acc, task) => {
+        const taskHours = timeEntriesByTask[task._id]?.totalHours || 0
+        return acc + taskHours
+      }, 0)
+
+      tasksByProject[project._id] = {projectTasks, totalHours}
+    })
+
+    return tasksByProject
+  }, [tasks])
 
   if (error) {
     return <ErrorAlert>{error}</ErrorAlert>
   }
 
-  if (!projects || !tasks || !users || !timerEntries) {
+  if (!projects || !tasks || !users || !timeEntries) {
     return <Loading />
   }
 

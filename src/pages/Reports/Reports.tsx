@@ -145,42 +145,42 @@ const Reports: FC = () => {
             (a, b) =>
               b[1].totalHours - a[1].totalHours || a[0].localeCompare(b[0])
           )
-          .map(([projectId, {projectTasks, totalHours}]) => (
-            <Accordion key={projectId} defaultExpanded={false}>
-              <AccordionSummary expandIcon={<ExpandMore />}>
-                <Chip
-                  label={totalHours.toFixed(1)}
-                  size="small"
-                  color="primary"
-                  sx={{mr: 2}}
-                />
-                <Typography variant="h2">
-                  {projects.find((p) => p._id === projectId)?.name ??
-                    "Not found"}
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails sx={{p: 0}}>
-                <List>
-                  {projectTasks
-                    .sort(
-                      (a, b) =>
-                        timeEntriesByTask[b._id].totalHours -
-                        timeEntriesByTask[a._id].totalHours
-                    )
-                    .map((task) => (
-                      <ListItem key={task._id}>
-                        <ListItemText
-                          primary={task.summary}
-                          secondary={timeEntriesByTask[
-                            task._id
-                          ].totalHours.toFixed(1)}
-                        />
-                      </ListItem>
-                    ))}
-                </List>
-              </AccordionDetails>
-            </Accordion>
-          ))}
+          .map(([projectId, {projectTasks, totalHours}]) => {
+            const project = projects.find((p) => p._id === projectId)
+
+            return (
+              <Accordion key={projectId} defaultExpanded={false}>
+                <AccordionSummary expandIcon={<ExpandMore />}>
+                  <Typography variant="h2">
+                    {project?.name ?? "Not found"}
+                  </Typography>
+                  <Typography fontSize="1.2rem" sx={{ml: "auto", mr: 1}}>
+                    ${((project?.rate ?? 0) * totalHours).toFixed(2)}
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails sx={{p: 0}}>
+                  <List>
+                    {projectTasks
+                      .sort(
+                        (a, b) =>
+                          timeEntriesByTask[b._id].totalHours -
+                          timeEntriesByTask[a._id].totalHours
+                      )
+                      .map((task) => (
+                        <ListItem key={task._id}>
+                          <ListItemText
+                            primary={task.summary}
+                            secondary={timeEntriesByTask[
+                              task._id
+                            ].totalHours.toFixed(1)}
+                          />
+                        </ListItem>
+                      ))}
+                  </List>
+                </AccordionDetails>
+              </Accordion>
+            )
+          })}
       </Box>
     </Container>
   )

@@ -172,16 +172,20 @@ const Reports: FC = () => {
                           timeEntriesByTask[b._id].totalHours -
                           timeEntriesByTask[a._id].totalHours
                       )
-                      .map((task) => (
-                        <ListItem key={task._id}>
-                          <ListItemText
-                            primary={task.summary}
-                            secondary={timeEntriesByTask[
-                              task._id
-                            ].totalHours.toFixed(1)}
-                          />
-                        </ListItem>
-                      ))}
+                      .map((task) => {
+                        const totalHours =
+                          timeEntriesByTask[task._id].totalHours
+                        return (
+                          <ListItem key={task._id}>
+                            <ListItemText
+                              primary={task.summary}
+                              secondary={`${task.state} – ${totalHours.toFixed(
+                                1
+                              )} hours`}
+                            />
+                          </ListItem>
+                        )
+                      })}
                   </List>
                 </AccordionDetails>
               </Accordion>

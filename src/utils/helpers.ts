@@ -52,7 +52,7 @@ const taskStateOrder: Record<TaskState, number> = {
   [TaskState.Done]: 4
 }
 
-export function compareTasks(a: Task, b: Task): number {
+export function compareTasksByState(a: Task, b: Task): number {
   return taskStateOrder[a.state] - taskStateOrder[b.state]
 }
 

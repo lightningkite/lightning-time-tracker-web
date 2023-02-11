@@ -14,7 +14,7 @@ import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import React, {FC, useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
-import {compareTasks} from "utils/helpers"
+import {compareTasksByState} from "utils/helpers"
 import {AnnotatedTask, useAnnotatedEndpoints} from "utils/useAnnotatedEndpoints"
 import {TaskListItem} from "./TaskListItem"
 
@@ -128,7 +128,7 @@ export const ProjectsTasks: FC = () => {
             </AccordionSummary>
             <AccordionDetails sx={{p: 0}}>
               <List>
-                {projectTasks.sort(compareTasks).map((task) => (
+                {projectTasks.sort(compareTasksByState).map((task) => (
                   <TaskListItem annotatedTask={task} key={task._id} />
                 ))}
               </List>

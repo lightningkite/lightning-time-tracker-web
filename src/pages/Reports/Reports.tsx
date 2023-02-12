@@ -4,7 +4,6 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
-  Chip,
   Container,
   List,
   ListItem,
@@ -19,11 +18,17 @@ import dayjs from "dayjs"
 import React, {FC, useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO} from "utils/helpers"
+import {Widgets} from "./Widgets"
 
 interface SelectedMonth {
   monthIndex: number
   year: number
 }
+
+export type TasksByProject = Record<
+  string,
+  {projectTasks: Task[]; totalHours: number}
+>
 
 const Reports: FC = () => {
   const {session} = useContext(AuthContext)
@@ -107,7 +112,7 @@ const Reports: FC = () => {
     return timeEntriesByTask
   }, [timeEntries, tasks])
 
-  const tasksByProject = useMemo(() => {
+  const tasksByProject: TasksByProject = useMemo(() => {
     if (!tasks || !projects) return {}
 
     const tasksByProject: Record<
@@ -140,6 +145,8 @@ const Reports: FC = () => {
     <Container maxWidth="md">
       <PageHeader title="Reports" />
 
+      <Widgets tasksByProject={tasksByProject} projects={projects} />
+
       <Box>
         {Object.entries(tasksByProject)
           .sort(
@@ -165,6 +172,9 @@ const Reports: FC = () => {
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails sx={{p: 0}}>
+                  {projectTasks.length === 0 && (
+                    <Typography mx={2}>No time spent</Typography>
+                  )}
                   <List>
                     {projectTasks
                       .sort(

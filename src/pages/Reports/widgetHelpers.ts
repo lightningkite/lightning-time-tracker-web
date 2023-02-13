@@ -22,28 +22,45 @@ function nthWeekdayOfMonth(date: Dayjs, weekday: Weekday, nth: number): Dayjs {
   }
 }
 
-const holidaysThisYear: Dayjs[] = [
-  dayjs().month(0).date(1), // New Years Day
-  nthWeekdayOfMonth(dayjs().month(4), Weekday.Monday, -1), // Memorial Day (Last Monday in May)
-  dayjs().month(6).date(4), // July 4
-  dayjs().month(6).date(24), // July 24
-  nthWeekdayOfMonth(dayjs().month(8), Weekday.Monday, 1), // Labor Day (First Monday in Sep)
-  nthWeekdayOfMonth(dayjs().month(10), Weekday.Thursday, 4), // Thanksgiving
-  nthWeekdayOfMonth(dayjs().month(10), Weekday.Thursday, 4).add(1, "day"), // Day After Thanksgiving
-  dayjs().month(11).date(24), // Christmas Eve
-  dayjs().month(11).date(25) // Christmas Day
-]
+const cachedHolidaysByYear: Map<number, Dayjs[]> = new Map()
 
-function isBillableDayThisYear(date: Dayjs): boolean {
+function getHolidaysForYear(year: number): Dayjs[] {
+  let holidays = cachedHolidaysByYear.get(year)
+  if (holidays) return holidays
+
+  holidays = [
+    dayjs().year(year).month(0).date(1), // New Years Day
+    nthWeekdayOfMonth(dayjs().year(year).month(4), Weekday.Monday, -1), // Memorial Day (Last Monday in May)
+    dayjs().year(year).month(6).date(4), // July 4
+    dayjs().year(year).month(6).date(24), // July 24
+    nthWeekdayOfMonth(dayjs().year(year).month(8), Weekday.Monday, 1), // Labor Day (First Monday in Sep)
+    nthWeekdayOfMonth(dayjs().year(year).month(10), Weekday.Thursday, 4), // Thanksgiving
+    nthWeekdayOfMonth(dayjs().year(year).month(10), Weekday.Thursday, 4).add(
+      1,
+      "day"
+    ), // Day After Thanksgiving
+    dayjs().year(year).month(11).date(24), // Christmas Eve
+    dayjs().year(year).month(11).date(25) // Christmas Day
+  ]
+
+  cachedHolidaysByYear.set(year, holidays)
+  return holidays
+}
+
+function isBillableDay(date: Dayjs): boolean {
+  // Weekends
   if (date.day() === Weekday.Saturday || date.day() === Weekday.Sunday) {
     return false
   }
 
-  if (holidaysThisYear.some((holiday) => holiday.isSame(date, "day"))) {
+  // Between Christmas and New Years Day
+  if (date.month() === 11 && date.date() > 25) {
     return false
   }
 
-  if (date.isAfter(dayjs().month(11).date(25))) {
+  const holidaysForYear = getHolidaysForYear(date.year())
+
+  if (holidaysForYear.some((holiday) => holiday.isSame(date, "day"))) {
     return false
   }
 
@@ -52,25 +69,20 @@ function isBillableDayThisYear(date: Dayjs): boolean {
 
 export function projectedRevenue(
   revenueToDate: number,
-  isCurrentMonth: boolean
+  dateRange: [Dayjs, Dayjs]
 ): number {
-  if (!isCurrentMonth) {
+  if (dateRange[1].isBefore(dayjs())) {
     return revenueToDate
   }
 
   let billableDaysSoFar = 0
   let billableDaysInMonth = 0
 
-  const today = dayjs()
-  const daysSoFar = today.date()
-  const daysInMonth = today.daysInMonth()
+  for (let d = dayjs(dateRange[0]); d.isBefore(dateRange[1]); d.add(1, "day")) {
+    const isBillable = isBillableDay(d)
 
-  for (let i = 1; i <= daysInMonth; i++) {
-		const isBillable = isBillableDayThisYear(today.date(i))
-		const hasPast = i <= daysSoFar
-		
-		isBillable && billableDaysInMonth++
-		isBillable && hasPast && billableDaysSoFar++
+    isBillable && billableDaysInMonth++
+    isBillable && d.isBefore(dayjs()) && billableDaysSoFar++
   }
 
   return revenueToDate * (billableDaysInMonth / billableDaysSoFar)

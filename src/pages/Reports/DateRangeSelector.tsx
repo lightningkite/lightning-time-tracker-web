@@ -1,6 +1,6 @@
 import {MenuItem, TextField} from "@mui/material"
-import dayjs from "dayjs"
-import React, {FC} from "react"
+import dayjs, {Dayjs} from "dayjs"
+import React, {FC, useEffect} from "react"
 
 export interface SelectedMonth {
   monthIndex: number
@@ -23,18 +23,27 @@ const selectedMonthOptions = (() => {
 })()
 
 export interface DateRangeSelectorProps {
-  setSelectedMonth: (selectedMonth: SelectedMonth) => void
+  setDateRange: (dateRange: [Dayjs, Dayjs]) => void
 }
 
 export const DateRangeSelector: FC<DateRangeSelectorProps> = (props) => {
-  const {setSelectedMonth} = props
+  const {setDateRange} = props
+
+  useEffect(
+    () => setDateRange(getSelectedMonthDateRange(selectedMonthOptions[0])),
+    []
+  )
 
   return (
     <TextField
       select
       label="Month"
       defaultValue={0}
-      onChange={(e) => setSelectedMonth(selectedMonthOptions[+e.target.value])}
+      onChange={(e) =>
+        setDateRange(
+          getSelectedMonthDateRange(selectedMonthOptions[+e.target.value])
+        )
+      }
     >
       {selectedMonthOptions.map((option, index) => (
         <MenuItem key={index} value={index}>
@@ -46,4 +55,20 @@ export const DateRangeSelector: FC<DateRangeSelectorProps> = (props) => {
       ))}
     </TextField>
   )
+}
+
+function getSelectedMonthDateRange(
+  selectedMonth: SelectedMonth
+): [Dayjs, Dayjs] {
+  const startOfMonth = dayjs()
+    .year(selectedMonth.year)
+    .month(selectedMonth.monthIndex)
+    .startOf("month")
+
+  const endOfMonth = dayjs()
+    .year(selectedMonth.year)
+    .month(selectedMonth.monthIndex)
+    .endOf("month")
+
+  return [startOfMonth, endOfMonth]
 }

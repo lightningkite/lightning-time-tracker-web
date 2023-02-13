@@ -1,4 +1,4 @@
-import {Task, TaskState} from "api/sdk"
+import {Task, TaskState, TimeEntry} from "api/sdk"
 import dayjs from "dayjs"
 import duration, {Duration} from "dayjs/plugin/duration"
 import {Timer} from "./context"
@@ -79,4 +79,13 @@ export function stringToDuration(durationString: string): Duration | null {
   if (hours < 0 || minutes < 0 || seconds < 0) return null
 
   return dayjs.duration({hours, minutes, seconds})
+}
+
+export function totalHoursForTimeEntries(timeEntries: TimeEntry[]): number {
+  return timeEntries.reduce((acc, timeEntry) => {
+    const milliseconds = timeEntry.durationMilliseconds
+    const hours = milliseconds / 1000 / 60 / 60
+    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+    return acc + hours
+  }, 0)
 }

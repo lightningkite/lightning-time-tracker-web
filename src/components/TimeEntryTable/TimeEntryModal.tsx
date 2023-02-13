@@ -27,7 +27,7 @@ export interface TimeEntryModalProps {
 const validationSchema = yup.object().shape({
   summary: yup.string().required("Required"),
   date: yup.date().required("Required"),
-  duration: yup
+  durationMilliseconds: yup
     .string()
     .required("Required")
     .test(
@@ -49,7 +49,7 @@ export const TimeEntryModal: FC<TimeEntryModalProps> = (props) => {
       task: null as Task | null,
       project: null as Project | null,
       summary: "",
-      duration: "",
+      durationMilliseconds: "",
       date: null as Date | null
     },
     validationSchema,
@@ -59,12 +59,14 @@ export const TimeEntryModal: FC<TimeEntryModalProps> = (props) => {
         task: values.task?._id,
         project: values.project?._id,
         durationMilliseconds: (
-          stringToDuration(values.duration) as Duration
+          stringToDuration(values.durationMilliseconds) as Duration
         ).asMilliseconds(),
         date: dateToISO(values.date as Date)
       }
 
       const modification = makeObjectModification(timeEntry, formattedValues)
+
+      console.log(formattedValues, modification)
 
       if (!modification) return
       await session.timeEntry.modify((timeEntry as TimeEntry)._id, modification)
@@ -93,7 +95,7 @@ export const TimeEntryModal: FC<TimeEntryModalProps> = (props) => {
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
           task: task || null,
           summary: timeEntry.summary,
-          duration: dayjs
+          durationMilliseconds: dayjs
             .duration(timeEntry.durationMilliseconds, "milliseconds")
             .format("HH:mm:ss"),
           date: dateFromISO(timeEntry.date)
@@ -150,7 +152,7 @@ export const TimeEntryModal: FC<TimeEntryModalProps> = (props) => {
           <TextField
             label="Duration"
             placeholder="hh:mm:ss"
-            {...makeFormikTextFieldProps(formik, "duration")}
+            {...makeFormikTextFieldProps(formik, "durationMilliseconds")}
           />
 
           <TextField

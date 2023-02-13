@@ -64,6 +64,8 @@ export const ProjectReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
 
   useEffect(() => {
     if (!dateRange) return
+    setTimeEntries(undefined)
+    setTasks(undefined)
 
     session.timeEntry
       .query({

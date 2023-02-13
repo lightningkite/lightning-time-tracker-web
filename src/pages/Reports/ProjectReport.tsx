@@ -10,7 +10,7 @@ import {
   ListItemText,
   Typography
 } from "@mui/material"
-import {Project, Task, TimeEntry, User} from "api/sdk"
+import {Project, Task, TimeEntry} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import React, {FC, useContext, useEffect, useMemo, useState} from "react"
@@ -29,11 +29,34 @@ export const ProjectReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
 
   const [projects, setProjects] = useState<Project[]>()
   const [tasks, setTasks] = useState<Task[]>()
-  const [users, setUsers] = useState<User[]>()
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>()
 
   const [error, setError] = useState("")
   const [expanded, setExpanded] = useState<string | null>(null)
+
+  useEffect(() => {
+    session.project
+      .query({})
+      .then(setProjects)
+      .catch(() => setError("Error fetching projects"))
+  }, [])
+
+  useEffect(() => {
+    setTimeEntries(undefined)
+    setTasks(undefined)
+
+    session.timeEntry
+      .query({
+        condition: {
+          And: [
+            {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
+            {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
+          ]
+        }
+      })
+      .then(setTimeEntries)
+      .catch(() => setError("Error fetching time entries"))
+  }, [dateRange])
 
   useEffect(() => {
     if (!timeEntries) return
@@ -53,60 +76,26 @@ export const ProjectReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
       .catch(() => setError("Error fetching tasks"))
   }, [timeEntries])
 
-  useEffect(() => {
-    Promise.all([session.project.query({}), session.user.query({})])
-      .then(([projects, users]) => {
-        setProjects(projects)
-        setUsers(users)
-      })
-      .catch(() => setError("Error fetching users or projects"))
-  }, [])
-
-  useEffect(() => {
-    if (!dateRange) return
-    setTimeEntries(undefined)
-    setTasks(undefined)
-
-    session.timeEntry
-      .query({
-        condition: {
-          And: [
-            {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
-            {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
-          ]
-        }
-      })
-      .then(setTimeEntries)
-      .catch(() => setError("Error fetching time entries"))
-  }, [dateRange])
-
-  const timeEntriesByTask = useMemo(() => {
+  const hoursPerTask = useMemo(() => {
     if (!timeEntries || !tasks) return {}
 
-    const timeEntriesByTask: Record<
-      string,
-      {taskTimeEntries: TimeEntry[]; totalHours: number}
-    > = {}
+    const perTask: Record<string, number> = {}
 
     tasks.forEach((task) => {
       const taskTimeEntries = timeEntries.filter(
         (timeEntry) => timeEntry.task === task._id
       )
-
       const totalHours = totalHoursForTimeEntries(taskTimeEntries)
-      timeEntriesByTask[task._id] = {taskTimeEntries, totalHours}
+      perTask[task._id] = totalHours
     })
 
-    return timeEntriesByTask
+    return perTask
   }, [timeEntries, tasks])
 
   const summarizeByProject: SummarizeByProject = useMemo(() => {
     if (!tasks || !projects || !timeEntries) return {}
 
-    const tasksByProject: Record<
-      string,
-      {projectTasks: Task[]; projectHours: number}
-    > = {}
+    const byProject: SummarizeByProject = {}
 
     projects.forEach((project) => {
       const projectTasks = tasks.filter((task) => task.project === project._id)
@@ -114,16 +103,16 @@ export const ProjectReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
         timeEntries.filter((t) => t.project === project._id)
       )
 
-      tasksByProject[project._id] = {projectTasks, projectHours}
+      byProject[project._id] = {projectTasks, projectHours}
     })
 
-    return tasksByProject
+    return byProject
   }, [tasks])
 
   if (error) {
     return <ErrorAlert>{error}</ErrorAlert>
   }
-  if (!projects || !tasks || !users || !timeEntries) {
+  if (!projects || !tasks || !timeEntries) {
     return <Loading />
   }
 
@@ -164,13 +153,10 @@ export const ProjectReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
               <AccordionDetails sx={{p: 0}}>
                 <List>
                   {projectTasks
-                    .sort(
-                      (a, b) =>
-                        timeEntriesByTask[b._id].totalHours -
-                        timeEntriesByTask[a._id].totalHours
-                    )
+                    .sort((a, b) => hoursPerTask[b._id] - hoursPerTask[a._id])
                     .map((task) => {
-                      const totalHours = timeEntriesByTask[task._id].totalHours
+                      const totalHours = hoursPerTask[task._id]
+
                       return (
                         <ListItem key={task._id}>
                           <ListItemText

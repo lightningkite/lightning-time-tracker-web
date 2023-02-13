@@ -116,7 +116,12 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
           >
             <Typography variant="body2" color="text.secondary">
               {annotatedTask.state.toUpperCase()} &nbsp;&#x2022;&nbsp;{" "}
-              {annotatedTask.annotations.user?.email ?? "Unknown user"}
+              {
+                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                (annotatedTask.annotations.user?.name ||
+                  annotatedTask.annotations.user?.email) ??
+                  "Unknown user"
+              }
             </Typography>
             {!isMobile && (
               <Box sx={{width: "8rem"}}>

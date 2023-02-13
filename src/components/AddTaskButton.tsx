@@ -104,8 +104,8 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
           <RestAutocompleteInput
             label="User"
             restEndpoint={session.user}
-            getOptionLabel={(user) => user.email}
-            searchProperties={["email"]}
+            getOptionLabel={(user) => user.name || user.email}
+            searchProperties={["name", "email"]}
             additionalQueryConditions={[
               {organization: {Equal: currentUser.organization}}
             ]}

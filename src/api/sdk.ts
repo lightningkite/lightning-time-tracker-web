@@ -82,6 +82,16 @@ export interface TimeEntry {
   durationMilliseconds: number
   date: string
 }
+export interface Timer {
+  _id: string
+  user: string
+  organization: string
+  lastStarted: string | null | undefined
+  accumulatedSeconds: number
+  task: string | null | undefined
+  project: string | null | undefined
+  summary: string
+}
 export interface UploadInformation {
   uploadUrl: string
   futureCallToken: string
@@ -90,12 +100,13 @@ export interface User {
   _id: string
   email: string
   organization: string
-  currentTask: string | null | undefined
-  limitToProjects: Array<string> | null | undefined
+  name: string
   statesCaredAbout: Array<TaskState>
   webPreferences: string
   isSuperUser: boolean
   termsAgreed: string
+  currentTask: string | null | undefined
+  limitToProjects: Array<string> | null | undefined
 }
 
 export interface Api {
@@ -291,6 +302,45 @@ export interface Api {
     ): Promise<number | null | undefined>
     groupAggregate(
       input: GroupAggregateQuery<TimeEntry>,
+      userToken: string
+    ): Promise<Record<string, number | null | undefined>>
+  }
+  readonly timer: {
+    default(userToken: string): Promise<Timer>
+    query(input: Query<Timer>, userToken: string): Promise<Array<Timer>>
+    detail(id: string, userToken: string): Promise<Timer>
+    insertBulk(input: Array<Timer>, userToken: string): Promise<Array<Timer>>
+    insert(input: Timer, userToken: string): Promise<Timer>
+    upsert(id: string, input: Timer, userToken: string): Promise<Timer>
+    bulkReplace(input: Array<Timer>, userToken: string): Promise<Array<Timer>>
+    replace(id: string, input: Timer, userToken: string): Promise<Timer>
+    bulkModify(
+      input: MassModification<Timer>,
+      userToken: string
+    ): Promise<number>
+    modifyWithDiff(
+      id: string,
+      input: Modification<Timer>,
+      userToken: string
+    ): Promise<EntryChange<Timer>>
+    modify(
+      id: string,
+      input: Modification<Timer>,
+      userToken: string
+    ): Promise<Timer>
+    bulkDelete(input: Condition<Timer>, userToken: string): Promise<number>
+    delete(id: string, userToken: string): Promise<void>
+    count(input: Condition<Timer>, userToken: string): Promise<number>
+    groupCount(
+      input: GroupCountQuery<Timer>,
+      userToken: string
+    ): Promise<Record<string, number>>
+    aggregate(
+      input: AggregateQuery<Timer>,
+      userToken: string
+    ): Promise<number | null | undefined>
+    groupAggregate(
+      input: GroupAggregateQuery<Timer>,
       userToken: string
     ): Promise<Record<string, number | null | undefined>>
   }
@@ -620,6 +670,69 @@ export class UserSession {
       input: GroupAggregateQuery<TimeEntry>
     ): Promise<Record<string, number | null | undefined>> => {
       return this.api.timeEntry.groupAggregate(input, this.userToken)
+    }
+  }
+
+  readonly timer = {
+    default: (): Promise<Timer> => {
+      return this.api.timer.default(this.userToken)
+    },
+    query: (input: Query<Timer>): Promise<Array<Timer>> => {
+      return this.api.timer.query(input, this.userToken)
+    },
+    detail: (id: string): Promise<Timer> => {
+      return this.api.timer.detail(id, this.userToken)
+    },
+    insertBulk: (input: Array<Timer>): Promise<Array<Timer>> => {
+      return this.api.timer.insertBulk(input, this.userToken)
+    },
+    insert: (input: Timer): Promise<Timer> => {
+      return this.api.timer.insert(input, this.userToken)
+    },
+    upsert: (id: string, input: Timer): Promise<Timer> => {
+      return this.api.timer.upsert(id, input, this.userToken)
+    },
+    bulkReplace: (input: Array<Timer>): Promise<Array<Timer>> => {
+      return this.api.timer.bulkReplace(input, this.userToken)
+    },
+    replace: (id: string, input: Timer): Promise<Timer> => {
+      return this.api.timer.replace(id, input, this.userToken)
+    },
+    bulkModify: (input: MassModification<Timer>): Promise<number> => {
+      return this.api.timer.bulkModify(input, this.userToken)
+    },
+    modifyWithDiff: (
+      id: string,
+      input: Modification<Timer>
+    ): Promise<EntryChange<Timer>> => {
+      return this.api.timer.modifyWithDiff(id, input, this.userToken)
+    },
+    modify: (id: string, input: Modification<Timer>): Promise<Timer> => {
+      return this.api.timer.modify(id, input, this.userToken)
+    },
+    bulkDelete: (input: Condition<Timer>): Promise<number> => {
+      return this.api.timer.bulkDelete(input, this.userToken)
+    },
+    delete: (id: string): Promise<void> => {
+      return this.api.timer.delete(id, this.userToken)
+    },
+    count: (input: Condition<Timer>): Promise<number> => {
+      return this.api.timer.count(input, this.userToken)
+    },
+    groupCount: (
+      input: GroupCountQuery<Timer>
+    ): Promise<Record<string, number>> => {
+      return this.api.timer.groupCount(input, this.userToken)
+    },
+    aggregate: (
+      input: AggregateQuery<Timer>
+    ): Promise<number | null | undefined> => {
+      return this.api.timer.aggregate(input, this.userToken)
+    },
+    groupAggregate: (
+      input: GroupAggregateQuery<Timer>
+    ): Promise<Record<string, number | null | undefined>> => {
+      return this.api.timer.groupAggregate(input, this.userToken)
     }
   }
 
@@ -1466,6 +1579,174 @@ export class LiveApi implements Api {
             : this.extraHeaders
         }
       ).then((x) => x.json())
+    }
+  }
+
+  readonly timer = {
+    default: (userToken: string): Promise<Timer> => {
+      return apiCall(`${this.httpUrl}/timers/rest/_default_`, undefined, {
+        method: "GET",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    query: (input: Query<Timer>, userToken: string): Promise<Array<Timer>> => {
+      return apiCall(`${this.httpUrl}/timers/rest/query`, input, {
+        method: "POST",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    detail: (id: string, userToken: string): Promise<Timer> => {
+      return apiCall(`${this.httpUrl}/timers/rest/${id}`, undefined, {
+        method: "GET",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    insertBulk: (
+      input: Array<Timer>,
+      userToken: string
+    ): Promise<Array<Timer>> => {
+      return apiCall(`${this.httpUrl}/timers/rest/bulk`, input, {
+        method: "POST",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    insert: (input: Timer, userToken: string): Promise<Timer> => {
+      return apiCall(`${this.httpUrl}/timers/rest`, input, {
+        method: "POST",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    upsert: (id: string, input: Timer, userToken: string): Promise<Timer> => {
+      return apiCall(`${this.httpUrl}/timers/rest/${id}`, input, {
+        method: "POST",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    bulkReplace: (
+      input: Array<Timer>,
+      userToken: string
+    ): Promise<Array<Timer>> => {
+      return apiCall(`${this.httpUrl}/timers/rest`, input, {
+        method: "PUT",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    replace: (id: string, input: Timer, userToken: string): Promise<Timer> => {
+      return apiCall(`${this.httpUrl}/timers/rest/${id}`, input, {
+        method: "PUT",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    bulkModify: (
+      input: MassModification<Timer>,
+      userToken: string
+    ): Promise<number> => {
+      return apiCall(`${this.httpUrl}/timers/rest/bulk`, input, {
+        method: "PATCH",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    modifyWithDiff: (
+      id: string,
+      input: Modification<Timer>,
+      userToken: string
+    ): Promise<EntryChange<Timer>> => {
+      return apiCall(`${this.httpUrl}/timers/rest/${id}/delta`, input, {
+        method: "PATCH",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    modify: (
+      id: string,
+      input: Modification<Timer>,
+      userToken: string
+    ): Promise<Timer> => {
+      return apiCall(`${this.httpUrl}/timers/rest/${id}`, input, {
+        method: "PATCH",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    bulkDelete: (
+      input: Condition<Timer>,
+      userToken: string
+    ): Promise<number> => {
+      return apiCall(`${this.httpUrl}/timers/rest/bulk-delete`, input, {
+        method: "POST",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    delete: (id: string, userToken: string): Promise<void> => {
+      return apiCall(`${this.httpUrl}/timers/rest/${id}`, undefined, {
+        method: "DELETE",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => undefined)
+    },
+    count: (input: Condition<Timer>, userToken: string): Promise<number> => {
+      return apiCall(`${this.httpUrl}/timers/rest/count`, input, {
+        method: "POST",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    groupCount: (
+      input: GroupCountQuery<Timer>,
+      userToken: string
+    ): Promise<Record<string, number>> => {
+      return apiCall(`${this.httpUrl}/timers/rest/group-count`, input, {
+        method: "POST",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    aggregate: (
+      input: AggregateQuery<Timer>,
+      userToken: string
+    ): Promise<number | null | undefined> => {
+      return apiCall(`${this.httpUrl}/timers/rest/aggregate`, input, {
+        method: "POST",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    groupAggregate: (
+      input: GroupAggregateQuery<Timer>,
+      userToken: string
+    ): Promise<Record<string, number | null | undefined>> => {
+      return apiCall(`${this.httpUrl}/timers/rest/group-aggregate`, input, {
+        method: "POST",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
     }
   }
 

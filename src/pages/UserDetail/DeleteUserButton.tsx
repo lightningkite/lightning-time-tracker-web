@@ -31,7 +31,7 @@ export const DeleteUserButton: FC<{user: User}> = ({user}) => {
 
   return (
     <>
-      <HoverHelp description={`Delete ${user.email}`}>
+      <HoverHelp description={`Delete ${user.name || user.email}`}>
         <Button onClick={handleOpen} color="error">
           Delete
         </Button>
@@ -44,13 +44,13 @@ export const DeleteUserButton: FC<{user: User}> = ({user}) => {
         aria-describedby={`alert-dialog-description-${user._id}`}
       >
         <DialogTitle id={`alert-dialog-title-${user._id}`}>
-          Delete {user.email}?
+          Delete {user.name || user.email}?
         </DialogTitle>
 
         <DialogContent>
           <DialogContentText id={`alert-dialog-description-${user._id}`}>
-            Are you sure you want to delete {user.email}? This action cannot be
-            undone.
+            Are you sure you want to delete {user.name || user.email}? This
+            action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

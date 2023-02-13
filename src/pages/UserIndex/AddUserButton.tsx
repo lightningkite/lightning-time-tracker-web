@@ -18,7 +18,8 @@ import * as yup from "yup"
 
 // Form validation schema. See: https://www.npmjs.com/package/yup#object
 const validationSchema = yup.object().shape({
-  email: yup.string().required("Required")
+  email: yup.string().required("Required"),
+  name: yup.string().required("Required")
 })
 
 export interface AddUserProps {
@@ -38,6 +39,7 @@ export const AddUserButton: FC<AddUserProps> = (props) => {
   const formik = useFormik({
     initialValues: {
       email: "",
+      name: "",
       isSuperUser: false
     },
     validationSchema,
@@ -79,6 +81,10 @@ export const AddUserButton: FC<AddUserProps> = (props) => {
           <TextField
             label="Email"
             {...makeFormikTextFieldProps(formik, "email")}
+          />
+          <TextField
+            label="Name"
+            {...makeFormikTextFieldProps(formik, "name")}
           />
 
           <FormControlLabel

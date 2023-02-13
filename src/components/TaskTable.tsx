@@ -41,7 +41,10 @@ export const TaskTable: FC<TaskTableProps> = (props) => {
           field: "user",
           headerName: "User",
           minWidth: 200,
-          valueGetter: (params) => params.row.annotations.user?.email
+          valueGetter: ({row}) =>
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+            row.annotations.user?.name || row.annotations.user?.email,
+          sortable: false
         },
         {
           field: "summary",

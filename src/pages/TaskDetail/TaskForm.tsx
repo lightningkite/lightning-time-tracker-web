@@ -84,7 +84,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       <RestAutocompleteInput
         label="User"
         restEndpoint={session.user}
-        getOptionLabel={(user) => user.email}
+        getOptionLabel={(user) => user.name || user.email}
         searchProperties={["email"]}
         disabled={!loadedInitialAsyncValues}
         {...makeFormikAutocompleteProps(formik, "user")}

@@ -1,4 +1,4 @@
-import {rand, randFirstName, randUuid} from "@ngneat/falso"
+import {rand, randFirstName, randLastName, randUuid} from "@ngneat/falso"
 import {Organization, User} from "api/sdk"
 import {dateToISO} from "utils/helpers"
 
@@ -13,6 +13,7 @@ export function generateUsers(
       return {
         _id: randUuid(),
         email: randFirstName().toLowerCase() + "@lightningkite.com",
+        name: `${randFirstName()} ${randLastName()}`,
         organization,
         currentTask: null,
         limitToProjects: null,

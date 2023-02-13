@@ -45,7 +45,8 @@ export const UserChip: FC<UserChipProps> = (props) => {
       <Chip
         size="small"
         color={isMine ? "primary" : undefined}
-        label={taskUser?.email ?? "Unknown"}
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        label={(taskUser?.name || taskUser?.email) ?? "Unknown"}
         icon={<ArrowDropDown />}
         onClick={(e) => setAnchorEl(e.currentTarget)}
         disabled={isChanging}
@@ -56,7 +57,7 @@ export const UserChip: FC<UserChipProps> = (props) => {
         <Divider />
         {users.map((user) => (
           <MenuItem onClick={() => handleChange(user)} key={user._id}>
-            {user.email}
+            {user.name || user.email}
           </MenuItem>
         ))}
       </Menu>

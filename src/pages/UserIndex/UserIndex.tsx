@@ -25,10 +25,19 @@ export const UserIndex: FC = () => {
       <RestDataTable
         restEndpoint={session.user}
         onRowClick={(user) => navigate(`/users/${user._id}`)}
-        searchFields={["email"]}
+        searchFields={["name", "email"]}
         dependencies={[refreshTrigger]}
         columns={[
-          {field: "email", headerName: "Email", flex: 1},
+          {
+            field: "name",
+            headerName: "Name",
+            maxWidth: 200
+          },
+          {
+            field: "email",
+            headerName: "Email",
+            flex: 1
+          },
           {
             field: "isSuperUser",
             headerName: "Super User",

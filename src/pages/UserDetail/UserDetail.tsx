@@ -33,10 +33,10 @@ const UserDetail: FC = () => {
   return (
     <Container maxWidth="md">
       <PageHeader
-        title={user.email}
+        title={user.name || user.email}
         breadcrumbs={[
           ["All Users", "/users"],
-          [user.email, ""]
+          [user.name || user.email, ""]
         ]}
       >
         <DeleteUserButton user={user} />

@@ -69,7 +69,10 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
       headerName: "User",
       flex: 1,
       minWidth: 200,
-      valueGetter: (params) => params.row.annotations.user?.email
+      valueGetter: ({row}) =>
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        row.annotations.user?.name || row.annotations.user?.email,
+      sortable: false
     },
     {
       field: "summary",

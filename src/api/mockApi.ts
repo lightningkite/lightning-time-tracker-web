@@ -10,6 +10,7 @@ import {
   ServerHealth,
   Task,
   TimeEntry,
+  Timer,
   UploadInformation,
   User
 } from "./sdk"
@@ -54,6 +55,8 @@ export class MockApi implements Api {
     this.mockDatastore.timeEntries,
     "timeEntry"
   )
+
+  readonly timer = mockRestEndpointFunctions<Timer>([], "timer")
 
   getServerHealth(): Promise<ServerHealth> {
     return Promise.reject()

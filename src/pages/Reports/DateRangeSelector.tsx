@@ -50,7 +50,7 @@ export const DateRangeSelector: FC<DateRangeSelectorProps> = (props) => {
   return (
     <TextField
       select
-      label="Month"
+      label="Date Range"
       defaultValue={0}
       onChange={(e) => setDateRange(dateRangeOptions[+e.target.value].value)}
     >

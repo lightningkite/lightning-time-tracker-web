@@ -180,7 +180,14 @@ const Reports: FC = () => {
         </TextField>
       </PageHeader>
 
-      <Widgets tasksByProject={tasksByProject} projects={projects} />
+      <Widgets
+        tasksByProject={tasksByProject}
+        projects={projects}
+        isCurrentMonth={
+          selectedMonth.monthIndex === getCurrentSelectedMonth().monthIndex &&
+          selectedMonth.year === getCurrentSelectedMonth().year
+        }
+      />
 
       <Box>
         {Object.entries(tasksByProject)

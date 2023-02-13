@@ -3,15 +3,17 @@ import {Project} from "api/sdk"
 import React, {FC} from "react"
 import {formatDollars} from "utils/helpers"
 import {TasksByProject} from "./Reports"
+import {projectedRevenue} from "./widgetHelpers"
 import {WidgetLayout} from "./WidgetLayout"
 
 export interface WidgetsProps {
   tasksByProject: TasksByProject
   projects: Project[]
+  isCurrentMonth: boolean
 }
 
 export const Widgets: FC<WidgetsProps> = (props) => {
-  const {tasksByProject, projects} = props
+  const {tasksByProject, projects, isCurrentMonth} = props
 
   const revenueDollarsToDate = Object.entries(tasksByProject).reduce(
     (acc, [projectId, {totalHours}]) => {
@@ -32,11 +34,22 @@ export const Widgets: FC<WidgetsProps> = (props) => {
         </Typography>
       </WidgetLayout>
 
-      <WidgetLayout title="Revenue to Date">
+      <WidgetLayout title={isCurrentMonth ? "Revenue to Date" : "Revenue"}>
         <Typography fontSize="2.5rem">
           {formatDollars(revenueDollarsToDate, false)}
         </Typography>
       </WidgetLayout>
+
+      {isCurrentMonth && (
+        <WidgetLayout title="Projected">
+          <Typography fontSize="2.5rem">
+            {formatDollars(
+              projectedRevenue(revenueDollarsToDate, isCurrentMonth),
+              false
+            )}
+          </Typography>
+        </WidgetLayout>
+      )}
     </Stack>
   )
 }

@@ -10,7 +10,7 @@ export function formatDollars(amount: number, includeCents: boolean = true) {
     style: "currency",
     currency: "USD",
     currencySign: "accounting",
-    minimumFractionDigits: includeCents ? 2 : 0
+    maximumFractionDigits: includeCents ? 2 : 0
   }).format(amount)
 }
 

@@ -8,6 +8,8 @@ import {
   List,
   ListItem,
   ListItemText,
+  MenuItem,
+  TextField,
   Typography
 } from "@mui/material"
 import {Project, Task, TimeEntry, User} from "api/sdk"
@@ -24,6 +26,21 @@ interface SelectedMonth {
   monthIndex: number
   year: number
 }
+
+const selectedMonthOptions = (() => {
+  const options: SelectedMonth[] = []
+
+  for (let i = 0; i < 12; i++) {
+    const month = dayjs().subtract(i, "month")
+
+    options.push({
+      monthIndex: month.month(),
+      year: month.year()
+    })
+  }
+
+  return options
+})()
 
 export type TasksByProject = Record<
   string,
@@ -143,7 +160,25 @@ const Reports: FC = () => {
 
   return (
     <Container maxWidth="md">
-      <PageHeader title="Reports" />
+      <PageHeader title="Reports">
+        <TextField
+          select
+          label="Month"
+          defaultValue={0}
+          onChange={(e) =>
+            setSelectedMonth(selectedMonthOptions[+e.target.value])
+          }
+        >
+          {selectedMonthOptions.map((option, index) => (
+            <MenuItem key={index} value={index}>
+              {dayjs()
+                .month(option.monthIndex)
+                .year(option.year)
+                .format("MMMM YYYY")}
+            </MenuItem>
+          ))}
+        </TextField>
+      </PageHeader>
 
       <Widgets tasksByProject={tasksByProject} projects={projects} />
 

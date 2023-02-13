@@ -1,7 +1,8 @@
 import {
   rand,
+  randFloat,
   randNumber,
-  randPastDate,
+  randRecentDate,
   randSentence,
   randUuid
 } from "@ngneat/falso"
@@ -12,12 +13,15 @@ import {dateToISO} from "utils/helpers"
 
 dayjs.extend(duration)
 
-export function generateTimeEntries(
-  totalPerTask: number,
-  tasks: Task[],
+export function generateTimeEntries(params: {
+  perTaskMonth: number
+  months: number
+  tasks: Task[]
   users: User[]
-): TimeEntry[] {
-  return Array.from({length: totalPerTask * tasks.length}, () => {
+}): TimeEntry[] {
+  const {perTaskMonth, months, tasks, users} = params
+
+  return Array.from({length: perTaskMonth * tasks.length * months}, () => {
     const task = rand(tasks)
     const user = rand(users.filter((u) => u.organization === task.organization))
 
@@ -30,12 +34,10 @@ export function generateTimeEntries(
       summary: randSentence(),
       durationMilliseconds: dayjs
         .duration({
-          hours: randNumber({min: 0, max: 1}),
-          minutes: randNumber({min: 0, max: 59}),
-          seconds: randNumber({min: 0, max: 59})
+          hours: randFloat({min: 0, max: 2})
         })
         .asMilliseconds(),
-      date: dateToISO(randPastDate())
+      date: dateToISO(randRecentDate({days: months * 30}))
     }
   })
 }

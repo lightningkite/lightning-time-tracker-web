@@ -17,8 +17,13 @@ export const generateMockDatastore = (): MockDatastore => {
   const organizations = generateOrganizations(1)
   const projects = generateProjects(5, organizations)
   const users = generateUsers(7, organizations)
-  const tasks = generateTasks(10, projects, users)
-  const timeEntries = generateTimeEntries(5, tasks, users)
+  const tasks = generateTasks({perProjectMonth: 10, months: 3, projects, users})
+  const timeEntries = generateTimeEntries({
+    perTaskMonth: 7,
+    months: 3,
+    tasks,
+    users
+  })
 
   return {users, organizations, projects, tasks, timeEntries}
 }

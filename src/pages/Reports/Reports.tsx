@@ -3,6 +3,7 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Alert,
   Box,
   Container,
   List,
@@ -211,10 +212,6 @@ const Reports: FC = () => {
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails sx={{p: 0}}>
-                  {projectTasks.length === 0 &&
-                    orphanedTimeEntries.length === 0 && (
-                      <Typography mx={2}>No time spent</Typography>
-                    )}
                   <List>
                     {projectTasks
                       .sort(
@@ -247,6 +244,12 @@ const Reports: FC = () => {
                         />
                       </ListItem>
                     )}
+
+                    <Alert severity="info" sx={{mx: 2, mt: 1}}>
+                      <Typography fontWeight="bold">
+                        Total hours: {projectHours.toFixed(2)}
+                      </Typography>
+                    </Alert>
                   </List>
                 </AccordionDetails>
               </Accordion>

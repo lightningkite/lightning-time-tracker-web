@@ -115,6 +115,7 @@ export const TimeEntryModal: FC<TimeEntryModalProps> = (props) => {
           throw new Error("Please fix the errors above.")
         }
       }}
+      onDelete={() => session.timeEntry.delete((timeEntry as TimeEntry)._id)}
       open={!!timeEntry}
       disableSubmitBtn={!loadedInitialAsyncValues || !formik.dirty}
     >

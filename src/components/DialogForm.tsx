@@ -15,14 +15,17 @@ import {
 } from "@mui/material"
 import {useFormik} from "formik"
 import React, {FC, useState} from "react"
+import {AutoLoadingButton} from "./AutoLoadingButton"
 
 export interface DialogFormProps extends DialogProps {
   title: string
   submitLabel?: string
   cancelLabel?: string
+  deleteLabel?: string
   instructions?: string
   onClose: () => void
   onSubmit: () => Promise<void>
+  onDelete?: () => Promise<void>
   disableSubmitBtn?: boolean
 }
 
@@ -31,10 +34,12 @@ export const DialogForm: FC<DialogFormProps> = (props) => {
     title,
     submitLabel = "Save",
     cancelLabel = "Cancel",
+    deleteLabel = "Delete",
     fullWidth = true,
     children,
     instructions,
     onSubmit,
+    onDelete,
     disableSubmitBtn = false,
     onClose,
     ...rest
@@ -105,7 +110,23 @@ export const DialogForm: FC<DialogFormProps> = (props) => {
         </DialogContent>
 
         <DialogActions>
+          {onDelete && (
+            <AutoLoadingButton
+              color="error"
+              disableElevation
+              onClick={() =>
+                onDelete()
+                  .then(handleClose)
+                  .catch(() => setError("Error deleting"))
+              }
+              sx={{mr: "auto"}}
+            >
+              {deleteLabel}
+            </AutoLoadingButton>
+          )}
+
           <Button onClick={handleClose}>{cancelLabel}</Button>
+
           <LoadingButton
             loading={isSubmitting}
             color="primary"

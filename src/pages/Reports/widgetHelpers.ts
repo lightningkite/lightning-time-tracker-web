@@ -82,7 +82,7 @@ export function projectedRevenue(
   for (
     let d = dayjs(dateRange.start);
     d.isBefore(dateRange.end);
-    d.add(1, "day")
+    d = d.add(1, "day")
   ) {
     const isBillable = isBillableDay(d)
 

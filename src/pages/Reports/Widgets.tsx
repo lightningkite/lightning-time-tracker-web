@@ -26,7 +26,8 @@ export const Widgets: FC<WidgetsProps> = (props) => {
     0
   )
 
-  const isTodayAfterEndDate = dayjs().isAfter(dateRange.end)
+  const isTodayWithinRange =
+    dayjs().isBefore(dateRange.end) && dayjs().isAfter(dateRange.start)
 
   return (
     <Stack direction="row" spacing={2} sx={{overflowX: "scroll", mb: 3}}>
@@ -38,13 +39,13 @@ export const Widgets: FC<WidgetsProps> = (props) => {
         </Typography>
       </WidgetLayout>
 
-      <WidgetLayout title={isTodayAfterEndDate ? "Revenue to Date" : "Revenue"}>
+      <WidgetLayout title={isTodayWithinRange ? "Revenue to Date" : "Revenue"}>
         <Typography fontSize="2.5rem">
           {formatDollars(revenueDollarsToDate, false)}
         </Typography>
       </WidgetLayout>
 
-      {isTodayAfterEndDate && (
+      {isTodayWithinRange && (
         <WidgetLayout title="Projected">
           <Typography fontSize="2.5rem">
             {formatDollars(

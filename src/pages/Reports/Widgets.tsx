@@ -1,8 +1,9 @@
 import {Stack, Typography} from "@mui/material"
 import {Project} from "api/sdk"
-import dayjs, {Dayjs} from "dayjs"
+import dayjs from "dayjs"
 import React, {FC} from "react"
 import {formatDollars} from "utils/helpers"
+import {DateRange} from "./DateRangeSelector"
 import {SummarizeByProject} from "./ProjectReport"
 import {projectedRevenue} from "./widgetHelpers"
 import {WidgetLayout} from "./WidgetLayout"
@@ -10,7 +11,7 @@ import {WidgetLayout} from "./WidgetLayout"
 export interface WidgetsProps {
   summarizeByProject: SummarizeByProject
   projects: Project[]
-  dateRange: [Dayjs, Dayjs]
+  dateRange: DateRange
 }
 
 export const Widgets: FC<WidgetsProps> = (props) => {
@@ -25,7 +26,7 @@ export const Widgets: FC<WidgetsProps> = (props) => {
     0
   )
 
-  const isTodayAfterEndDate = dayjs().isAfter(dateRange[1])
+  const isTodayAfterEndDate = dayjs().isAfter(dateRange.end)
 
   return (
     <Stack direction="row" spacing={2} sx={{overflowX: "scroll", mb: 3}}>

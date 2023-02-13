@@ -1,4 +1,5 @@
 import dayjs, {Dayjs} from "dayjs"
+import {DateRange} from "./DateRangeSelector"
 
 enum Weekday {
   Sunday = 0,
@@ -69,16 +70,20 @@ function isBillableDay(date: Dayjs): boolean {
 
 export function projectedRevenue(
   revenueToDate: number,
-  dateRange: [Dayjs, Dayjs]
+  dateRange: DateRange
 ): number {
-  if (dateRange[1].isBefore(dayjs())) {
+  if (dateRange.end.isBefore(dayjs())) {
     return revenueToDate
   }
 
   let billableDaysSoFar = 0
   let billableDaysInMonth = 0
 
-  for (let d = dayjs(dateRange[0]); d.isBefore(dateRange[1]); d.add(1, "day")) {
+  for (
+    let d = dayjs(dateRange.start);
+    d.isBefore(dateRange.end);
+    d.add(1, "day")
+  ) {
     const isBillable = isBillableDay(d)
 
     isBillable && billableDaysInMonth++

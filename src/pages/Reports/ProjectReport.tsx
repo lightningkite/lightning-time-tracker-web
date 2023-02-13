@@ -13,10 +13,10 @@ import {
 import {Project, Task, TimeEntry, User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
-import {Dayjs} from "dayjs"
 import React, {FC, useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO, formatDollars, totalHoursForTimeEntries} from "utils/helpers"
+import {DateRange} from "./DateRangeSelector"
 import {Widgets} from "./Widgets"
 
 export type SummarizeByProject = Record<
@@ -24,7 +24,7 @@ export type SummarizeByProject = Record<
   {projectTasks: Task[]; projectHours: number}
 >
 
-export const ProjectReport: FC<{dateRange: [Dayjs, Dayjs]}> = ({dateRange}) => {
+export const ProjectReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
   const {session} = useContext(AuthContext)
 
   const [projects, setProjects] = useState<Project[]>()
@@ -69,8 +69,8 @@ export const ProjectReport: FC<{dateRange: [Dayjs, Dayjs]}> = ({dateRange}) => {
       .query({
         condition: {
           And: [
-            {date: {GreaterThanOrEqual: dateToISO(dateRange[0].toDate())}},
-            {date: {LessThanOrEqual: dateToISO(dateRange[1].toDate())}}
+            {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
+            {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
           ]
         }
       })

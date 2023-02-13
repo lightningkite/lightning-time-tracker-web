@@ -7,6 +7,11 @@ export interface SelectedMonth {
   year: number
 }
 
+export interface DateRange {
+  start: Dayjs
+  end: Dayjs
+}
+
 const selectedMonthOptions = (() => {
   const options: SelectedMonth[] = []
 
@@ -23,7 +28,7 @@ const selectedMonthOptions = (() => {
 })()
 
 export interface DateRangeSelectorProps {
-  setDateRange: (dateRange: [Dayjs, Dayjs]) => void
+  setDateRange: (dateRange: DateRange) => void
 }
 
 export const DateRangeSelector: FC<DateRangeSelectorProps> = (props) => {
@@ -57,9 +62,7 @@ export const DateRangeSelector: FC<DateRangeSelectorProps> = (props) => {
   )
 }
 
-function getSelectedMonthDateRange(
-  selectedMonth: SelectedMonth
-): [Dayjs, Dayjs] {
+function getSelectedMonthDateRange(selectedMonth: SelectedMonth): DateRange {
   const startOfMonth = dayjs()
     .year(selectedMonth.year)
     .month(selectedMonth.monthIndex)
@@ -70,5 +73,8 @@ function getSelectedMonthDateRange(
     .month(selectedMonth.monthIndex)
     .endOf("month")
 
-  return [startOfMonth, endOfMonth]
+  return {
+		start: startOfMonth,
+		end: endOfMonth
+	}
 }

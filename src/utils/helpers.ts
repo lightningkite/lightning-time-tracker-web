@@ -1,9 +1,18 @@
 import {Task, TaskState} from "api/sdk"
 import dayjs from "dayjs"
+import duration, {Duration} from "dayjs/plugin/duration"
 import {Timer} from "./context"
 
-import duration, {Duration} from "dayjs/plugin/duration"
 dayjs.extend(duration)
+
+export function formatDollars(amount: number, includeCents: boolean = true) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    currencySign: "accounting",
+    minimumFractionDigits: includeCents ? 2 : 0
+  }).format(amount)
+}
 
 export function camelCaseToTitleCase(str: string) {
   return str.replace(/([A-Z])/g, " $1").replace(/^./, function (str) {

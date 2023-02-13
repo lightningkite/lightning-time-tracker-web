@@ -17,7 +17,7 @@ import PageHeader from "components/PageHeader"
 import dayjs from "dayjs"
 import React, {FC, useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext} from "utils/context"
-import {dateToISO} from "utils/helpers"
+import {dateToISO, formatDollars} from "utils/helpers"
 import {Widgets} from "./Widgets"
 
 interface SelectedMonth {
@@ -168,7 +168,7 @@ const Reports: FC = () => {
                     {project?.name ?? "Not found"}
                   </Typography>
                   <Typography fontSize="1.2rem" sx={{ml: "auto", mr: 1}}>
-                    ${((project?.rate ?? 0) * totalHours).toFixed(2)}
+                    {formatDollars((project?.rate ?? 0) * totalHours, false)}
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails sx={{p: 0}}>

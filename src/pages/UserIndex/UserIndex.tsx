@@ -31,6 +31,7 @@ export const UserIndex: FC = () => {
           {
             field: "name",
             headerName: "Name",
+            flex: 1,
             maxWidth: 200
           },
           {

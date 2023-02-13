@@ -42,9 +42,9 @@ const selectedMonthOptions = (() => {
   return options
 })()
 
-export type TasksByProject = Record<
+export type SummarizeByProject = Record<
   string,
-  {projectTasks: Task[]; totalHours: number}
+  {projectTasks: Task[]; projectHours: number}
 >
 
 const Reports: FC = () => {
@@ -117,34 +117,28 @@ const Reports: FC = () => {
         (timeEntry) => timeEntry.task === task._id
       )
 
-      const totalHours = taskTimeEntries.reduce((acc, timeEntry) => {
-        const milliseconds = timeEntry.durationMilliseconds
-        const hours = milliseconds / 1000 / 60 / 60
-        return acc + hours
-      }, 0)
-
+      const totalHours = totalHoursForTimeEntries(taskTimeEntries)
       timeEntriesByTask[task._id] = {taskTimeEntries, totalHours}
     })
 
     return timeEntriesByTask
   }, [timeEntries, tasks])
 
-  const tasksByProject: TasksByProject = useMemo(() => {
-    if (!tasks || !projects) return {}
+  const summarizeByProject: SummarizeByProject = useMemo(() => {
+    if (!tasks || !projects || !timeEntries) return {}
 
     const tasksByProject: Record<
       string,
-      {projectTasks: Task[]; totalHours: number}
+      {projectTasks: Task[]; projectHours: number}
     > = {}
 
     projects.forEach((project) => {
       const projectTasks = tasks.filter((task) => task.project === project._id)
-      const totalHours = projectTasks.reduce((acc, task) => {
-        const taskHours = timeEntriesByTask[task._id]?.totalHours || 0
-        return acc + taskHours
-      }, 0)
+      const projectHours = totalHoursForTimeEntries(
+        timeEntries.filter((t) => t.project === project._id)
+      )
 
-      tasksByProject[project._id] = {projectTasks, totalHours}
+      tasksByProject[project._id] = {projectTasks, projectHours}
     })
 
     return tasksByProject
@@ -181,7 +175,7 @@ const Reports: FC = () => {
       </PageHeader>
 
       <Widgets
-        tasksByProject={tasksByProject}
+        tasksByProject={summarizeByProject}
         projects={projects}
         isCurrentMonth={
           selectedMonth.monthIndex === getCurrentSelectedMonth().monthIndex &&
@@ -190,13 +184,16 @@ const Reports: FC = () => {
       />
 
       <Box>
-        {Object.entries(tasksByProject)
+        {Object.entries(summarizeByProject)
           .sort(
             (a, b) =>
-              b[1].totalHours - a[1].totalHours || a[0].localeCompare(b[0])
+              b[1].projectHours - a[1].projectHours || a[0].localeCompare(b[0])
           )
-          .map(([projectId, {projectTasks, totalHours}]) => {
+          .map(([projectId, {projectTasks, projectHours}]) => {
             const project = projects.find((p) => p._id === projectId)
+            const orphanedTimeEntries = timeEntries.filter(
+              (t) => t.project === projectId && !t.task
+            )
 
             return (
               <Accordion key={projectId} expanded={projectId === expanded}>
@@ -210,13 +207,14 @@ const Reports: FC = () => {
                     {project?.name ?? "Not found"}
                   </Typography>
                   <Typography fontSize="1.2rem" sx={{ml: "auto", mr: 1}}>
-                    {formatDollars((project?.rate ?? 0) * totalHours, false)}
+                    {formatDollars((project?.rate ?? 0) * projectHours, false)}
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails sx={{p: 0}}>
-                  {projectTasks.length === 0 && (
-                    <Typography mx={2}>No time spent</Typography>
-                  )}
+                  {projectTasks.length === 0 &&
+                    orphanedTimeEntries.length === 0 && (
+                      <Typography mx={2}>No time spent</Typography>
+                    )}
                   <List>
                     {projectTasks
                       .sort(
@@ -238,6 +236,17 @@ const Reports: FC = () => {
                           </ListItem>
                         )
                       })}
+
+                    {orphanedTimeEntries.length > 0 && (
+                      <ListItem>
+                        <ListItemText
+                          primary="Other time"
+                          secondary={`${totalHoursForTimeEntries(
+                            orphanedTimeEntries
+                          ).toFixed(1)} hours`}
+                        />
+                      </ListItem>
+                    )}
                   </List>
                 </AccordionDetails>
               </Accordion>
@@ -246,6 +255,15 @@ const Reports: FC = () => {
       </Box>
     </Container>
   )
+}
+
+function totalHoursForTimeEntries(timeEntries: TimeEntry[]): number {
+  return timeEntries.reduce((acc, timeEntry) => {
+    const milliseconds = timeEntry.durationMilliseconds
+    const hours = milliseconds / 1000 / 60 / 60
+    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+    return acc + hours
+  }, 0)
 }
 
 function getCurrentSelectedMonth(): SelectedMonth {

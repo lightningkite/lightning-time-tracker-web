@@ -2,12 +2,12 @@ import {Stack, Typography} from "@mui/material"
 import {Project} from "api/sdk"
 import React, {FC} from "react"
 import {formatDollars} from "utils/helpers"
-import {TasksByProject} from "./Reports"
+import {SummarizeByProject} from "./Reports"
 import {projectedRevenue} from "./widgetHelpers"
 import {WidgetLayout} from "./WidgetLayout"
 
 export interface WidgetsProps {
-  tasksByProject: TasksByProject
+  tasksByProject: SummarizeByProject
   projects: Project[]
   isCurrentMonth: boolean
 }
@@ -16,7 +16,7 @@ export const Widgets: FC<WidgetsProps> = (props) => {
   const {tasksByProject, projects, isCurrentMonth} = props
 
   const revenueDollarsToDate = Object.entries(tasksByProject).reduce(
-    (acc, [projectId, {totalHours}]) => {
+    (acc, [projectId, {projectHours: totalHours}]) => {
       const project = projects.find((project) => project._id === projectId)
 
       return acc + (project?.rate ?? 0) * totalHours
@@ -29,7 +29,7 @@ export const Widgets: FC<WidgetsProps> = (props) => {
       <WidgetLayout title="Hours Worked">
         <Typography fontSize="2.5rem">
           {Object.values(tasksByProject)
-            .reduce((acc, {totalHours}) => acc + totalHours, 0)
+            .reduce((acc, {projectHours}) => acc + projectHours, 0)
             .toFixed(1)}
         </Typography>
       </WidgetLayout>

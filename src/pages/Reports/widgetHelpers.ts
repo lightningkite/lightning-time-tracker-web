@@ -72,23 +72,25 @@ export function projectedRevenue(
   revenueToDate: number,
   dateRange: DateRange
 ): number {
-  if (dateRange.end.isBefore(dayjs())) {
+  if (dateRange.end.isBefore(dayjs(), "day")) {
     return revenueToDate
   }
 
   let billableDaysSoFar = 0
-  let billableDaysInMonth = 0
+  let billableDaysInRange = 0
 
   for (
     let d = dayjs(dateRange.start);
-    d.isBefore(dateRange.end);
+    !d.isAfter(dateRange.end, "day");
     d = d.add(1, "day")
   ) {
     const isBillable = isBillableDay(d)
 
-    isBillable && billableDaysInMonth++
-    isBillable && d.isBefore(dayjs()) && billableDaysSoFar++
+    isBillable && billableDaysInRange++
+    isBillable && d.isBefore(dayjs(), "day") && billableDaysSoFar++
   }
 
-  return revenueToDate * (billableDaysInMonth / billableDaysSoFar)
+  console.log({billableDaysSoFar, billableDaysInRange})
+
+  return revenueToDate * (billableDaysInRange / billableDaysSoFar)
 }

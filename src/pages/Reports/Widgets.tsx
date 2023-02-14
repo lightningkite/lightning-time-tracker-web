@@ -27,7 +27,8 @@ export const Widgets: FC<WidgetsProps> = (props) => {
   )
 
   const isTodayWithinRange =
-    dayjs().isBefore(dateRange.end) && dayjs().isAfter(dateRange.start)
+    !dayjs().isAfter(dateRange.end, "day") &&
+    !dayjs().isBefore(dateRange.start, "day")
 
   return (
     <Stack direction="row" spacing={2} sx={{overflowX: "scroll", mb: 3}}>

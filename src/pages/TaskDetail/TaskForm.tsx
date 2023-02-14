@@ -7,7 +7,7 @@ import {
 } from "@lightningkite/mui-lightning-components"
 import {LoadingButton} from "@mui/lab"
 import {Alert, InputAdornment, MenuItem, Stack, TextField} from "@mui/material"
-import {Task, TaskState, User} from "api/sdk"
+import {Project, Task, TaskState, User} from "api/sdk"
 import {useFormik} from "formik"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
@@ -15,6 +15,7 @@ import * as yup from "yup"
 
 const validationSchema = yup.object().shape({
   user: yup.object().required("Required"),
+  project: yup.object().required("Required"),
   state: yup.string().required("Required"),
   summary: yup.string().required("Required"),
   estimate: yup.number().min(0, "Must be positive").nullable()
@@ -37,6 +38,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
   const formik = useFormik({
     initialValues: {
       user: null as User | null,
+      project: null as Project | null,
       state: task.state,
       summary: task.summary,
       description: task.description,
@@ -50,6 +52,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       const formattedValues: Partial<Task> = {
         ...values,
         user: values.user?._id,
+        project: values.project?._id,
         estimate: values.estimate ? +values.estimate : null
       }
 
@@ -73,10 +76,15 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
   })
 
   useEffect(() => {
-    session.user.detail(task.user).then((user) => {
-      formik.resetForm({values: {...formik.values, user}})
-      setLoadedInitialAsyncValues(true)
-    })
+    Promise.all([
+      session.project.detail(task.project),
+      session.user.detail(task.user)
+    ])
+      .then(([project, user]) => {
+        formik.resetForm({values: {...formik.values, user, project}})
+        setLoadedInitialAsyncValues(true)
+      })
+      .catch(() => alert("Error loading initial values"))
   }, [])
 
   return (
@@ -88,6 +96,14 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
         searchProperties={["email"]}
         disabled={!loadedInitialAsyncValues}
         {...makeFormikAutocompleteProps(formik, "user")}
+      />
+      <RestAutocompleteInput
+        label="Project"
+        restEndpoint={session.project}
+        getOptionLabel={(project) => project.name}
+        searchProperties={["name"]}
+        disabled={!loadedInitialAsyncValues}
+        {...makeFormikAutocompleteProps(formik, "project")}
       />
       <TextField
         label="Summary"

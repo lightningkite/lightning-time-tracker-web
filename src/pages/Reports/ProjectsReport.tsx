@@ -1,8 +1,7 @@
 import {Card} from "@mui/material"
 import {DataGrid, GridEnrichedColDef} from "@mui/x-data-grid"
-import {TimeEntry, User} from "api/sdk"
+import {Project, TimeEntry, User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
-import dayjs from "dayjs"
 import React, {FC, useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO, MILLISECONDS_PER_HOUR} from "utils/helpers"
@@ -10,14 +9,15 @@ import {DateRange} from "./DateRangeSelector"
 
 interface HoursTableRow {
   user: User
-  dayHours: Record<string, number>
+  projectHours: Record<string, number>
 }
 
-export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
+export const ProjectsReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
   const {session} = useContext(AuthContext)
 
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>()
   const [users, setUsers] = useState<User[]>()
+  const [projects, setProjects] = useState<Project[]>()
 
   const [error, setError] = useState("")
 
@@ -30,6 +30,12 @@ export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
 
   useEffect(() => {
     setTimeEntries(undefined)
+    setProjects(undefined)
+
+    session.project
+      .query({})
+      .then(setProjects)
+      .catch(() => setError("Error fetching projects"))
 
     session.timeEntry
       .query({
@@ -45,29 +51,39 @@ export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
   }, [dateRange])
 
   const tableData: HoursTableRow[] = useMemo(() => {
-    if (!timeEntries || !users) {
+    if (!timeEntries || !users || !projects) {
       return []
     }
 
-    const dayHoursByUserId: Record<string, Record<string, number>> = {}
+    const projectHoursByUserId: Record<string, Record<string, number>> = {}
 
     users.forEach((user) => {
-      dayHoursByUserId[user._id] = {}
+      projectHoursByUserId[user._id] = {}
     })
 
     timeEntries.forEach((timeEntry) => {
-      const date = dayjs(timeEntry.date).format("YYYY-MM-DD")
-
-      dayHoursByUserId[timeEntry.user][date] =
-        (dayHoursByUserId[timeEntry.user][date] ?? 0) +
+      projectHoursByUserId[timeEntry.user][timeEntry.project] =
+        (projectHoursByUserId[timeEntry.user][timeEntry.project] ?? 0) +
         timeEntry.durationMilliseconds / MILLISECONDS_PER_HOUR
     })
 
     return users.map((user) => ({
       user,
-      dayHours: dayHoursByUserId[user._id]
+      projectHours: projectHoursByUserId[user._id]
     }))
-  }, [timeEntries, users])
+  }, [timeEntries, users, projects])
+
+  const hoursByProject: Record<string, number> = useMemo(() => {
+    const totals: Record<string, number> = {}
+
+    tableData.forEach((row) => {
+      Object.entries(row.projectHours).forEach(([projectId, hours]) => {
+        totals[projectId] = (totals[projectId] ?? 0) + hours
+      })
+    })
+
+    return totals
+  }, [tableData])
 
   if (error) {
     return <ErrorAlert>{error}</ErrorAlert>
@@ -77,7 +93,7 @@ export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
     <Card>
       <DataGrid
         autoHeight
-        loading={!users || !timeEntries}
+        loading={!users || !timeEntries || !projects}
         disableSelectionOnClick
         disableColumnMenu
         columns={[
@@ -87,32 +103,31 @@ export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
             width: 200,
             valueGetter: ({row}) => row.user.name || row.user.email
           },
-          {
-            field: "total",
-            headerName: "Total",
-            width: 80,
-            valueGetter: ({row}) =>
-              Object.values(row.dayHours)
-                .reduce((a, b) => a + b, 0)
-                .toFixed(1)
-          },
-          ...Array.from(
-            {length: dateRange.end.diff(dateRange.start, "day") + 1},
-            (_, i) => {
-              const date = dateRange.start.add(i, "day")
-
+          // {
+          //   field: "total",
+          //   headerName: "Total",
+          //   width: 80,
+          //   valueGetter: ({row}) =>
+          //     Object.values(row.projectHours)
+          //       .reduce((a, b) => a + b, 0)
+          //       .toFixed(1)
+          // },
+          ...(projects ?? [])
+            .sort(
+              (a, b) => hoursByProject[b._id] || 0 - hoursByProject[a._id] || 0
+            )
+            .map((project) => {
               const column: GridEnrichedColDef<HoursTableRow> = {
-                field: date.format("YYYY-MM-DD"),
-                headerName: date.format("MMM D"),
-                minWidth: 80,
+                field: project._id,
+                headerName: project.name,
+                minWidth: Math.min(200, project.name.length * 7 + 50),
                 flex: 1,
                 valueGetter: ({row}) =>
-                  row.dayHours[date.format("YYYY-MM-DD")]?.toFixed(1) || "–"
+                  row.projectHours[project._id]?.toFixed(1) || "–"
               }
 
               return column
-            }
-          )
+            })
         ]}
         initialState={{
           sorting: {

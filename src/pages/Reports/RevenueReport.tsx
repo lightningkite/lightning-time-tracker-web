@@ -24,7 +24,7 @@ export type SummarizeByProject = Record<
   {projectTasks: Task[]; projectHours: number}
 >
 
-export const ProjectReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
+export const RevenueReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
   const {session} = useContext(AuthContext)
 
   const [projects, setProjects] = useState<Project[]>()

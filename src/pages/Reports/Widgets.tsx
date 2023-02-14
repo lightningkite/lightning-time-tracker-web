@@ -4,7 +4,7 @@ import dayjs from "dayjs"
 import React, {FC} from "react"
 import {formatDollars} from "utils/helpers"
 import {DateRange} from "./DateRangeSelector"
-import {SummarizeByProject} from "./ProjectReport"
+import {SummarizeByProject} from "./RevenueReport"
 import {projectedRevenue} from "./widgetHelpers"
 import {WidgetLayout} from "./WidgetLayout"
 

@@ -3,6 +3,7 @@ import {Box, Container, Tab} from "@mui/material"
 import PageHeader from "components/PageHeader"
 import React, {FC, useState} from "react"
 import {DateRange, DateRangeSelector} from "./DateRangeSelector"
+import { HoursReport } from "./HoursReport"
 import {ProjectReport} from "./ProjectReport"
 
 const Reports: FC = () => {
@@ -10,7 +11,7 @@ const Reports: FC = () => {
   const [value, setValue] = useState("1")
 
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="lg">
       <PageHeader title="Reports">
         <DateRangeSelector setDateRange={setDateRange} />
       </PageHeader>
@@ -21,14 +22,14 @@ const Reports: FC = () => {
             <Box sx={{borderBottom: 1, borderColor: "divider"}}>
               <TabList onChange={(_e, newValue) => setValue(newValue)}>
                 <Tab label="Projects" value="1" />
-                <Tab label="Item Two" value="2" />
+                <Tab label="Employee Hours" value="2" />
               </TabList>
             </Box>
             <TabPanel value="1" sx={{px: 0}}>
               <ProjectReport dateRange={dateRange} />
             </TabPanel>
             <TabPanel value="2" sx={{px: 0}}>
-              Item Two
+              <HoursReport dateRange={dateRange} />
             </TabPanel>
           </TabContext>
         </>

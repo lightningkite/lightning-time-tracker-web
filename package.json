@@ -21,6 +21,7 @@
     "@mui/icons-material": "^5.11.0",
     "@mui/lab": "^5.0.0-alpha.115",
     "@mui/material": "^5.11.4",
+    "@mui/x-data-grid": "^5.17.23",
     "@mui/x-date-pickers": "^5.0.13",
     "@ngneat/falso": "^6.4.0",
     "dayjs": "^1.11.7",

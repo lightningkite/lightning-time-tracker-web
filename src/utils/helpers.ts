@@ -5,6 +5,8 @@ import {Timer} from "./context"
 
 dayjs.extend(duration)
 
+export const MILLISECONDS_PER_HOUR = 1000 * 60 * 60
+
 export function formatDollars(amount: number, includeCents: boolean = true) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -84,7 +86,7 @@ export function stringToDuration(durationString: string): Duration | null {
 export function totalHoursForTimeEntries(timeEntries: TimeEntry[]): number {
   return timeEntries.reduce((acc, timeEntry) => {
     const milliseconds = timeEntry.durationMilliseconds
-    const hours = milliseconds / 1000 / 60 / 60
+    const hours = milliseconds / MILLISECONDS_PER_HOUR
     // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     return acc + hours
   }, 0)

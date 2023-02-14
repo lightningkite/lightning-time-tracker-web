@@ -103,15 +103,15 @@ export const ProjectsReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
             width: 200,
             valueGetter: ({row}) => row.user.name || row.user.email
           },
-          // {
-          //   field: "total",
-          //   headerName: "Total",
-          //   width: 80,
-          //   valueGetter: ({row}) =>
-          //     Object.values(row.projectHours)
-          //       .reduce((a, b) => a + b, 0)
-          //       .toFixed(1)
-          // },
+          {
+            field: "total",
+            headerName: "Total",
+            width: 80,
+            valueGetter: ({row}) =>
+              Object.values(row.projectHours)
+                .reduce((a, b) => a + b, 0)
+                .toFixed(1)
+          },
           ...(projects ?? [])
             .sort(
               (a, b) => hoursByProject[b._id] || 0 - hoursByProject[a._id] || 0

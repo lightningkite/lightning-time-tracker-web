@@ -52,7 +52,8 @@ const Settings: FC = () => {
             <FormControl>
               <FormLabel>Summarize Time</FormLabel>
               <FormHelperText sx={{ml: 0}}>
-                Choose how your time entries will be summarized in the toolbar
+                Choose the time period to show the total time for in the menu
+                bar
               </FormHelperText>
               <RadioGroup
                 value={applicationSettings.summaryTime}

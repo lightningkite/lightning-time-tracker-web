@@ -1,6 +1,5 @@
 import {rand, randFirstName, randLastName, randUuid} from "@ngneat/falso"
 import {Organization, User} from "api/sdk"
-import {dateToISO} from "utils/helpers"
 
 export function generateUsers(
   totalPerOrganization: number,
@@ -16,10 +15,12 @@ export function generateUsers(
         name: `${randFirstName()} ${randLastName()}`,
         organization,
         currentTask: null,
-        limitToProjects: null,
         isSuperUser: true,
-        termsAgreed: dateToISO(new Date()),
-        statesCaredAbout: [],
+        defaultFilters: {
+          projects: [],
+          states: [],
+          users: []
+        },
         webPreferences: ""
       }
     }

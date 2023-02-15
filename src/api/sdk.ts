@@ -14,6 +14,11 @@ export interface EmailPinLogin {
   email: string
   pin: string
 }
+export interface Filters {
+  projects: Array<string>
+  states: Array<TaskState>
+  users: Array<string>
+}
 export interface HealthStatus {
   level: Level
   checkedAt: string
@@ -101,12 +106,10 @@ export interface User {
   email: string
   organization: string
   name: string
-  statesCaredAbout: Array<TaskState>
   webPreferences: string
   isSuperUser: boolean
-  termsAgreed: string
+  defaultFilters: Filters
   currentTask: string | null | undefined
-  limitToProjects: Array<string> | null | undefined
 }
 
 export interface Api {

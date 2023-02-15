@@ -8,7 +8,7 @@ import {
   List,
   Typography
 } from "@mui/material"
-import {Project, TaskState} from "api/sdk"
+import {Project} from "api/sdk"
 import {AddTaskButton} from "components/AddTaskButton"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
@@ -17,12 +17,6 @@ import {AuthContext, TimerContext} from "utils/context"
 import {compareTasksByState} from "utils/helpers"
 import {AnnotatedTask, useAnnotatedEndpoints} from "utils/useAnnotatedEndpoints"
 import {TaskListItem} from "./TaskListItem"
-
-const dashboardTaskStates: TaskState[] = [
-  TaskState.Active,
-  TaskState.Completed,
-  TaskState.Tested
-]
 
 export const ProjectsTasks: FC = () => {
   const {session, currentOrganization, currentUser} = useContext(AuthContext)
@@ -44,7 +38,11 @@ export const ProjectsTasks: FC = () => {
         condition: {
           And: [
             {organization: {Equal: currentOrganization._id}},
-            {state: {Inside: dashboardTaskStates}}
+            {
+              state: !currentUser.defaultFilters.states.length
+                ? {Always: true}
+                : {Inside: currentUser.defaultFilters.states}
+            }
           ]
         }
       })

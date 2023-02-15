@@ -6,12 +6,17 @@ import {
 import {LoadingButton} from "@mui/lab"
 import {
   Alert,
+  capitalize,
   Checkbox,
+  FormControl,
   FormControlLabel,
+  FormGroup,
+  FormHelperText,
+  FormLabel,
   Stack,
   TextField
 } from "@mui/material"
-import {User} from "api/sdk"
+import {TaskState, User} from "api/sdk"
 import {useFormik} from "formik"
 import React, {FC, useContext, useState} from "react"
 import {AuthContext} from "utils/context"
@@ -40,7 +45,8 @@ export const UserForm: FC<UserFormProps> = (props) => {
     initialValues: {
       email: user.email,
       name: user.name,
-      isSuperUser: user.isSuperUser
+      isSuperUser: user.isSuperUser,
+      defaultStates: user.defaultFilters.states
     },
     validationSchema,
     // When the form is submitted, this function is called if the form values are valid
@@ -48,8 +54,14 @@ export const UserForm: FC<UserFormProps> = (props) => {
       setError("")
 
       // Convert date fields from Date back to ISO string
-      const formattedValues = {
-        ...values
+      const formattedValues: Partial<User> = {
+        email: values.email,
+        name: values.name,
+        isSuperUser: values.isSuperUser,
+        defaultFilters: {
+          ...user.defaultFilters,
+          states: values.defaultStates
+        }
       }
 
       // Automatically builds the Lightning Server modification given the old object and the new values
@@ -80,6 +92,45 @@ export const UserForm: FC<UserFormProps> = (props) => {
       <TextField label="Email" {...makeFormikTextFieldProps(formik, "email")} />
 
       <TextField label="Name" {...makeFormikTextFieldProps(formik, "name")} />
+
+      {user._id === currentUser._id && (
+        <FormControl component="fieldset" variant="standard">
+          <FormLabel component="legend">States Cared About</FormLabel>
+          <FormHelperText>
+            Only tasks with these states will be shown on your dashboard
+          </FormHelperText>
+          <FormGroup>
+            {Object.values(TaskState).map((state) => (
+              <FormControlLabel
+                key={state}
+                control={
+                  <Checkbox
+                    checked={formik.values.defaultStates.includes(state)}
+                    onChange={(e) => {
+                      const nowChecked = e.target.checked
+                      const wasChecked =
+                        formik.values.defaultStates.includes(state)
+
+                      if (nowChecked && !wasChecked) {
+                        formik.setFieldValue(
+                          "defaultStates",
+                          formik.values.defaultStates.concat(state)
+                        )
+                      } else if (!nowChecked && wasChecked) {
+                        formik.setFieldValue(
+                          "defaultStates",
+                          formik.values.defaultStates.filter((s) => s !== state)
+                        )
+                      }
+                    }}
+                  />
+                }
+                label={capitalize(state)}
+              />
+            ))}
+          </FormGroup>
+        </FormControl>
+      )}
 
       <FormControlLabel
         control={

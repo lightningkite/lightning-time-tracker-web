@@ -10,6 +10,7 @@ import {
   Stack,
   TextField
 } from "@mui/material"
+import {TaskState} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import {useFormik} from "formik"
 import React, {FC, useContext, useState} from "react"
@@ -49,9 +50,11 @@ export const AddUserButton: FC<AddUserProps> = (props) => {
         _id: crypto.randomUUID(),
         organization: currentUser.organization,
         currentTask: undefined,
-        limitToProjects: undefined,
-        termsAgreed: new Date().toISOString(),
-        statesCaredAbout: [],
+        defaultFilters: {
+          projects: [],
+          states: [TaskState.Active],
+          users: []
+        },
         webPreferences: ""
       })
 

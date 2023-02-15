@@ -116,3 +116,10 @@ export function booleanCompare<T>(
   if (aKey) return -1
   return 1
 }
+
+// Should use this instead of `dayjs.duration().format()` because what if the hours are more than 24?
+export function formatLongDuration(duration: Duration): string {
+  const hoursString = duration.asHours().toFixed(0)
+
+  return `${hoursString} : ${duration.format("mm : ss")}`
+}

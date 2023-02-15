@@ -1,6 +1,7 @@
-import {Box, MenuItem, TextField} from "@mui/material"
+import {MenuItem, Stack, TextField} from "@mui/material"
+import {DatePicker} from "@mui/x-date-pickers"
 import dayjs, {Dayjs} from "dayjs"
-import React, {FC, useEffect} from "react"
+import React, {FC, useEffect, useState} from "react"
 
 export interface DateRange {
   start: Dayjs
@@ -76,15 +77,19 @@ export interface DateRangeSelectorProps {
 export const DateRangeSelector: FC<DateRangeSelectorProps> = (props) => {
   const {setDateRange, dateRange} = props
 
-  useEffect(() => setDateRange(dateRangeOptions[0].value), [])
+  const [selectorValue, setSelectorValue] = useState(0)
+
+  useEffect(() => {
+    selectorValue !== -1 && setDateRange(dateRangeOptions[selectorValue].value)
+  }, [selectorValue])
 
   return (
-    <Box mb={2}>
+    <Stack direction="row" mb={2} spacing={2}>
       <TextField
         select
         label="Date Range"
-        defaultValue={0}
-        onChange={(e) => setDateRange(dateRangeOptions[+e.target.value].value)}
+        value={selectorValue}
+        onChange={(e) => setSelectorValue(+e.target.value)}
         helperText={
           dateRange &&
           `${dateRange.start.format("MMM D")} - ${dateRange.end.format(
@@ -97,7 +102,29 @@ export const DateRangeSelector: FC<DateRangeSelectorProps> = (props) => {
             {option.label}
           </MenuItem>
         ))}
+        <MenuItem value={-1}>Custom</MenuItem>
       </TextField>
-    </Box>
+
+      {selectorValue === -1 && dateRange && (
+        <>
+          <DatePicker
+            label="Start"
+            value={dateRange.start}
+            onChange={(newValue) =>
+              newValue && setDateRange({...dateRange, start: newValue})
+            }
+            renderInput={(params) => <TextField {...params} />}
+          />
+          <DatePicker
+            label="End"
+            value={dateRange.end}
+            onChange={(newValue) =>
+              newValue && setDateRange({...dateRange, end: newValue})
+            }
+            renderInput={(params) => <TextField {...params} />}
+          />
+        </>
+      )}
+    </Stack>
   )
 }

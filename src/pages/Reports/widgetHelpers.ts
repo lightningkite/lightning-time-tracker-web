@@ -90,7 +90,5 @@ export function projectedRevenue(
     isBillable && d.isBefore(dayjs(), "day") && billableDaysSoFar++
   }
 
-  console.log({billableDaysSoFar, billableDaysInRange})
-
   return revenueToDate * (billableDaysInRange / billableDaysSoFar)
 }

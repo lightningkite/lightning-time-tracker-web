@@ -1,22 +1,23 @@
+import {Aggregate} from "@lightningkite/lightning-server-simplified"
 import {Card} from "@mui/material"
 import {DataGrid, GridEnrichedColDef} from "@mui/x-data-grid"
-import {TimeEntry, User} from "api/sdk"
+import {User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import dayjs from "dayjs"
-import React, {FC, useContext, useEffect, useMemo, useState} from "react"
+import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO, MILLISECONDS_PER_HOUR} from "utils/helpers"
 import {DateRange} from "./DateRangeSelector"
 
 interface HoursTableRow {
   user: User
-  dayHours: Record<string, number>
+  dayMilliseconds: Record<string, number | null | undefined>
 }
 
 export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
   const {session} = useContext(AuthContext)
 
-  const [timeEntries, setTimeEntries] = useState<TimeEntry[]>()
+  const [tableData, setTableData] = useState<HoursTableRow[]>([])
   const [users, setUsers] = useState<User[]>()
 
   const [error, setError] = useState("")
@@ -29,45 +30,37 @@ export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
   }, [])
 
   useEffect(() => {
-    setTimeEntries(undefined)
+    setTableData([])
 
-    session.timeEntry
-      .query({
-        condition: {
-          And: [
-            {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
-            {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
-          ]
-        }
-      })
-      .then(setTimeEntries)
-      .catch(() => setError("Error fetching time entries"))
-  }, [dateRange])
-
-  const tableData: HoursTableRow[] = useMemo(() => {
-    if (!timeEntries || !users) {
-      return []
+    if (!users) {
+      return
     }
 
-    const dayHoursByUserId: Record<string, Record<string, number>> = {}
+    const requests: Promise<HoursTableRow["dayMilliseconds"]>[] = users.map(
+      (user) =>
+        session.timeEntry.groupAggregate({
+          condition: {
+            And: [
+              {user: {Equal: user._id}},
+              {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
+              {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
+            ]
+          },
+          aggregate: Aggregate.Sum,
+          property: "durationMilliseconds",
+          groupBy: "date"
+        })
+    )
 
-    users.forEach((user) => {
-      dayHoursByUserId[user._id] = {}
-    })
-
-    timeEntries.forEach((timeEntry) => {
-      const date = dayjs(timeEntry.date).format("YYYY-MM-DD")
-
-      dayHoursByUserId[timeEntry.user][date] =
-        (dayHoursByUserId[timeEntry.user][date] ?? 0) +
-        timeEntry.durationMilliseconds / MILLISECONDS_PER_HOUR
-    })
-
-    return users.map((user) => ({
-      user,
-      dayHours: dayHoursByUserId[user._id]
-    }))
-  }, [timeEntries, users])
+    Promise.all(requests).then((r) =>
+      setTableData(
+        r.map((dayMilliseconds, i) => ({
+          user: users[i],
+          dayMilliseconds
+        }))
+      )
+    )
+  }, [dateRange, users])
 
   if (error) {
     return <ErrorAlert>{error}</ErrorAlert>
@@ -77,7 +70,7 @@ export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
     <Card>
       <DataGrid
         autoHeight
-        loading={!users || !timeEntries}
+        loading={!users || !tableData}
         disableSelectionOnClick
         disableColumnMenu
         columns={[
@@ -91,10 +84,14 @@ export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
             field: "total",
             headerName: "Total",
             width: 80,
+            type: "number",
             valueGetter: ({row}) =>
-              Object.values(row.dayHours)
-                .reduce((a, b) => a + b, 0)
-                .toFixed(1)
+              Object.values(row.dayMilliseconds).reduce<number>(
+                (acc, milliseconds) => acc + (milliseconds ?? 0),
+                0
+              ),
+            valueFormatter: ({value}) =>
+              (value / MILLISECONDS_PER_HOUR).toFixed(1)
           },
           ...Array.from(
             {length: dateRange.end.diff(dateRange.start, "day") + 1},
@@ -106,8 +103,11 @@ export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
                 headerName: date.format("MMM D"),
                 minWidth: 80,
                 flex: 1,
+                type: "number",
                 valueGetter: ({row}) =>
-                  row.dayHours[date.format("YYYY-MM-DD")]?.toFixed(1) || "–"
+                  row.dayMilliseconds[date.format("YYYY-MM-DD")],
+                valueFormatter: ({value}) =>
+                  value ? (value / MILLISECONDS_PER_HOUR).toFixed(1) : "–"
               }
 
               return column

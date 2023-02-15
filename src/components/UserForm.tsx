@@ -111,36 +111,38 @@ export const UserForm: FC<UserFormProps> = (props) => {
               Tasks with these states will always be shown on your dashboard
             </FormHelperText>
             <FormGroup>
-              {Object.values(TaskState).map((state) => (
-                <FormControlLabel
-                  key={state}
-                  control={
-                    <Checkbox
-                      checked={formik.values.defaultStates.includes(state)}
-                      onChange={(e) => {
-                        const nowChecked = e.target.checked
-                        const wasChecked =
-                          formik.values.defaultStates.includes(state)
+              {Object.values(TaskState)
+                .filter((state) => state !== TaskState.Done)
+                .map((state) => (
+                  <FormControlLabel
+                    key={state}
+                    control={
+                      <Checkbox
+                        checked={formik.values.defaultStates.includes(state)}
+                        onChange={(e) => {
+                          const nowChecked = e.target.checked
+                          const wasChecked =
+                            formik.values.defaultStates.includes(state)
 
-                        if (nowChecked && !wasChecked) {
-                          formik.setFieldValue(
-                            "defaultStates",
-                            formik.values.defaultStates.concat(state)
-                          )
-                        } else if (!nowChecked && wasChecked) {
-                          formik.setFieldValue(
-                            "defaultStates",
-                            formik.values.defaultStates.filter(
-                              (s) => s !== state
+                          if (nowChecked && !wasChecked) {
+                            formik.setFieldValue(
+                              "defaultStates",
+                              formik.values.defaultStates.concat(state)
                             )
-                          )
-                        }
-                      }}
-                    />
-                  }
-                  label={capitalize(state)}
-                />
-              ))}
+                          } else if (!nowChecked && wasChecked) {
+                            formik.setFieldValue(
+                              "defaultStates",
+                              formik.values.defaultStates.filter(
+                                (s) => s !== state
+                              )
+                            )
+                          }
+                        }}
+                      />
+                    }
+                    label={capitalize(state)}
+                  />
+                ))}
             </FormGroup>
           </FormControl>
 

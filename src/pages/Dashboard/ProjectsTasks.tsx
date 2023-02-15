@@ -19,7 +19,7 @@ import {compareTasksByState} from "utils/helpers"
 import {AnnotatedTask, useAnnotatedEndpoints} from "utils/useAnnotatedEndpoints"
 import {TaskListItem} from "./TaskListItem"
 
-export const ProjectsTasks: FC = () => {
+export const ProjectsTasks: FC<{onlyMine: boolean}> = ({onlyMine}) => {
   const {session, currentOrganization, currentUser} = useContext(AuthContext)
   const {timers} = useContext(TimerContext)
   const {annotatedTaskEndpoint} = useAnnotatedEndpoints()
@@ -70,7 +70,9 @@ export const ProjectsTasks: FC = () => {
 
     projects.forEach((project) => {
       const projectTasks = annotatedTasks.filter(
-        (task) => task.project === project._id
+        (task) =>
+          task.project === project._id &&
+          (!onlyMine || task.user === currentUser._id)
       )
 
       const myTasksCount = projectTasks.filter(
@@ -81,7 +83,7 @@ export const ProjectsTasks: FC = () => {
     })
 
     return tasksByProject
-  }, [annotatedTasks, projects])
+  }, [annotatedTasks, projects, onlyMine])
 
   useEffect(() => {
     if (!annotatedTasks || !projects || initialSorting) return

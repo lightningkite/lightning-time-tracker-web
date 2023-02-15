@@ -1,5 +1,5 @@
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
-import {Add, Pause, Person, PlayArrow} from "@mui/icons-material"
+import {Add, Pause, Person, PlayArrow, Warning} from "@mui/icons-material"
 import {
   Box,
   IconButton,
@@ -102,8 +102,12 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
       >
         {isMine && (
           <HoverHelp description="Assigned to me">
-            <ListItemIcon sx={{color: "primary.main"}}>
-              <Person />
+            <ListItemIcon
+              sx={{
+                color: annotatedTask.emergency ? "error.main" : "primary.main"
+              }}
+            >
+              {annotatedTask.emergency ? <Warning /> : <Person />}
             </ListItemIcon>
           </HoverHelp>
         )}

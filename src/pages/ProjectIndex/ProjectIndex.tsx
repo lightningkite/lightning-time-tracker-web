@@ -42,7 +42,7 @@ export const ProjectIndex: FC = () => {
             headerName: "Rate",
             width: 80,
             type: "number",
-            valueFormatter: ({value}) => `$${value as number}`
+            valueFormatter: ({value}) => `$${(value as number | null) ?? 0}`
           }
         ]}
       />

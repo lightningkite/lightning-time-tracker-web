@@ -9,7 +9,7 @@ import {
   List,
   Typography
 } from "@mui/material"
-import {Project} from "api/sdk"
+import {Project, TaskState} from "api/sdk"
 import {AddTaskButton} from "components/AddTaskButton"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
@@ -51,6 +51,7 @@ export const ProjectsTasks: FC = () => {
         condition: {
           And: [
             {organization: {Equal: currentOrganization._id}},
+            {state: {NotEqual: TaskState.Done}},
             {Or: [{And: filterConditions}, {user: {Equal: currentUser._id}}]}
           ]
         }

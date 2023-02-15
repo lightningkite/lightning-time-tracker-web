@@ -77,7 +77,7 @@ const TaskDetail: FC = () => {
 
       <TimeEntryTable
         additionalQueryConditions={[{task: {Equal: task._id}}]}
-        hiddenColumns={["project", "summary", "task"]}
+        hiddenColumns={["project", "task"]}
       />
     </Container>
   )

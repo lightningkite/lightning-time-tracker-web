@@ -1,3 +1,4 @@
+import {Aggregate, Condition} from "@lightningkite/lightning-server-simplified"
 import {ExpandMore} from "@mui/icons-material"
 import {
   Accordion,
@@ -13,9 +14,9 @@ import {
 import {Project, Task, TimeEntry} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
-import React, {FC, useContext, useEffect, useMemo, useState} from "react"
+import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
-import {dateToISO, formatDollars, totalHoursForTimeEntries} from "utils/helpers"
+import {dateToISO, formatDollars, MILLISECONDS_PER_HOUR} from "utils/helpers"
 import {DateRange} from "./DateRangeSelector"
 import {Widgets} from "./Widgets"
 
@@ -29,7 +30,10 @@ export const RevenueReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
 
   const [projects, setProjects] = useState<Project[]>()
   const [tasks, setTasks] = useState<Task[]>()
-  const [timeEntries, setTimeEntries] = useState<TimeEntry[]>()
+  const [msPerTask, setMsPerTask] =
+    useState<Record<string, number | null | undefined>>()
+  const [orphanMsPerTask, setOrphanMsPerTask] =
+    useState<Record<string, number | null | undefined>>()
 
   const [error, setError] = useState("")
   const [expanded, setExpanded] = useState<string | null>(null)
@@ -42,31 +46,49 @@ export const RevenueReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
   }, [])
 
   useEffect(() => {
-    setTimeEntries(undefined)
     setTasks(undefined)
+    setMsPerTask(undefined)
+    setOrphanMsPerTask(undefined)
 
-    session.timeEntry
-      .query({
+    const timeEntryDateRangeConditions: Condition<TimeEntry>[] = [
+      {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
+      {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
+    ]
+
+    const millisecondsPerTaskRequest = session.timeEntry.groupAggregate({
+      aggregate: Aggregate.Sum,
+      condition: {
+        And: [...timeEntryDateRangeConditions, {task: {NotEqual: null}}]
+      },
+      groupBy: "task",
+      property: "durationMilliseconds"
+    })
+
+    const orphanMillisecondsPerProjectRequest =
+      session.timeEntry.groupAggregate({
+        aggregate: Aggregate.Sum,
         condition: {
-          And: [
-            {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
-            {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
-          ]
-        }
+          And: [...timeEntryDateRangeConditions, {task: {Equal: null}}]
+        },
+        groupBy: "project",
+        property: "durationMilliseconds"
       })
-      .then(setTimeEntries)
+
+    Promise.all([
+      millisecondsPerTaskRequest,
+      orphanMillisecondsPerProjectRequest
+    ])
+      .then(([millisecondsPerTask, orphanMillisecondsPerProject]) => {
+        setMsPerTask(millisecondsPerTask)
+        setOrphanMsPerTask(orphanMillisecondsPerProject)
+      })
       .catch(() => setError("Error fetching time entries"))
   }, [dateRange])
 
   useEffect(() => {
-    if (!timeEntries) return
+    if (!msPerTask) return
 
-    const uniqueTaskIds = new Set(
-      timeEntries.reduce<string[]>((acc, timeEntry) => {
-        timeEntry.task && acc.push(timeEntry.task)
-        return acc
-      }, [])
-    )
+    const uniqueTaskIds = new Set(Object.keys(msPerTask))
 
     session.task
       .query({
@@ -74,88 +96,69 @@ export const RevenueReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
       })
       .then(setTasks)
       .catch(() => setError("Error fetching tasks"))
-  }, [timeEntries])
-
-  const hoursPerTask = useMemo(() => {
-    if (!timeEntries || !tasks) return {}
-
-    const perTask: Record<string, number> = {}
-
-    tasks.forEach((task) => {
-      const taskTimeEntries = timeEntries.filter(
-        (timeEntry) => timeEntry.task === task._id
-      )
-      const totalHours = totalHoursForTimeEntries(taskTimeEntries)
-      perTask[task._id] = totalHours
-    })
-
-    return perTask
-  }, [timeEntries, tasks])
-
-  const summarizeByProject: SummarizeByProject = useMemo(() => {
-    if (!tasks || !projects || !timeEntries) return {}
-
-    const byProject: SummarizeByProject = {}
-
-    projects.forEach((project) => {
-      const projectTasks = tasks.filter((task) => task.project === project._id)
-      const projectHours = totalHoursForTimeEntries(
-        timeEntries.filter((t) => t.project === project._id)
-      )
-
-      byProject[project._id] = {projectTasks, projectHours}
-    })
-
-    return byProject
-  }, [tasks])
+  }, [msPerTask])
 
   if (error) {
     return <ErrorAlert>{error}</ErrorAlert>
   }
-  if (!projects || !tasks || !timeEntries) {
+
+  if (!projects || !tasks || !msPerTask || !orphanMsPerTask) {
     return <Loading />
   }
 
   return (
     <Box>
-      <Widgets
-        summarizeByProject={summarizeByProject}
-        projects={projects}
-        dateRange={dateRange}
-      />
+      <Widgets dateRange={dateRange} />
 
-      {Object.entries(summarizeByProject)
+      {projects
+        .map((project) => {
+          const projectTasks = tasks.filter(
+            (task) => task.project === project._id
+          )
+          const taskMilliseconds = projectTasks.reduce((acc, task) => {
+            return acc + (msPerTask[task._id] ?? 0)
+          }, 0)
+          const orphanMilliseconds = orphanMsPerTask[project._id] ?? 0
+
+          return {
+            project,
+            projectTasks,
+            orphanHours: orphanMilliseconds / MILLISECONDS_PER_HOUR,
+            totalHours:
+              (taskMilliseconds + orphanMilliseconds) / MILLISECONDS_PER_HOUR
+          }
+        })
         .sort(
           (a, b) =>
-            b[1].projectHours - a[1].projectHours || a[0].localeCompare(b[0])
+            b.totalHours - a.totalHours ||
+            a.project.name.localeCompare(b.project.name)
         )
-        .map(([projectId, {projectTasks, projectHours}]) => {
-          const project = projects.find((p) => p._id === projectId)
-          const orphanedTimeEntries = timeEntries.filter(
-            (t) => t.project === projectId && !t.task
-          )
-
+        .map(({project, projectTasks, orphanHours, totalHours}) => {
           return (
-            <Accordion key={projectId} expanded={projectId === expanded}>
+            <Accordion key={project._id} expanded={project._id === expanded}>
               <AccordionSummary
                 expandIcon={<ExpandMore />}
                 onClick={() =>
-                  setExpanded(expanded === projectId ? null : projectId)
+                  setExpanded(expanded === project._id ? null : project._id)
                 }
               >
                 <Typography variant="h2">
-                  {project?.name ?? "Not found"}
+                  {project.name ?? "Not found"}
                 </Typography>
                 <Typography fontSize="1.2rem" sx={{ml: "auto", mr: 1}}>
-                  {formatDollars((project?.rate ?? 0) * projectHours, false)}
+                  {formatDollars((project.rate ?? 0) * totalHours, false)}
                 </Typography>
               </AccordionSummary>
               <AccordionDetails sx={{p: 0}}>
                 <List>
                   {projectTasks
-                    .sort((a, b) => hoursPerTask[b._id] - hoursPerTask[a._id])
+                    .sort(
+                      (a, b) =>
+                        (msPerTask[b._id] ?? 0) - (msPerTask[a._id] ?? 0)
+                    )
                     .map((task) => {
-                      const totalHours = hoursPerTask[task._id]
+                      const totalHours =
+                        (msPerTask[task._id] ?? 0) / MILLISECONDS_PER_HOUR
 
                       return (
                         <ListItem key={task._id}>
@@ -169,20 +172,18 @@ export const RevenueReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
                       )
                     })}
 
-                  {orphanedTimeEntries.length > 0 && (
+                  {orphanHours > 0 && (
                     <ListItem>
                       <ListItemText
                         primary="Other time"
-                        secondary={`${totalHoursForTimeEntries(
-                          orphanedTimeEntries
-                        ).toFixed(1)} hours`}
+                        secondary={`${orphanHours.toFixed(1)} hours`}
                       />
                     </ListItem>
                   )}
 
                   <Alert severity="info" sx={{mx: 2, mt: 1}}>
                     <Typography fontWeight="bold">
-                      Total hours: {projectHours.toFixed(2)}
+                      Total hours: {totalHours.toFixed(2)}
                     </Typography>
                   </Alert>
                 </List>

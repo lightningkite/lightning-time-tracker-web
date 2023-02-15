@@ -68,9 +68,9 @@ export const ProjectsTasks: FC = () => {
     > = {}
 
     projects.forEach((project) => {
-      const projectTasks = annotatedTasks
-        .filter((task) => task.project === project._id)
-        .sort((a, b) => a.summary.localeCompare(b.summary))
+      const projectTasks = annotatedTasks.filter(
+        (task) => task.project === project._id
+      )
 
       const myTasksCount = projectTasks.filter(
         (task) => task.user === currentUser._id
@@ -136,9 +136,17 @@ export const ProjectsTasks: FC = () => {
             </AccordionSummary>
             <AccordionDetails sx={{p: 0}}>
               <List>
-                {projectTasks.sort(compareTasksByState).map((task) => (
-                  <TaskListItem annotatedTask={task} key={task._id} />
-                ))}
+                {projectTasks
+                  // Sort by state, then by is current user
+                  .sort(
+                    (a, b) =>
+                      compareTasksByState(a, b) ||
+                      +(b.user === currentUser._id) -
+                        +(a.user === currentUser._id)
+                  )
+                  .map((task) => (
+                    <TaskListItem annotatedTask={task} key={task._id} />
+                  ))}
               </List>
             </AccordionDetails>
           </Accordion>

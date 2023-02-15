@@ -1,3 +1,4 @@
+import {Condition} from "@lightningkite/lightning-server-simplified"
 import {ExpandMore} from "@mui/icons-material"
 import {
   Accordion,
@@ -33,16 +34,24 @@ export const ProjectsTasks: FC = () => {
       .then(setProjects)
       .catch(() => setProjects(null))
 
+    const filterConditions: Condition<AnnotatedTask>[] = []
+
+    filterConditions.push({
+      state: {Inside: currentUser.defaultFilters.states}
+    })
+
+    filterConditions.push({
+      project: {Inside: currentUser.defaultFilters.projects}
+    })
+
+    filterConditions.length === 0 && filterConditions.push({Always: true})
+
     annotatedTaskEndpoint
       .query({
         condition: {
           And: [
             {organization: {Equal: currentOrganization._id}},
-            {
-              state: !currentUser.defaultFilters.states.length
-                ? {Always: true}
-                : {Inside: currentUser.defaultFilters.states}
-            }
+            {Or: [{And: filterConditions}, {user: {Equal: currentUser._id}}]}
           ]
         }
       })
@@ -98,6 +107,7 @@ export const ProjectsTasks: FC = () => {
   return (
     <Box>
       {Object.entries(tasksByProject)
+        .filter(([_, {projectTasks}]) => projectTasks.length > 0)
         .sort(
           (a, b) => initialSorting.indexOf(b[0]) - initialSorting.indexOf(a[0])
         )

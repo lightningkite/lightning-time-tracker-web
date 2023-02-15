@@ -16,9 +16,9 @@ import {
   Stack,
   TextField
 } from "@mui/material"
-import {TaskState, User} from "api/sdk"
+import {Project, TaskState, User} from "api/sdk"
 import {useFormik} from "formik"
-import React, {FC, useContext, useState} from "react"
+import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import * as yup from "yup"
 
@@ -39,6 +39,14 @@ export const UserForm: FC<UserFormProps> = (props) => {
   const {session, currentUser, setCurrentUser} = useContext(AuthContext)
 
   const [error, setError] = useState("")
+  const [projectOptions, setProjectOptions] = useState<Project[]>()
+
+  useEffect(() => {
+    session.project
+      .query({})
+      .then(setProjectOptions)
+      .catch(() => alert("Error loading projects"))
+  }, [])
 
   // Formik is a library for managing form state. See: https://formik.org/docs/overview
   const formik = useFormik({
@@ -46,7 +54,8 @@ export const UserForm: FC<UserFormProps> = (props) => {
       email: user.email,
       name: user.name,
       isSuperUser: user.isSuperUser,
-      defaultStates: user.defaultFilters.states
+      defaultStates: user.defaultFilters.states,
+      defaultProjects: user.defaultFilters.projects
     },
     validationSchema,
     // When the form is submitted, this function is called if the form values are valid
@@ -60,7 +69,8 @@ export const UserForm: FC<UserFormProps> = (props) => {
         isSuperUser: values.isSuperUser,
         defaultFilters: {
           ...user.defaultFilters,
-          states: values.defaultStates
+          states: values.defaultStates,
+          projects: values.defaultProjects
         }
       }
 
@@ -94,42 +104,87 @@ export const UserForm: FC<UserFormProps> = (props) => {
       <TextField label="Name" {...makeFormikTextFieldProps(formik, "name")} />
 
       {user._id === currentUser._id && (
-        <FormControl component="fieldset" variant="standard">
-          <FormLabel component="legend">States Cared About</FormLabel>
-          <FormHelperText>
-            Only tasks with these states will be shown on your dashboard
-          </FormHelperText>
-          <FormGroup>
-            {Object.values(TaskState).map((state) => (
-              <FormControlLabel
-                key={state}
-                control={
-                  <Checkbox
-                    checked={formik.values.defaultStates.includes(state)}
-                    onChange={(e) => {
-                      const nowChecked = e.target.checked
-                      const wasChecked =
-                        formik.values.defaultStates.includes(state)
+        <>
+          <FormControl component="fieldset" variant="standard">
+            <FormLabel component="legend">Dashboard States</FormLabel>
+            <FormHelperText>
+              Tasks with these states will always be shown on your dashboard
+            </FormHelperText>
+            <FormGroup>
+              {Object.values(TaskState).map((state) => (
+                <FormControlLabel
+                  key={state}
+                  control={
+                    <Checkbox
+                      checked={formik.values.defaultStates.includes(state)}
+                      onChange={(e) => {
+                        const nowChecked = e.target.checked
+                        const wasChecked =
+                          formik.values.defaultStates.includes(state)
 
-                      if (nowChecked && !wasChecked) {
-                        formik.setFieldValue(
-                          "defaultStates",
-                          formik.values.defaultStates.concat(state)
-                        )
-                      } else if (!nowChecked && wasChecked) {
-                        formik.setFieldValue(
-                          "defaultStates",
-                          formik.values.defaultStates.filter((s) => s !== state)
-                        )
-                      }
-                    }}
-                  />
-                }
-                label={capitalize(state)}
-              />
-            ))}
-          </FormGroup>
-        </FormControl>
+                        if (nowChecked && !wasChecked) {
+                          formik.setFieldValue(
+                            "defaultStates",
+                            formik.values.defaultStates.concat(state)
+                          )
+                        } else if (!nowChecked && wasChecked) {
+                          formik.setFieldValue(
+                            "defaultStates",
+                            formik.values.defaultStates.filter(
+                              (s) => s !== state
+                            )
+                          )
+                        }
+                      }}
+                    />
+                  }
+                  label={capitalize(state)}
+                />
+              ))}
+            </FormGroup>
+          </FormControl>
+
+          <FormControl component="fieldset" variant="standard">
+            <FormLabel component="legend">Dashboard Projects</FormLabel>
+            <FormHelperText>
+              Tasks for these projects will always be shown on your dashboard
+            </FormHelperText>
+            <FormGroup>
+              {projectOptions?.map((project) => (
+                <FormControlLabel
+                  key={project._id}
+                  control={
+                    <Checkbox
+                      checked={formik.values.defaultProjects.includes(
+                        project._id
+                      )}
+                      onChange={(e) => {
+                        const nowChecked = e.target.checked
+                        const wasChecked =
+                          formik.values.defaultProjects.includes(project._id)
+
+                        if (nowChecked && !wasChecked) {
+                          formik.setFieldValue(
+                            "defaultProjects",
+                            formik.values.defaultProjects.concat(project._id)
+                          )
+                        } else if (!nowChecked && wasChecked) {
+                          formik.setFieldValue(
+                            "defaultProjects",
+                            formik.values.defaultProjects.filter(
+                              (s) => s !== project._id
+                            )
+                          )
+                        }
+                      }}
+                    />
+                  }
+                  label={project.name}
+                />
+              ))}
+            </FormGroup>
+          </FormControl>
+        </>
       )}
 
       <FormControlLabel

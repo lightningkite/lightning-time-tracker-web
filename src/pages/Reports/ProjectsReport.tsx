@@ -1,23 +1,26 @@
+import {Aggregate} from "@lightningkite/lightning-server-simplified"
 import {Card} from "@mui/material"
 import {DataGrid, GridEnrichedColDef} from "@mui/x-data-grid"
-import {Project, TimeEntry, User} from "api/sdk"
+import {Project, User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
-import React, {FC, useContext, useEffect, useMemo, useState} from "react"
+import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO, MILLISECONDS_PER_HOUR} from "utils/helpers"
 import {DateRange} from "./DateRangeSelector"
 
 interface HoursTableRow {
   user: User
-  projectHours: Record<string, number>
+  projectMilliseconds: Record<string, number | null | undefined>
 }
 
 export const ProjectsReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
   const {session} = useContext(AuthContext)
 
-  const [timeEntries, setTimeEntries] = useState<TimeEntry[]>()
+  const [tableData, setTableData] = useState<HoursTableRow[]>()
   const [users, setUsers] = useState<User[]>()
   const [projects, setProjects] = useState<Project[]>()
+  const [msByProject, setMsByProject] =
+    useState<Record<string, number | null | undefined>>()
 
   const [error, setError] = useState("")
 
@@ -26,64 +29,67 @@ export const ProjectsReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
       .query({})
       .then(setUsers)
       .catch(() => setError("Error fetching users"))
-  }, [])
-
-  useEffect(() => {
-    setTimeEntries(undefined)
-    setProjects(undefined)
 
     session.project
       .query({})
       .then(setProjects)
       .catch(() => setError("Error fetching projects"))
+  }, [])
+
+  useEffect(() => {
+    setMsByProject(undefined)
 
     session.timeEntry
-      .query({
+      .groupAggregate({
         condition: {
           And: [
             {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
             {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
           ]
-        }
+        },
+        aggregate: Aggregate.Sum,
+        property: "durationMilliseconds",
+        groupBy: "project"
       })
-      .then(setTimeEntries)
-      .catch(() => setError("Error fetching time entries"))
+      .then(setMsByProject)
+      .catch(() => setError("Error fetching hours per project"))
   }, [dateRange])
 
-  const tableData: HoursTableRow[] = useMemo(() => {
-    if (!timeEntries || !users || !projects) {
-      return []
+  useEffect(() => {
+    setTableData(undefined)
+
+    if (!users) {
+      return
     }
 
-    const projectHoursByUserId: Record<string, Record<string, number>> = {}
-
-    users.forEach((user) => {
-      projectHoursByUserId[user._id] = {}
-    })
-
-    timeEntries.forEach((timeEntry) => {
-      projectHoursByUserId[timeEntry.user][timeEntry.project] =
-        (projectHoursByUserId[timeEntry.user][timeEntry.project] ?? 0) +
-        timeEntry.durationMilliseconds / MILLISECONDS_PER_HOUR
-    })
-
-    return users.map((user) => ({
-      user,
-      projectHours: projectHoursByUserId[user._id]
-    }))
-  }, [timeEntries, users, projects])
-
-  const hoursByProject: Record<string, number> = useMemo(() => {
-    const totals: Record<string, number> = {}
-
-    tableData.forEach((row) => {
-      Object.entries(row.projectHours).forEach(([projectId, hours]) => {
-        totals[projectId] = (totals[projectId] ?? 0) + hours
+    const userProjectMillisecondsRequests: Promise<
+      HoursTableRow["projectMilliseconds"]
+    >[] = users.map((user) =>
+      session.timeEntry.groupAggregate({
+        condition: {
+          And: [
+            {user: {Equal: user._id}},
+            {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
+            {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
+          ]
+        },
+        aggregate: Aggregate.Sum,
+        property: "durationMilliseconds",
+        groupBy: "project"
       })
-    })
+    )
 
-    return totals
-  }, [tableData])
+    Promise.all(userProjectMillisecondsRequests)
+      .then((r) =>
+        setTableData(
+          r.map((projectMilliseconds, i) => ({
+            user: users[i],
+            projectMilliseconds
+          }))
+        )
+      )
+      .catch(() => setError("Error fetching table data"))
+  }, [dateRange, users])
 
   if (error) {
     return <ErrorAlert>{error}</ErrorAlert>
@@ -93,7 +99,7 @@ export const ProjectsReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
     <Card>
       <DataGrid
         autoHeight
-        loading={!users || !timeEntries || !projects}
+        loading={!users || !tableData || !projects}
         disableSelectionOnClick
         disableColumnMenu
         columns={[
@@ -107,34 +113,41 @@ export const ProjectsReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
             field: "total",
             headerName: "Total",
             width: 80,
+            type: "number",
             valueGetter: ({row}) =>
-              Object.values(row.projectHours)
-                .reduce((a, b) => a + b, 0)
-                .toFixed(1)
+              Object.values(row.projectMilliseconds).reduce<number>(
+                (acc, milliseconds) => acc + (milliseconds ?? 0),
+                0
+              ),
+            valueFormatter: ({value}) =>
+              (value / MILLISECONDS_PER_HOUR).toFixed(1)
           },
-          ...(projects ?? [])
-            .sort(
-              (a, b) => hoursByProject[b._id] || 0 - hoursByProject[a._id] || 0
-            )
-            .map((project) => {
-              const column: GridEnrichedColDef<HoursTableRow> = {
-                field: project._id,
-                headerName: project.name,
-                minWidth: Math.min(200, project.name.length * 7 + 50),
-                flex: 1,
-                valueGetter: ({row}) =>
-                  row.projectHours[project._id]?.toFixed(1) || "–"
-              }
+          ...(!projects || !msByProject
+            ? []
+            : projects.sort(
+                (a, b) => (msByProject[b._id] ?? 0) - (msByProject[a._id] ?? 0)
+              )
+          ).map((project) => {
+            const column: GridEnrichedColDef<HoursTableRow> = {
+              field: project._id,
+              headerName: project.name,
+              minWidth: Math.min(200, project.name.length * 7 + 50),
+              flex: 1,
+              type: "number",
+              valueGetter: ({row}) => row.projectMilliseconds[project._id] ?? 0,
+              valueFormatter: ({value}) =>
+                value ? (value / MILLISECONDS_PER_HOUR).toFixed(1) : "–"
+            }
 
-              return column
-            })
+            return column
+          })
         ]}
         initialState={{
           sorting: {
             sortModel: [{field: "user", sort: "asc"}]
           }
         }}
-        rows={tableData}
+        rows={tableData ?? []}
         getRowId={(r) => r.user._id}
         hideFooter
         sx={{

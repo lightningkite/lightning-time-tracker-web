@@ -3,20 +3,12 @@ import {Dayjs} from "dayjs"
 import React, {createContext, FC, ReactElement} from "react"
 import {useGlobalTimerManager} from "./useGlobalTimerManager"
 
-export interface ApplicationSettings {
-  mode: "light" | "dark"
-  color: string
-  summaryTime: "day" | "week"
-}
-
 export interface AuthContextType {
   session: UserSession
   logout: () => void
   currentUser: User
   setCurrentUser: (newCurrentUser: User) => void
   currentOrganization: Organization
-  applicationSettings: ApplicationSettings
-  updateApplicationSettings: (newSettings: Partial<ApplicationSettings>) => void
 }
 
 export interface UnauthContextType {

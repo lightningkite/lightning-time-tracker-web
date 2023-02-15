@@ -5,18 +5,20 @@ import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
-import {dateToISO, getTimerSeconds} from "utils/helpers"
+import {dateToISO, getTimerSeconds, parsePreferences} from "utils/helpers"
 
 dayjs.extend(duration)
 
 export const SummaryTime: FC = () => {
-  const {session, currentUser, applicationSettings} = useContext(AuthContext)
+  const {session, currentUser} = useContext(AuthContext)
   const {timers} = useContext(TimerContext)
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
 
   const [submittedSeconds, setSubmittedSeconds] = useState<number>()
   const [unsubmittedSeconds, setUnsubmittedSeconds] = useState(0)
+
+  const preferences = parsePreferences(currentUser?.webPreferences)
 
   const calculateUnsubmittedSeconds = () => {
     const seconds = Object.values(timers).reduce(
@@ -34,7 +36,7 @@ export const SummaryTime: FC = () => {
 
   useEffect(() => {
     const dateCondition: Condition<string> =
-      applicationSettings.summaryTime === "day"
+      preferences.summaryTime === "day"
         ? {Equal: dateToISO(new Date())}
         : {
             GreaterThanOrEqual: dateToISO(dayjs().startOf("week").toDate())
@@ -50,13 +52,11 @@ export const SummaryTime: FC = () => {
       })
       .then((milliseconds) => setSubmittedSeconds((milliseconds ?? 0) / 1000))
       .catch(console.error)
-  }, [Object.keys(timers).length, applicationSettings.summaryTime])
+  }, [Object.keys(timers).length, preferences.summaryTime])
 
   return (
     <HoverHelp
-      description={
-        applicationSettings.summaryTime === "day" ? "Today" : "This Week"
-      }
+      description={preferences.summaryTime === "day" ? "Today" : "This Week"}
     >
       <Typography fontSize={isMobile ? undefined : "1.2rem"}>
         {submittedSeconds !== undefined

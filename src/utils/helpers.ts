@@ -1,6 +1,7 @@
 import {Task, TaskState, TimeEntry} from "api/sdk"
 import dayjs from "dayjs"
 import duration, {Duration} from "dayjs/plugin/duration"
+import {WebPreferences} from "pages/Settings/Settings"
 import {Timer} from "./context"
 
 dayjs.extend(duration)
@@ -90,4 +91,15 @@ export function totalHoursForTimeEntries(timeEntries: TimeEntry[]): number {
     // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     return acc + hours
   }, 0)
+}
+
+export function parsePreferences(
+  preferencesJSON: string | null | undefined
+): WebPreferences {
+  try {
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    return JSON.parse(preferencesJSON || "{}")
+  } catch {
+    return {}
+  }
 }

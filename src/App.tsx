@@ -11,13 +11,8 @@ import React, {FC, useEffect, useState} from "react"
 import {BrowserRouter} from "react-router-dom"
 import {AuthRoutes, UnauthRoutes} from "routers"
 import {theme} from "theme"
-import {LocalStorageKey} from "utils/constants"
-import {
-  ApplicationSettings,
-  AuthContext,
-  TimerContextProvider,
-  UnauthContext
-} from "utils/context"
+import {AuthContext, TimerContextProvider, UnauthContext} from "utils/context"
+import {parsePreferences} from "utils/helpers"
 
 const App: FC = () => {
   const {api, changeBackendURL, session, authenticate, logout} =
@@ -26,25 +21,6 @@ const App: FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>()
   const [currentOrganization, setCurrentOrganization] =
     useState<Organization | null>()
-  const [applicationSettings, setApplicationSettings] =
-    useState<ApplicationSettings>(() => {
-      const partialSettings = JSON.parse(
-        localStorage.getItem(LocalStorageKey.SETTINGS) ?? "{}"
-      ) as Partial<ApplicationSettings>
-
-      return {
-        mode: partialSettings.mode === "light" ? "light" : "dark",
-        color: partialSettings.color ?? "lightBlue",
-        summaryTime: partialSettings.summaryTime ?? "week"
-      }
-    })
-
-  useEffect(() => {
-    localStorage.setItem(
-      LocalStorageKey.SETTINGS,
-      JSON.stringify(applicationSettings)
-    )
-  }, [applicationSettings])
 
   const isLoggedIn = !!session
 
@@ -87,14 +63,16 @@ const App: FC = () => {
     return <ErrorAlert>Error loading current organization</ErrorAlert>
   }
 
+  const preferences = parsePreferences(currentUser?.webPreferences)
+
   return (
     <ThemeProvider
       theme={createTheme({
         ...theme,
         palette: {
-          mode: applicationSettings.mode,
+          mode: preferences.mode ?? "dark",
           primary: {
-            main: (colors as any)[applicationSettings.color][500]
+            main: (colors as any)[preferences.color ?? "lightBlue"][500]
           }
         }
       })}
@@ -109,10 +87,7 @@ const App: FC = () => {
                 logout,
                 currentUser,
                 setCurrentUser,
-                currentOrganization,
-                applicationSettings,
-                updateApplicationSettings: (s) =>
-                  setApplicationSettings((prev) => ({...prev, ...s}))
+                currentOrganization
               }}
             >
               <TimerContextProvider>

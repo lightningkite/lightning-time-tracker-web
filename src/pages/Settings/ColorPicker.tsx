@@ -1,9 +1,14 @@
 import {Box, colors, Radio} from "@mui/material"
-import React, {FC, useContext} from "react"
-import {AuthContext} from "utils/context"
+import React, {FC} from "react"
+import {WebPreferences} from "./Settings"
 
-export const ColorPicker: FC = () => {
-  const {applicationSettings, updateApplicationSettings} = useContext(AuthContext)
+export interface ColorPickerProps {
+  preferences: WebPreferences
+  updatePreferences: (newPreferences: WebPreferences) => void
+}
+
+export const ColorPicker: FC<ColorPickerProps> = (props) => {
+  const {preferences, updatePreferences} = props
 
   return (
     <Box>
@@ -12,8 +17,8 @@ export const ColorPicker: FC = () => {
         .map(([name, color]) => (
           <Radio
             key={name}
-            checked={applicationSettings.color === name}
-            onChange={() => updateApplicationSettings({color: name})}
+            checked={preferences.color === name}
+            onChange={() => updatePreferences({color: name})}
             sx={{
               color: (color as any)[800],
               "&.Mui-checked": {

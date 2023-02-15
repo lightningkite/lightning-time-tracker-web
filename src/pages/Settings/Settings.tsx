@@ -17,16 +17,45 @@ import PageHeader from "components/PageHeader"
 import {UserForm} from "components/UserForm"
 import React, {FC, useContext} from "react"
 import {AuthContext} from "utils/context"
+import {parsePreferences} from "utils/helpers"
 import {ColorPicker} from "./ColorPicker"
 
+export interface WebPreferences {
+  mode?: "light" | "dark"
+  color?: string
+  summaryTime?: "day" | "week"
+}
+
 const Settings: FC = () => {
-  const {
-    logout,
-    applicationSettings,
-    updateApplicationSettings,
-    currentUser,
-    setCurrentUser
-  } = useContext(AuthContext)
+  const {logout, currentUser, setCurrentUser, session} = useContext(AuthContext)
+
+  const preferences = parsePreferences(currentUser?.webPreferences)
+
+  const updatePreferences = (newPartialPreferences: WebPreferences) => {
+    const previousPreferences = structuredClone(preferences)
+
+    const newPreferencesJSON = JSON.stringify({
+      ...preferences,
+      ...newPartialPreferences
+    })
+
+    // Optimistically update the UI
+    setCurrentUser({
+      ...currentUser,
+      webPreferences: newPreferencesJSON
+    })
+
+    session.user
+      .modify(currentUser._id, {webPreferences: {Assign: newPreferencesJSON}})
+      .then(setCurrentUser)
+      .catch(() =>
+        // If the update fails, revert the UI
+        setCurrentUser({
+          ...currentUser,
+          webPreferences: JSON.stringify(previousPreferences)
+        })
+      )
+  }
 
   return (
     <Container maxWidth="md">
@@ -56,9 +85,9 @@ const Settings: FC = () => {
                 bar
               </FormHelperText>
               <RadioGroup
-                value={applicationSettings.summaryTime}
+                value={preferences.summaryTime}
                 onChange={(e) =>
-                  updateApplicationSettings({
+                  updatePreferences({
                     summaryTime: e.target.value as "day" | "week"
                   })
                 }
@@ -89,23 +118,22 @@ const Settings: FC = () => {
             <Button
               variant="outlined"
               onClick={() =>
-                updateApplicationSettings({
-                  mode: applicationSettings.mode === "dark" ? "light" : "dark"
+                updatePreferences({
+                  mode: preferences.mode === "dark" ? "light" : "dark"
                 })
               }
               startIcon={
-                applicationSettings.mode === "light" ? (
-                  <LightMode />
-                ) : (
-                  <DarkMode />
-                )
+                preferences.mode === "light" ? <LightMode /> : <DarkMode />
               }
               sx={{alignSelf: "flex-start"}}
             >
-              {applicationSettings.mode} Mode
+              {preferences.mode} Mode
             </Button>
 
-            <ColorPicker />
+            <ColorPicker
+              preferences={preferences}
+              updatePreferences={updatePreferences}
+            />
           </FormSection>
         </CardContent>
       </Card>

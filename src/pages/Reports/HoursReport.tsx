@@ -51,14 +51,16 @@ export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
         })
     )
 
-    Promise.all(requests).then((r) =>
-      setTableData(
-        r.map((dayMilliseconds, i) => ({
-          user: users[i],
-          dayMilliseconds
-        }))
+    Promise.all(requests)
+      .then((r) =>
+        setTableData(
+          r.map((dayMilliseconds, i) => ({
+            user: users[i],
+            dayMilliseconds
+          }))
+        )
       )
-    )
+      .catch(() => setError("Error fetching table data"))
   }, [dateRange, users])
 
   if (error) {
@@ -104,7 +106,7 @@ export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
                 flex: 1,
                 type: "number",
                 valueGetter: ({row}) =>
-                  row.dayMilliseconds[date.format("YYYY-MM-DD")],
+                  row.dayMilliseconds[date.format("YYYY-MM-DD")] ?? 0,
                 valueFormatter: ({value}) =>
                   value ? (value / MILLISECONDS_PER_HOUR).toFixed(1) : "–"
               }

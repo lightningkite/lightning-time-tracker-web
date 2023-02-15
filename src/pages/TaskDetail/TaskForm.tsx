@@ -1,12 +1,21 @@
 import {makeObjectModification} from "@lightningkite/lightning-server-simplified"
 import {
   makeFormikAutocompleteProps,
+  makeFormikCheckboxProps,
   makeFormikNumericTextFieldProps,
   makeFormikTextFieldProps,
   RestAutocompleteInput
 } from "@lightningkite/mui-lightning-components"
 import {LoadingButton} from "@mui/lab"
-import {Alert, InputAdornment, MenuItem, Stack, TextField} from "@mui/material"
+import {
+  Alert,
+  Checkbox,
+  FormControlLabel,
+  InputAdornment,
+  MenuItem,
+  Stack,
+  TextField
+} from "@mui/material"
 import {Project, Task, TaskState, User} from "api/sdk"
 import {useFormik} from "formik"
 import React, {FC, useContext, useEffect, useState} from "react"
@@ -42,7 +51,8 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       state: task.state,
       summary: task.summary,
       description: task.description,
-      estimate: task.estimate?.toString() ?? ""
+      estimate: task.estimate?.toString() ?? "",
+      emergency: task.emergency
     },
     validationSchema,
 
@@ -131,6 +141,10 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
         InputProps={{
           endAdornment: <InputAdornment position="end">hours</InputAdornment>
         }}
+      />
+      <FormControlLabel
+        control={<Checkbox {...makeFormikCheckboxProps(formik, "emergency")} />}
+        label="Emergency"
       />
 
       {error && <Alert severity="error">{error}</Alert>}

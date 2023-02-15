@@ -1,11 +1,19 @@
 import {
   makeFormikAutocompleteProps,
+  makeFormikCheckboxProps,
   makeFormikNumericTextFieldProps,
   makeFormikTextFieldProps,
   RestAutocompleteInput
 } from "@lightningkite/mui-lightning-components"
 import {Add} from "@mui/icons-material"
-import {Button, Stack, SxProps, TextField} from "@mui/material"
+import {
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Stack,
+  SxProps,
+  TextField
+} from "@mui/material"
 import {TaskState} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import {useFormik} from "formik"
@@ -48,7 +56,8 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
       user: currentUser,
       summary: "",
       description: "",
-      estimate: ""
+      estimate: "",
+      emergency: false
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -127,6 +136,13 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
           <TextField
             label="Estimate (hours)"
             {...makeFormikNumericTextFieldProps(formik, "estimate")}
+          />
+
+          <FormControlLabel
+            control={
+              <Checkbox {...makeFormikCheckboxProps(formik, "emergency")} />
+            }
+            label="Emergency"
           />
         </Stack>
       </DialogForm>

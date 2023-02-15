@@ -3,7 +3,6 @@ import {Card} from "@mui/material"
 import {DataGrid, GridEnrichedColDef} from "@mui/x-data-grid"
 import {User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
-import dayjs from "dayjs"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO, MILLISECONDS_PER_HOUR} from "utils/helpers"
@@ -17,7 +16,7 @@ interface HoursTableRow {
 export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
   const {session} = useContext(AuthContext)
 
-  const [tableData, setTableData] = useState<HoursTableRow[]>([])
+  const [tableData, setTableData] = useState<HoursTableRow[]>()
   const [users, setUsers] = useState<User[]>()
 
   const [error, setError] = useState("")
@@ -30,7 +29,7 @@ export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
   }, [])
 
   useEffect(() => {
-    setTableData([])
+    setTableData(undefined)
 
     if (!users) {
       return
@@ -119,7 +118,7 @@ export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
             sortModel: [{field: "user", sort: "asc"}]
           }
         }}
-        rows={tableData}
+        rows={tableData ?? []}
         getRowId={(r) => r.user._id}
         hideFooter
         sx={{

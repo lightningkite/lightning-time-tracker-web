@@ -103,3 +103,16 @@ export function parsePreferences(
     return {}
   }
 }
+
+export function booleanCompare<T>(
+  a: T,
+  b: T,
+  key: (item: T) => boolean
+): number {
+  const aKey = key(a)
+  const bKey = key(b)
+
+  if (aKey === bKey) return 0
+  if (aKey) return -1
+  return 1
+}

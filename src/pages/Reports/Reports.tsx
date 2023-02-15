@@ -13,9 +13,9 @@ const Reports: FC = () => {
 
   return (
     <Container maxWidth="xl">
-      <PageHeader title="Reports">
-        <DateRangeSelector setDateRange={setDateRange} />
-      </PageHeader>
+      <PageHeader title="Reports" />
+
+      <DateRangeSelector setDateRange={setDateRange} dateRange={dateRange} />
 
       {dateRange && (
         <>

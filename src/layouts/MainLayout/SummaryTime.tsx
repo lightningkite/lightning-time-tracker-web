@@ -3,7 +3,7 @@ import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {Typography, useMediaQuery, useTheme} from "@mui/material"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
-import React, {cloneElement, FC, useContext, useEffect, useState} from "react"
+import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
 import {dateToISO, getTimerSeconds, parsePreferences} from "utils/helpers"
 
@@ -28,10 +28,9 @@ export const SummaryTime: FC = () => {
 
     setUnsubmittedSeconds(seconds)
   }
-  
 
   const changeTime = () => {
-    const previousPreferences = {...preferences};
+    const previousPreferences = {...preferences}
     const summaryTime = preferences.summaryTime === "day" ? "week" : "day"
     const pref = JSON.stringify({summaryTime})
     session.user
@@ -75,7 +74,10 @@ export const SummaryTime: FC = () => {
     <HoverHelp
       description={preferences.summaryTime === "day" ? "Today" : "This Week"}
     >
-      <Typography onClick={changeTime} fontSize={isMobile ? undefined : "1.2rem"}>
+      <Typography
+        onClick={changeTime}
+        fontSize={isMobile ? undefined : "1.2rem"}
+      >
         {submittedSeconds !== undefined
           ? dayjs
               .duration(submittedSeconds + unsubmittedSeconds, "seconds")

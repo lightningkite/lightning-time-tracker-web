@@ -3,14 +3,14 @@ import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {Typography, useMediaQuery, useTheme} from "@mui/material"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
-import React, {FC, useContext, useEffect, useState} from "react"
+import React, {cloneElement, FC, useContext, useEffect, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
 import {dateToISO, getTimerSeconds, parsePreferences} from "utils/helpers"
 
 dayjs.extend(duration)
 
 export const SummaryTime: FC = () => {
-  const {session, currentUser} = useContext(AuthContext)
+  const {session, currentUser, setCurrentUser} = useContext(AuthContext)
   const {timers} = useContext(TimerContext)
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
@@ -27,6 +27,23 @@ export const SummaryTime: FC = () => {
     )
 
     setUnsubmittedSeconds(seconds)
+  }
+  
+
+  const changeTime = () => {
+    const previousPreferences = {...preferences};
+    const summaryTime = preferences.summaryTime === "day" ? "week" : "day"
+    const pref = JSON.stringify({summaryTime})
+    session.user
+      .modify(currentUser._id, {webPreferences: {Assign: pref}})
+      .then(setCurrentUser)
+      .catch(() =>
+        // If the update fails, revert the UI
+        setCurrentUser({
+          ...currentUser,
+          webPreferences: JSON.stringify(previousPreferences)
+        })
+      )
   }
 
   useEffect(() => {
@@ -58,7 +75,7 @@ export const SummaryTime: FC = () => {
     <HoverHelp
       description={preferences.summaryTime === "day" ? "Today" : "This Week"}
     >
-      <Typography fontSize={isMobile ? undefined : "1.2rem"}>
+      <Typography onClick={changeTime} fontSize={isMobile ? undefined : "1.2rem"}>
         {submittedSeconds !== undefined
           ? dayjs
               .duration(submittedSeconds + unsubmittedSeconds, "seconds")

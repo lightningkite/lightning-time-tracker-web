@@ -4,7 +4,7 @@ import {
   SessionRestEndpoint,
   WithAnnotations
 } from "@lightningkite/lightning-server-simplified"
-import {Organization, UserSession} from "api/sdk"
+import {UserSession} from "api/sdk"
 
 /** Interface for an object that has all the same keys as a SessionRestEndpoint */
 type HasKeysOfSessionRestEndpoint<T extends HasId> = Record<
@@ -75,13 +75,14 @@ export function useQueryJoin<
   ANNOTATE_WITH_KEY extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
 >(params: {
   baseEndpoint: BASE_ENDPOINT_KEY
-  annotateWith: ANNOTATE_WITH_KEY
+  annotateWith: ANNOTATE_WITH_KEY[]
 }): SessionRestEndpoint<
   WithAnnotations<
     T,
     Record<
       ANNOTATE_WITH_KEY,
       TypeOfSessionEndpointKey<
+        // @ts-expect-error
         ReferentialSchema[BASE_ENDPOINT_KEY][ANNOTATE_WITH_KEY]
       >
     >

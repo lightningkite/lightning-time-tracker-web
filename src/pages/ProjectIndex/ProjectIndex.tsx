@@ -1,6 +1,5 @@
 import {RestDataTable} from "@lightningkite/mui-lightning-components"
 import {Container} from "@mui/material"
-import {Timer} from "api/sdk"
 import PageHeader from "components/PageHeader"
 import dayjs from "dayjs"
 import React, {FC, useContext, useState} from "react"
@@ -15,15 +14,15 @@ export const ProjectIndex: FC = () => {
 
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
-  const newEndpoint = useQueryJoin<Timer, "timer", "project">({
-    baseEndpoint: "timer",
-    annotateWith: "project"
+  const newEndpoint = useQueryJoin({
+    baseEndpoint: "timeEntry",
+    annotateWith: ["task", "user", "project"],
   })
 
   ;(async () => {
     const val = await newEndpoint.detail("123")
 
-    console.log(val.annotations.project)
+    console.log(val.annotations)
   })()
 
   return (

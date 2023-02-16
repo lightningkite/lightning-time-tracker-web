@@ -5,30 +5,35 @@ import {
   WithAnnotations
 } from "@lightningkite/lightning-server-simplified"
 import {UserSession} from "api/sdk"
+import {useContext} from "react"
+import {AuthContext} from "./context"
 
-/** Interface for an object that has all the same keys as a SessionRestEndpoint */
-type HasKeysOfSessionRestEndpoint<T extends HasId> = Record<
+/** Check that type has all keys of SessionRestEndpoint */
+type IsSessionRestEndpoint<T extends HasId> = Record<
   keyof SessionRestEndpoint<T>,
   any
 >
 
-type SessionEndpointKey = keyof Pick<
+/** Picks all the keys of UserSession that are rest endpoints */
+type EndpointKey = keyof Pick<
   UserSession,
   {
-    [K in keyof UserSession]: UserSession[K] extends HasKeysOfSessionRestEndpoint<any>
+    [K in keyof UserSession]: UserSession[K] extends IsSessionRestEndpoint<any>
       ? K
       : never
   }[keyof UserSession]
 >
 
 /**
+ * Gets the model type of a given key for a rest endpoint
+ *
  * Example:
- *
- * TypeOfSessionEndpointKey<"organization">
- *
- * `> Organization`
+ * ```ts
+ * TypeOfEndpointKey<"organization">
+ * // Organization
+ * ```
  */
-type TypeOfSessionEndpointKey<K extends SessionEndpointKey> = Awaited<
+type TypeOfEndpointKey<K extends EndpointKey> = Awaited<
   ReturnType<UserSession[K]["detail"]>
 >
 
@@ -60,45 +65,88 @@ const referentialSchema = {
     organization: "organization"
   }
 } satisfies {
-  [P in SessionEndpointKey]: Partial<
-    Record<keyof TypeOfSessionEndpointKey<P>, SessionEndpointKey>
-  >
+  [P in EndpointKey]: Partial<Record<keyof TypeOfEndpointKey<P>, EndpointKey>>
 }
 
 type ReferentialSchema = typeof referentialSchema
 
+export type JoinedQueryType<
+  BASE_ENDPOINT_KEY extends EndpointKey,
+  ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
+> = WithAnnotations<
+  TypeOfEndpointKey<BASE_ENDPOINT_KEY>,
+  {
+    [A in ANNOTATE_WITH_KEYS]:
+      | undefined
+      | TypeOfEndpointKey<
+          // @ts-expect-error
+          ReferentialSchema[BASE_ENDPOINT_KEY][A]
+        >
+  }
+>
+
+export type UseQueryJoinReturn<
+  BASE_ENDPOINT_KEY extends EndpointKey,
+  ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
+> = SessionRestEndpoint<JoinedQueryType<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>>
+
 // TODO: annotations key should be _annotations
 
 export function useQueryJoin<
-  T extends HasId,
-  BASE_ENDPOINT_KEY extends SessionEndpointKey,
-  ANNOTATE_WITH_KEY extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
+  BASE_ENDPOINT_KEY extends EndpointKey,
+  ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
 >(params: {
-  baseEndpoint: BASE_ENDPOINT_KEY
-  annotateWith: ANNOTATE_WITH_KEY[]
-}): SessionRestEndpoint<
-  WithAnnotations<
-    T,
-    Record<
-      ANNOTATE_WITH_KEY,
-      TypeOfSessionEndpointKey<
-        // @ts-expect-error
-        ReferentialSchema[BASE_ENDPOINT_KEY][ANNOTATE_WITH_KEY]
-      >
-    >
-  >
-> {
-  const {baseEndpoint} = params
+  baseKey: BASE_ENDPOINT_KEY
+  annotationKeys: ANNOTATE_WITH_KEYS[]
+}): UseQueryJoinReturn<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS> {
+  const {baseKey, annotationKeys} = params
+  const {session} = useContext(AuthContext)
 
-  const annotatedEndpoint = annotateEndpoint(baseEndpoint, async (items) =>
-    items.map((i) => ({...i, annotations: {} as any}))
-  )
+  const baseEndpoint = session[baseKey]
+
+  const annotatedEndpoint = annotateEndpoint(baseEndpoint, async (items) => {
+    const annotationEndpointKeys = annotationKeys.map(
+      (key) => referentialSchema[baseKey][key]
+    ) as unknown as EndpointKey[]
+
+    console.log(annotationEndpointKeys)
+
+    const annotationRequests: Promise<HasId[]>[] = annotationEndpointKeys.map(
+      (annotationKey) => {
+        // @ts-expect-error
+        const fkOnItem = referentialSchema[baseKey][annotationKey]
+
+        const annotationEndpoint = session[
+          annotationKey
+        ] as SessionRestEndpoint<any>
+
+        const annotationIds = new Set<string>()
+        items.forEach((i) => {
+          const annotationId = i[fkOnItem]
+          if (annotationId !== null && annotationId !== undefined) {
+            annotationIds.add(annotationId)
+          }
+        })
+
+        return annotationEndpoint.query({
+          condition: {_id: {Inside: [...annotationIds]}}
+        })
+      }
+    )
+
+    const annotationResponses = await Promise.all(annotationRequests)
+
+    return items.map((i) => ({
+      ...i,
+      annotations: annotationKeys.reduce((acc, key, index) => {
+        const annotationKey = annotationEndpointKeys[index]
+        // @ts-expect-error
+        const fkOnItem = referentialSchema[baseKey][annotationKey]
+        const annotationResponse = annotationResponses[index]
+        const annotation = annotationResponse.find((a) => a._id === i[fkOnItem])
+        return {...acc, [key]: annotation}
+      }, {})
+    }))
+  })
   return annotatedEndpoint
 }
-
-// Record<
-//     ANNOTATE_WITH_KEY,
-//     TypeOfSessionEndpointKey<
-//       ReferentialSchema[BASE_ENDPOINT_KEY][ANNOTATE_WITH_KEY]
-//     >
-//   >

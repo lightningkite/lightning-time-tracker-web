@@ -15,8 +15,8 @@ export const ProjectIndex: FC = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const newEndpoint = useQueryJoin({
-    baseEndpoint: "timeEntry",
-    annotateWith: ["task", "user", "project"],
+    baseKey: "timeEntry",
+    annotationKeys: ["task", "user", "project"]
   })
 
   ;(async () => {

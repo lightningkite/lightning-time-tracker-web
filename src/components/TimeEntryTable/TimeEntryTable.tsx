@@ -7,14 +7,16 @@ import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import relativeTime from "dayjs/plugin/relativeTime"
 import React, {FC, useState} from "react"
-import {
-  AnnotatedTimeEntry,
-  useAnnotatedEndpoints
-} from "utils/useAnnotatedEndpoints"
+import {JoinedQueryType, useQueryJoin} from "utils/useQueryJoin"
 import {TimeEntryModal} from "./TimeEntryModal"
 
 dayjs.extend(relativeTime)
 dayjs.extend(duration)
+
+export type AnnotatedTimeEntry = JoinedQueryType<
+  "timeEntry",
+  "task" | "project" | "user"
+>
 
 export interface TimeEntryTableProps
   extends Partial<RestDataTableProps<AnnotatedTimeEntry>> {
@@ -23,7 +25,12 @@ export interface TimeEntryTableProps
 
 export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
   const {hiddenColumns = [], ...restProps} = props
-  const {annotatedTimeEntryEndpoint} = useAnnotatedEndpoints()
+  const annotatedTimeEntryEndpoint = useQueryJoin({
+    baseKey: "timeEntry",
+    annotationKeys: ["task", "project", "user"].filter(
+      (k) => !hiddenColumns.includes(k)
+    )
+  })
 
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [selectedTimeEntry, setSelectedTimeEntry] = useState<TimeEntry | null>(

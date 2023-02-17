@@ -5,7 +5,10 @@ import {
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import React, {FC} from "react"
-import {AnnotatedTask, useAnnotatedEndpoints} from "utils/useAnnotatedEndpoints"
+import {
+  AnnotatedTask,
+  useOldAnnotatedEndpoints
+} from "utils/useOldAnnotatedEndpoints"
 
 dayjs.extend(duration)
 
@@ -16,7 +19,7 @@ export interface TaskTableProps
 
 export const TaskTable: FC<TaskTableProps> = (props) => {
   const {...restProps} = props
-  const {annotatedTaskEndpoint} = useAnnotatedEndpoints()
+  const {annotatedTaskEndpoint} = useOldAnnotatedEndpoints()
 
   return (
     <RestDataTable
@@ -65,7 +68,9 @@ export const TaskTable: FC<TaskTableProps> = (props) => {
           type: "number",
           sortable: false,
           valueGetter: ({row}) =>
-            row.estimate ? row._annotations.totalTaskHours / row.estimate : null,
+            row.estimate
+              ? row._annotations.totalTaskHours / row.estimate
+              : null,
           valueFormatter: ({value}) =>
             value ? `${Math.round((value as number) * 100)}%` : "–"
         }

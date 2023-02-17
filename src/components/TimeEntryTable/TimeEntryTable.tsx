@@ -6,7 +6,7 @@ import {TimeEntry} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import relativeTime from "dayjs/plugin/relativeTime"
-import React, {FC, useState} from "react"
+import React, {FC, useEffect, useState} from "react"
 import {JoinedQueryType, useQueryJoin} from "utils/useQueryJoin"
 import {TimeEntryModal} from "./TimeEntryModal"
 
@@ -25,17 +25,26 @@ export interface TimeEntryTableProps
 
 export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
   const {hiddenColumns = [], ...restProps} = props
+
   const annotatedTimeEntryEndpoint = useQueryJoin({
     baseKey: "timeEntry",
     annotationKeys: ["task", "project", "user"].filter(
-      (k) => !hiddenColumns.includes(k)
-    )
+      (key) => !hiddenColumns.includes(key)
+    ) as ("task" | "project" | "user")[]
   })
 
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [selectedTimeEntry, setSelectedTimeEntry] = useState<TimeEntry | null>(
     null
   )
+
+  useEffect(() => {
+    annotatedTimeEntryEndpoint
+      .query({
+        condition: {date: {Equal: dayjs().format("YYYY-MM-DD")}}
+      })
+      .then(console.log)
+  }, [])
 
   const columns: RestDataTableProps<AnnotatedTimeEntry>["columns"] = [
     {
@@ -62,14 +71,14 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
       headerName: "Project",
       flex: 1,
       minWidth: 200,
-      valueGetter: (params) => params.row.annotations.project?.name
+      valueGetter: (params) => params.row._annotations.project?.name
     },
     {
       field: "task",
       headerName: "Task",
       flex: 2,
       minWidth: 200,
-      valueGetter: (params) => params.row.annotations.task?.summary
+      valueGetter: (params) => params.row._annotations.task?.summary
     },
     {
       field: "user",
@@ -78,7 +87,7 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
       minWidth: 200,
       valueGetter: ({row}) =>
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        row.annotations.user?.name || row.annotations.user?.email,
+        row._annotations.user?.name || row._annotations.user?.email,
       sortable: false
     },
     {

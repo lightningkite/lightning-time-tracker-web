@@ -1,26 +1,22 @@
 import {
   Aggregate,
   annotateEndpoint,
-  SessionRestEndpoint,
   WithAnnotations
 } from "@lightningkite/lightning-server-simplified"
-import {Project, Task, TimeEntry, User} from "api/sdk"
+import {Task, User} from "api/sdk"
 import {useContext} from "react"
 import {AuthContext} from "utils/context"
 
-export type AnnotatedTask = WithAnnotations<
-  Task,
-  {user?: User; totalTaskHours: number}
->
-
-export type AnnotatedTimeEntry = WithAnnotations<
-  TimeEntry,
-  {task?: Task; project?: Project; user?: User}
->
+export interface TaskAnnotation {
+  user?: User
+  totalTaskHours: number
+}
+export type AnnotatedTask = WithAnnotations<Task, TaskAnnotation>
 
 export interface UseAnnotatedEndpointsReturn {
-  annotatedTaskEndpoint: SessionRestEndpoint<AnnotatedTask>
-  annotatedTimeEntryEndpoint: SessionRestEndpoint<AnnotatedTimeEntry>
+  annotatedTaskEndpoint: ReturnType<
+    typeof annotateEndpoint<Task, TaskAnnotation>
+  >
 }
 
 export const useAnnotatedEndpoints = (): UseAnnotatedEndpointsReturn => {
@@ -30,8 +26,9 @@ export const useAnnotatedEndpoints = (): UseAnnotatedEndpointsReturn => {
   // TASKS
   // ***********************************
 
-  const annotatedTaskEndpoint: SessionRestEndpoint<AnnotatedTask> =
-    annotateEndpoint(session.task, async (tasks) => {
+  const annotatedTaskEndpoint = annotateEndpoint(
+    session.task,
+    async (tasks) => {
       const userIds = new Set<string>()
       const taskIds = new Set<string>()
 
@@ -57,42 +54,10 @@ export const useAnnotatedEndpoints = (): UseAnnotatedEndpointsReturn => {
           totalTaskHours: (taskTimeAggregates[task._id] ?? 0) / (3600 * 1000)
         }
       }))
-    })
-
-  // ***********************************
-  // TIME ENTRIES
-  // ***********************************
-
-  const annotatedTimeEntryEndpoint: SessionRestEndpoint<AnnotatedTimeEntry> =
-    annotateEndpoint(session.timeEntry, async (timeEntries: TimeEntry[]) => {
-      const taskIds = new Set<string>()
-      const projectIds = new Set<string>()
-      const userIds = new Set<string>()
-
-      timeEntries.forEach((timeEntry) => {
-        userIds.add(timeEntry.user)
-        timeEntry.task && taskIds.add(timeEntry.task)
-        projectIds.add(timeEntry.project)
-      })
-
-      const [tasks, projects, users] = await Promise.all([
-        session.task.query({condition: {_id: {Inside: [...taskIds]}}}),
-        session.project.query({condition: {_id: {Inside: [...projectIds]}}}),
-        session.user.query({condition: {_id: {Inside: [...userIds]}}})
-      ])
-
-      return timeEntries.map((timeEntry) => ({
-        ...timeEntry,
-        annotations: {
-          user: users.find((user) => user._id === timeEntry.user),
-          task: tasks.find((task) => task._id === timeEntry.task),
-          project: projects.find((project) => project._id === timeEntry.project)
-        }
-      }))
-    })
+    }
+  )
 
   return {
-    annotatedTaskEndpoint,
-    annotatedTimeEntryEndpoint
+    annotatedTaskEndpoint
   }
 }

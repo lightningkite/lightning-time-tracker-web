@@ -70,25 +70,37 @@ const referentialSchema = {
 
 type ReferentialSchema = typeof referentialSchema
 
+export type JoinedQueryAnnotation<
+  BASE_ENDPOINT_KEY extends EndpointKey,
+  ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
+> = {
+  [A in ANNOTATE_WITH_KEYS]:
+    | undefined
+    | TypeOfEndpointKey<
+        // @ts-expect-error
+        ReferentialSchema[BASE_ENDPOINT_KEY][A]
+      >
+}
+
 export type JoinedQueryType<
   BASE_ENDPOINT_KEY extends EndpointKey,
   ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
 > = WithAnnotations<
   TypeOfEndpointKey<BASE_ENDPOINT_KEY>,
-  {
-    [A in ANNOTATE_WITH_KEYS]:
-      | undefined
-      | TypeOfEndpointKey<
-          // @ts-expect-error
-          ReferentialSchema[BASE_ENDPOINT_KEY][A]
-        >
-  }
+  JoinedQueryAnnotation<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
 >
 
 export type UseQueryJoinReturn<
   BASE_ENDPOINT_KEY extends EndpointKey,
   ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
-> = SessionRestEndpoint<JoinedQueryType<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>>
+> = ReturnType<
+  typeof annotateEndpoint<
+    TypeOfEndpointKey<BASE_ENDPOINT_KEY>,
+    JoinedQueryAnnotation<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
+  >
+>
+
+// <JoinedQueryType<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>>
 
 // TODO: annotations key should be _annotations
 
@@ -108,8 +120,6 @@ export function useQueryJoin<
     const annotationEndpointKeys = annotationKeys.map(
       (key) => referentialSchema[baseKey][key]
     ) as unknown as EndpointKey[]
-
-    console.log(annotationEndpointKeys)
 
     const annotationRequests: Promise<HasId[]>[] = annotationEndpointKeys.map(
       (annotationKey) => {
@@ -138,7 +148,7 @@ export function useQueryJoin<
 
     return items.map((i) => ({
       ...i,
-      annotations: annotationKeys.reduce((acc, key, index) => {
+      _annotations: annotationKeys.reduce((acc, key, index) => {
         const annotationKey = annotationEndpointKeys[index]
         // @ts-expect-error
         const fkOnItem = referentialSchema[baseKey][annotationKey]
@@ -148,5 +158,6 @@ export function useQueryJoin<
       }, {})
     }))
   })
+
   return annotatedEndpoint
 }

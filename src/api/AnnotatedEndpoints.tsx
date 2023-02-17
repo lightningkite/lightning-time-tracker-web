@@ -87,30 +87,30 @@ export type UseAnnotatedEndpointItemType<
 
 export const referentialSchema = {
   organization: {
-    owner: "user" as "user"
+    owner: "user"
   },
   project: {
-    organization: "organization" as "organization"
+    organization: "organization"
   },
   user: {
-    organization: "organization" as "organization"
+    organization: "organization"
   },
   task: {
-    project: "project" as "project",
-    organization: "organization" as "organization",
-    user: "user" as "user"
+    project: "project",
+    organization: "organization",
+    user: "user"
   },
   timeEntry: {
-    task: "task" as "task",
-    user: "user" as "user",
-    project: "project" as "project",
-    organization: "organization" as "organization"
+    task: "task",
+    user: "user",
+    project: "project",
+    organization: "organization"
   },
   timer: {
-    user: "user" as "user",
-    task: "task" as "task",
-    project: "project" as "project",
-    organization: "organization" as "organization"
+    user: "user",
+    task: "task",
+    project: "project",
+    organization: "organization"
   }
 } satisfies ReferentialSchemaMustSatisfy
 
@@ -164,49 +164,40 @@ export function useAnnotatedEndpoint<
 
   const baseEndpoint = session[baseKey]
 
-  const endpointKeysForAnnotations: EndpointKey[] = annotateWith.map(
-    (key) => (referentialSchema[baseKey] as any)[key]
-  )
-
   const annotatedEndpoint = annotateEndpoint<
     BaseItemType,
     TypeOfAnnotation<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
   >(baseEndpoint, async (baseItems) => {
-    const annotationRequests: Promise<HasId[]>[] =
-      endpointKeysForAnnotations.map((annotationKey) => {
+    // Promises for each annotation
+    const annotationRequests: Array<Promise<HasId[]>> = annotateWith.map(
+      (annotateWithKey) => {
+        const annotationEndpointKey = referentialSchema[baseKey][
+          annotateWithKey
+        ] as keyof UserSession
+
         const annotationEndpoint = session[
-          annotationKey
-        ] as SessionRestEndpoint<any>
+          annotationEndpointKey
+        ] as SessionRestEndpoint<HasId>
 
-        const foreignKeyProperty: keyof BaseItemType =
-          // @ts-expect-error
-          referentialSchema[baseKey][annotationKey]
-
-        const annotatedModelIds = new Set<string>()
-        baseItems.forEach((item) => {
-          const foreignKey = item[foreignKeyProperty]
-          if (foreignKey !== null && foreignKey !== undefined) {
-            annotatedModelIds.add(foreignKey as string)
-          }
-        })
+        const foreignModelIdsToFetch = baseItems
+          .map((item) => item[annotateWithKey as keyof BaseItemType])
+          .filter((item) => item !== null && item !== undefined) as string[]
 
         return annotationEndpoint.query({
-          condition: {_id: {Inside: [...annotatedModelIds]}}
+          condition: {_id: {Inside: [...new Set(foreignModelIdsToFetch)]}}
         })
-      })
+      },
+      {}
+    )
 
     const annotationResponses = await Promise.all(annotationRequests)
 
     return baseItems.map((item) => {
       const itemAnnotation = annotateWith.reduce(
         (acc, annotateWithKey, index) => {
-          const annotationKey = endpointKeysForAnnotations[index]
-          const foreignKeyProperty: keyof BaseItemType =
-            // @ts-expect-error
-            referentialSchema[baseKey][annotationKey]
           const annotationResponse = annotationResponses[index]
           const annotation = annotationResponse.find(
-            (a) => a._id === item[foreignKeyProperty]
+            (a) => a._id === item[annotateWithKey as keyof BaseItemType]
           )
           return {...acc, [annotateWithKey]: annotation}
         },

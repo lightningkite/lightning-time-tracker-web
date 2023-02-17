@@ -2,12 +2,15 @@ import {
   RestDataTable,
   RestDataTableProps
 } from "@lightningkite/mui-lightning-components"
+import {
+  useAnnotatedEndpoint,
+  UseAnnotatedEndpointItemType
+} from "api/AnnotatedEndpoints"
 import {TimeEntry} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import relativeTime from "dayjs/plugin/relativeTime"
 import React, {FC, useState} from "react"
-import {UseAnnotatedEndpointItemType, useAnnotatedEndpoint} from "utils/useAnnotatedEndpoint"
 import {TimeEntryModal} from "./TimeEntryModal"
 
 dayjs.extend(relativeTime)
@@ -27,7 +30,7 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
   const {hiddenColumns = [], ...restProps} = props
   const annotatedTimeEntryEndpoint = useAnnotatedEndpoint({
     baseKey: "timeEntry",
-    annotationKeys: ["task", "project", "user"].filter(
+    annotateWith: ["task", "project", "user"].filter(
       (k) => !hiddenColumns.includes(k)
     ) as ("task" | "project" | "user")[]
   })

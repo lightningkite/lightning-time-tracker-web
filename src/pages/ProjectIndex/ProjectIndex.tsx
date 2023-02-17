@@ -1,11 +1,11 @@
 import {RestDataTable} from "@lightningkite/mui-lightning-components"
 import {Container} from "@mui/material"
+import {useAnnotatedEndpoint} from "api/AnnotatedEndpoints"
 import PageHeader from "components/PageHeader"
 import dayjs from "dayjs"
 import React, {FC, useContext, useState} from "react"
 import {useNavigate} from "react-router-dom"
 import {AuthContext} from "utils/context"
-import {useAnnotatedEndpoint} from "utils/useAnnotatedEndpoint"
 import {AddProjectButton} from "./AddProjectButton"
 
 export const ProjectIndex: FC = () => {
@@ -16,13 +16,13 @@ export const ProjectIndex: FC = () => {
 
   const newEndpoint = useAnnotatedEndpoint({
     baseKey: "timeEntry",
-    annotationKeys: ["task", "user", "project"]
+    annotateWith: ["task", "user", "project"]
   })
 
   ;(async () => {
     const val = await newEndpoint.detail("123")
 
-    console.log(val._annotations.project)
+    console.log(val._annotations.user)
   })()
 
   return (

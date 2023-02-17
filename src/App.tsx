@@ -1,6 +1,7 @@
 import {colors, createTheme, CssBaseline, ThemeProvider} from "@mui/material"
 import {LocalizationProvider} from "@mui/x-date-pickers"
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs"
+import {AnnotatedEndpointContextProvider} from "api/AnnotatedEndpoints"
 import {Organization, User} from "api/sdk"
 import {useSessionManager} from "api/useSessionManager"
 import ErrorAlert from "components/ErrorAlert"
@@ -90,11 +91,13 @@ const App: FC = () => {
                 currentOrganization
               }}
             >
-              <TimerContextProvider>
-                <MainLayout>
-                  <AuthRoutes />
-                </MainLayout>
-              </TimerContextProvider>
+              <AnnotatedEndpointContextProvider session={session}>
+                <TimerContextProvider>
+                  <MainLayout>
+                    <AuthRoutes />
+                  </MainLayout>
+                </TimerContextProvider>
+              </AnnotatedEndpointContextProvider>
             </AuthContext.Provider>
           ) : (
             <UnauthContext.Provider

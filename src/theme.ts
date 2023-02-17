@@ -1,5 +1,4 @@
 import {createTheme} from "@mui/material"
-import {blue} from "@mui/material/colors"
 
 // https://mui.com/material-ui/customization/theming/
 export const theme = createTheme({

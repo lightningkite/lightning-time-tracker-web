@@ -1,7 +1,7 @@
 import {colors, createTheme, CssBaseline, ThemeProvider} from "@mui/material"
 import {LocalizationProvider} from "@mui/x-date-pickers"
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs"
-import {Organization, User} from "api/sdk"
+import {Organization, referentialSchema, User} from "api/sdk"
 import {useSessionManager} from "api/useSessionManager"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
@@ -11,6 +11,7 @@ import React, {FC, useEffect, useState} from "react"
 import {BrowserRouter} from "react-router-dom"
 import {AuthRoutes, UnauthRoutes} from "routers"
 import {theme} from "theme"
+import {AnnotatedEndpointContextProvider} from "utils/AnnotatedEndpointProvider"
 import {AuthContext, TimerContextProvider, UnauthContext} from "utils/context"
 import {parsePreferences} from "utils/helpers"
 
@@ -90,11 +91,16 @@ const App: FC = () => {
                 currentOrganization
               }}
             >
-              <TimerContextProvider>
-                <MainLayout>
-                  <AuthRoutes />
-                </MainLayout>
-              </TimerContextProvider>
+              <AnnotatedEndpointContextProvider
+                session={session}
+                referentialSchema={referentialSchema}
+              >
+                <TimerContextProvider>
+                  <MainLayout>
+                    <AuthRoutes />
+                  </MainLayout>
+                </TimerContextProvider>
+              </AnnotatedEndpointContextProvider>
             </AuthContext.Provider>
           ) : (
             <UnauthContext.Provider

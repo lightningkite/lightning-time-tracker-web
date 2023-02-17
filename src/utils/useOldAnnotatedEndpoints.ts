@@ -49,7 +49,7 @@ export const useAnnotatedEndpoints = (): UseAnnotatedEndpointsReturn => {
 
       return tasks.map((task) => ({
         ...task,
-        annotations: {
+        _annotations: {
           user: users.find((user) => user._id === task.user),
           totalTaskHours: (taskTimeAggregates[task._id] ?? 0) / (3600 * 1000)
         }

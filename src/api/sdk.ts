@@ -9,6 +9,36 @@ import {
   Modification,
   Query
 } from "@lightningkite/lightning-server-simplified"
+import {ReferentialSchemaMustSatisfy} from "utils/AnnotatedEndpointProvider"
+
+export const referentialSchema = {
+  organization: {
+    owner: "user"
+  },
+  project: {
+    organization: "organization"
+  },
+  user: {
+    organization: "organization"
+  },
+  task: {
+    project: "project",
+    organization: "organization",
+    user: "user"
+  },
+  timeEntry: {
+    task: "task",
+    user: "user",
+    project: "project",
+    organization: "organization"
+  },
+  timer: {
+    user: "user",
+    task: "task",
+    project: "project",
+    organization: "organization"
+  }
+} satisfies ReferentialSchemaMustSatisfy
 
 export interface EmailPinLogin {
   email: string

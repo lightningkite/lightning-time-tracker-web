@@ -19,7 +19,7 @@ import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import {useFormik} from "formik"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
-import {AnnotatedTask} from "utils/useAnnotatedEndpoints"
+import {AnnotatedTask} from "utils/useOldAnnotatedEndpoints"
 import {useFocus} from "utils/useFocus"
 import * as yup from "yup"
 
@@ -76,7 +76,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
 
       afterSubmit({
         ...task,
-        annotations: {
+        _annotations: {
           user: values.user,
           totalTaskHours: 0
         }

@@ -2,18 +2,22 @@ import {
   RestDataTable,
   RestDataTableProps
 } from "@lightningkite/mui-lightning-components"
-import {TimeEntry} from "api/sdk"
+import {referentialSchema, TimeEntry} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import relativeTime from "dayjs/plugin/relativeTime"
 import React, {FC, useEffect, useState} from "react"
-import {AnnotatedItemType, useAnnotatedEndpoint} from "utils/useAnnotatedEndpoint"
+import {
+  AnnotatedItemType,
+  useAnnotatedEndpoint
+} from "utils/useAnnotatedEndpoint"
 import {TimeEntryModal} from "./TimeEntryModal"
 
 dayjs.extend(relativeTime)
 dayjs.extend(duration)
 
 export type AnnotatedTimeEntry = AnnotatedItemType<
+  typeof referentialSchema,
   "timeEntry",
   "task" | "project" | "user"
 >

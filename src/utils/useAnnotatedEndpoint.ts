@@ -6,7 +6,12 @@ import {
 } from "@lightningkite/lightning-server-simplified"
 import {UserSession} from "api/sdk"
 import {useContext} from "react"
-import {AuthContext} from "./context"
+import {
+  AnnotatedEndpointContext,
+  ReferentialSchemaMustSatisfy
+} from "./AnnotatedEndpointProvider"
+
+// TODO: require app be wrapped in context provider to provide session and referential schema, type with referential schema type when using hook
 
 /** Check that type has all keys of SessionRestEndpoint */
 type IsSessionRestEndpoint<T extends HasId> = Record<
@@ -15,7 +20,7 @@ type IsSessionRestEndpoint<T extends HasId> = Record<
 >
 
 /** Picks all the keys of UserSession that are rest endpoints */
-type EndpointKey = keyof Pick<
+export type EndpointKey = keyof Pick<
   UserSession,
   {
     [K in keyof UserSession]: UserSession[K] extends IsSessionRestEndpoint<any>
@@ -33,46 +38,14 @@ type EndpointKey = keyof Pick<
  * // Organization
  * ```
  */
-type TypeOfEndpointKey<K extends EndpointKey> = Awaited<
+export type TypeOfEndpointKey<K extends EndpointKey> = Awaited<
   ReturnType<UserSession[K]["detail"]>
 >
 
-const referentialSchema = {
-  organization: {
-    owner: "user"
-  },
-  project: {
-    organization: "organization"
-  },
-  user: {
-    organization: "organization"
-  },
-  task: {
-    project: "project",
-    organization: "organization",
-    user: "user"
-  },
-  timeEntry: {
-    task: "task",
-    user: "user",
-    project: "project",
-    organization: "organization"
-  },
-  timer: {
-    user: "user",
-    task: "task",
-    project: "project",
-    organization: "organization"
-  }
-} satisfies {
-  [P in EndpointKey]: Partial<Record<keyof TypeOfEndpointKey<P>, EndpointKey>>
-}
-
-type ReferentialSchema = typeof referentialSchema
-
 export type JoinedQueryAnnotation<
+  REFERENTIAL_SCHEMA extends ReferentialSchemaMustSatisfy,
   BASE_ENDPOINT_KEY extends EndpointKey,
-  ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
+  ANNOTATE_WITH_KEYS extends keyof REFERENTIAL_SCHEMA[BASE_ENDPOINT_KEY]
 > = {
   [A in ANNOTATE_WITH_KEYS]:
     | undefined
@@ -83,32 +56,56 @@ export type JoinedQueryAnnotation<
 }
 
 export type AnnotatedItemType<
+  REFERENTIAL_SCHEMA extends ReferentialSchemaMustSatisfy,
   BASE_ENDPOINT_KEY extends EndpointKey,
-  ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
+  ANNOTATE_WITH_KEYS extends keyof REFERENTIAL_SCHEMA[BASE_ENDPOINT_KEY]
 > = WithAnnotations<
   TypeOfEndpointKey<BASE_ENDPOINT_KEY>,
-  JoinedQueryAnnotation<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
+  JoinedQueryAnnotation<
+    REFERENTIAL_SCHEMA,
+    BASE_ENDPOINT_KEY,
+    ANNOTATE_WITH_KEYS
+  >
 >
 
 export type UseAnnotatedEndpointReturn<
+  REFERENTIAL_SCHEMA extends ReferentialSchemaMustSatisfy,
   BASE_ENDPOINT_KEY extends EndpointKey,
-  ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
+  ANNOTATE_WITH_KEYS extends keyof REFERENTIAL_SCHEMA[BASE_ENDPOINT_KEY]
 > = ReturnType<
   typeof annotateEndpoint<
     TypeOfEndpointKey<BASE_ENDPOINT_KEY>,
-    JoinedQueryAnnotation<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
+    JoinedQueryAnnotation<
+      REFERENTIAL_SCHEMA,
+      BASE_ENDPOINT_KEY,
+      ANNOTATE_WITH_KEYS
+    >
   >
 >
 
 export function useAnnotatedEndpoint<
+  REFERENTIAL_SCHEMA extends ReferentialSchemaMustSatisfy,
   BASE_ENDPOINT_KEY extends EndpointKey,
-  ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
+  ANNOTATE_WITH_KEYS extends keyof REFERENTIAL_SCHEMA[BASE_ENDPOINT_KEY]
 >(params: {
   baseKey: BASE_ENDPOINT_KEY
   annotationKeys: ANNOTATE_WITH_KEYS[]
-}): UseAnnotatedEndpointReturn<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS> {
+}): UseAnnotatedEndpointReturn<
+  REFERENTIAL_SCHEMA,
+  BASE_ENDPOINT_KEY,
+  ANNOTATE_WITH_KEYS
+> {
   const {baseKey, annotationKeys} = params
-  const {session} = useContext(AuthContext)
+  const {session, referentialSchema} = useContext(AnnotatedEndpointContext)
+
+  if (!session || !referentialSchema) {
+    console.error(
+      "AnnotatedEndpointProvider not found in context. Wrap your App component in AnnotatedEndpointProvider"
+    )
+    throw new Error(
+      "useAnnotatedEndpoint must be used within a AnnotatedEndpointProvider"
+    )
+  }
 
   const baseEndpoint = session[baseKey]
 

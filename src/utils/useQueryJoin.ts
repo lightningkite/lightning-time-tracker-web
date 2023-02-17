@@ -1,5 +1,6 @@
 import {
   annotateEndpoint,
+  AnnotateEndpointReturn,
   HasId,
   SessionRestEndpoint,
   WithAnnotations
@@ -37,6 +38,7 @@ type TypeOfEndpointKey<K extends EndpointKey> = Awaited<
   ReturnType<UserSession[K]["detail"]>
 >
 
+/** Type of the annotation of the model used by annotated endpoint */
 type TypeOfAnnotation<
   BASE_ENDPOINT_KEY extends EndpointKey,
   ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
@@ -48,6 +50,15 @@ type TypeOfAnnotation<
         ReferentialSchema[BASE_ENDPOINT_KEY][A]
       >
 }
+
+/** Type of the model used by the annotated endpoint */
+export type JoinedQueryType<
+  BASE_ENDPOINT_KEY extends EndpointKey,
+  ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
+> = WithAnnotations<
+  TypeOfEndpointKey<BASE_ENDPOINT_KEY>,
+  TypeOfAnnotation<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
+>
 
 const referentialSchema = {
   organization: {
@@ -82,18 +93,24 @@ const referentialSchema = {
 
 type ReferentialSchema = typeof referentialSchema
 
-export type JoinedQueryType<
+/** This is the limited set of endpoint keys available when using an annotated endpoint */
+type AnnotatedEndpointKeys<
   BASE_ENDPOINT_KEY extends EndpointKey,
   ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
-> = WithAnnotations<
+> = keyof AnnotateEndpointReturn<
   TypeOfEndpointKey<BASE_ENDPOINT_KEY>,
   TypeOfAnnotation<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
 >
 
+// !! Don't try to simplify this by writing AnnotateEndpointReturn<...> without pick. It should work, but types start being inferred as any.
+/** Return type of `useQueryJoin` */
 export type UseQueryJoinReturn<
   BASE_ENDPOINT_KEY extends EndpointKey,
   ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
-> = SessionRestEndpoint<JoinedQueryType<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>>
+> = Pick<
+  SessionRestEndpoint<JoinedQueryType<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>>,
+  AnnotatedEndpointKeys<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
+>
 
 export function useQueryJoin<
   BASE_ENDPOINT_KEY extends EndpointKey,

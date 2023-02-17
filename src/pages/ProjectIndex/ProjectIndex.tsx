@@ -5,7 +5,7 @@ import dayjs from "dayjs"
 import React, {FC, useContext, useState} from "react"
 import {useNavigate} from "react-router-dom"
 import {AuthContext} from "utils/context"
-import {useQueryJoin} from "utils/useQueryJoin"
+import {useAnnotatedEndpoint} from "utils/useAnnotatedEndpoint"
 import {AddProjectButton} from "./AddProjectButton"
 
 export const ProjectIndex: FC = () => {
@@ -14,7 +14,7 @@ export const ProjectIndex: FC = () => {
 
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
-  const newEndpoint = useQueryJoin({
+  const newEndpoint = useAnnotatedEndpoint({
     baseKey: "timeEntry",
     annotationKeys: ["task", "user", "project"]
   })

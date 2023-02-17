@@ -7,13 +7,13 @@ import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import relativeTime from "dayjs/plugin/relativeTime"
 import React, {FC, useEffect, useState} from "react"
-import {JoinedQueryType, useQueryJoin} from "utils/useQueryJoin"
+import {AnnotatedItemType, useAnnotatedEndpoint} from "utils/useAnnotatedEndpoint"
 import {TimeEntryModal} from "./TimeEntryModal"
 
 dayjs.extend(relativeTime)
 dayjs.extend(duration)
 
-export type AnnotatedTimeEntry = JoinedQueryType<
+export type AnnotatedTimeEntry = AnnotatedItemType<
   "timeEntry",
   "task" | "project" | "user"
 >
@@ -26,7 +26,7 @@ export interface TimeEntryTableProps
 export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
   const {hiddenColumns = [], ...restProps} = props
 
-  const annotatedTimeEntryEndpoint = useQueryJoin({
+  const annotatedTimeEntryEndpoint = useAnnotatedEndpoint({
     baseKey: "timeEntry",
     annotationKeys: ["task", "project", "user"].filter(
       (key) => !hiddenColumns.includes(key)

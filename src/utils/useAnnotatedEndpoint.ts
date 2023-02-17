@@ -82,7 +82,7 @@ export type JoinedQueryAnnotation<
       >
 }
 
-export type JoinedQueryType<
+export type AnnotatedItemType<
   BASE_ENDPOINT_KEY extends EndpointKey,
   ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
 > = WithAnnotations<
@@ -90,7 +90,7 @@ export type JoinedQueryType<
   JoinedQueryAnnotation<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
 >
 
-export type UseQueryJoinReturn<
+export type UseAnnotatedEndpointReturn<
   BASE_ENDPOINT_KEY extends EndpointKey,
   ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
 > = ReturnType<
@@ -100,17 +100,13 @@ export type UseQueryJoinReturn<
   >
 >
 
-// <JoinedQueryType<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>>
-
-// TODO: annotations key should be _annotations
-
-export function useQueryJoin<
+export function useAnnotatedEndpoint<
   BASE_ENDPOINT_KEY extends EndpointKey,
   ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
 >(params: {
   baseKey: BASE_ENDPOINT_KEY
   annotationKeys: ANNOTATE_WITH_KEYS[]
-}): UseQueryJoinReturn<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS> {
+}): UseAnnotatedEndpointReturn<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS> {
   const {baseKey, annotationKeys} = params
   const {session} = useContext(AuthContext)
 

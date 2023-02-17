@@ -37,6 +37,18 @@ type TypeOfEndpointKey<K extends EndpointKey> = Awaited<
   ReturnType<UserSession[K]["detail"]>
 >
 
+type TypeOfAnnotation<
+  BASE_ENDPOINT_KEY extends EndpointKey,
+  ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
+> = {
+  [A in ANNOTATE_WITH_KEYS]:
+    | undefined
+    | TypeOfEndpointKey<
+        // @ts-expect-error
+        ReferentialSchema[BASE_ENDPOINT_KEY][A]
+      >
+}
+
 const referentialSchema = {
   organization: {
     owner: "user"
@@ -75,22 +87,13 @@ export type JoinedQueryType<
   ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
 > = WithAnnotations<
   TypeOfEndpointKey<BASE_ENDPOINT_KEY>,
-  {
-    [A in ANNOTATE_WITH_KEYS]:
-      | undefined
-      | TypeOfEndpointKey<
-          // @ts-expect-error
-          ReferentialSchema[BASE_ENDPOINT_KEY][A]
-        >
-  }
+  TypeOfAnnotation<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
 >
 
 export type UseQueryJoinReturn<
   BASE_ENDPOINT_KEY extends EndpointKey,
   ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
 > = SessionRestEndpoint<JoinedQueryType<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>>
-
-// TODO: annotations key should be _annotations
 
 export function useQueryJoin<
   BASE_ENDPOINT_KEY extends EndpointKey,
@@ -148,5 +151,6 @@ export function useQueryJoin<
       }, {})
     }))
   })
+
   return annotatedEndpoint
 }

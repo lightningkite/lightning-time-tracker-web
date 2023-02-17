@@ -29,7 +29,7 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
     baseKey: "timeEntry",
     annotationKeys: ["task", "project", "user"].filter(
       (k) => !hiddenColumns.includes(k)
-    )
+    ) as ("task" | "project" | "user")[]
   })
 
   const [refreshTrigger, setRefreshTrigger] = useState(0)

@@ -22,7 +22,7 @@ export const ProjectIndex: FC = () => {
   ;(async () => {
     const val = await newEndpoint.detail("123")
 
-    console.log(val._annotations)
+    console.log(val._annotations.project)
   })()
 
   return (

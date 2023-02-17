@@ -52,7 +52,7 @@ type TypeOfAnnotation<
 }
 
 /** Type of the model used by the annotated endpoint */
-export type JoinedQueryType<
+export type UseAnnotatedEndpointItemType<
   BASE_ENDPOINT_KEY extends EndpointKey,
   ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
 > = WithAnnotations<
@@ -104,21 +104,21 @@ type AnnotatedEndpointKeys<
 
 // !! Don't try to simplify this by writing AnnotateEndpointReturn<...> without pick. It should work, but types start being inferred as any.
 /** Return type of `useQueryJoin` */
-export type UseQueryJoinReturn<
+export type UseAnnotatedEndpointReturn<
   BASE_ENDPOINT_KEY extends EndpointKey,
   ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
 > = Pick<
-  SessionRestEndpoint<JoinedQueryType<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>>,
+  SessionRestEndpoint<UseAnnotatedEndpointItemType<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>>,
   AnnotatedEndpointKeys<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
 >
 
-export function useQueryJoin<
+export function useAnnotatedEndpoint<
   BASE_ENDPOINT_KEY extends EndpointKey,
   ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
 >(params: {
   baseKey: BASE_ENDPOINT_KEY
   annotationKeys: ANNOTATE_WITH_KEYS[]
-}): UseQueryJoinReturn<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS> {
+}): UseAnnotatedEndpointReturn<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS> {
   const {baseKey, annotationKeys} = params
   const {session} = useContext(AuthContext)
 

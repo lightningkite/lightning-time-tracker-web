@@ -52,7 +52,7 @@ export const useAnnotatedEndpoints = (): UseAnnotatedEndpointsReturn => {
 
       return tasks.map((task) => ({
         ...task,
-        annotations: {
+        _annotations: {
           user: users.find((user) => user._id === task.user),
           totalTaskHours: (taskTimeAggregates[task._id] ?? 0) / (3600 * 1000)
         }
@@ -83,7 +83,7 @@ export const useAnnotatedEndpoints = (): UseAnnotatedEndpointsReturn => {
 
       return timeEntries.map((timeEntry) => ({
         ...timeEntry,
-        annotations: {
+        _annotations: {
           user: users.find((user) => user._id === timeEntry.user),
           task: tasks.find((task) => task._id === timeEntry.task),
           project: projects.find((project) => project._id === timeEntry.project)

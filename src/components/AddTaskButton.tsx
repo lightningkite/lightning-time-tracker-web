@@ -76,7 +76,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
 
       afterSubmit({
         ...task,
-        annotations: {
+        _annotations: {
           user: values.user,
           totalTaskHours: 0
         }

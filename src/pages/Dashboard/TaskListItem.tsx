@@ -42,7 +42,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
   const isPlaying = !!timerKey && !!timers[timerKey].lastStarted
 
   const taskPercentBudget = annotatedTask.estimate
-    ? (annotatedTask.annotations.totalTaskHours / annotatedTask.estimate) * 100
+    ? (annotatedTask._annotations.totalTaskHours / annotatedTask.estimate) * 100
     : 0
 
   const budgetColor: LinearProgressProps["color"] = (() => {
@@ -122,8 +122,8 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
               {annotatedTask.state.toUpperCase()} &nbsp;&#x2022;&nbsp;{" "}
               {
                 // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                (annotatedTask.annotations.user?.name ||
-                  annotatedTask.annotations.user?.email) ??
+                (annotatedTask._annotations.user?.name ||
+                  annotatedTask._annotations.user?.email) ??
                   "Unknown user"
               }
             </Typography>
@@ -139,10 +139,10 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
                   }
                 >
                   {annotatedTask.estimate
-                    ? `${annotatedTask.annotations.totalTaskHours.toFixed(
+                    ? `${annotatedTask._annotations.totalTaskHours.toFixed(
                         1
                       )} of ${annotatedTask.estimate} hours`
-                    : `${annotatedTask.annotations.totalTaskHours.toFixed(
+                    : `${annotatedTask._annotations.totalTaskHours.toFixed(
                         1
                       )} hours`}
                 </Typography>

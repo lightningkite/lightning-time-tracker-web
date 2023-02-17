@@ -138,7 +138,7 @@ export function useQueryJoin<
 
     return items.map((i) => ({
       ...i,
-      annotations: annotationKeys.reduce((acc, key, index) => {
+      _annotations: annotationKeys.reduce((acc, key, index) => {
         const annotationKey = annotationEndpointKeys[index]
         // @ts-expect-error
         const fkOnItem = referentialSchema[baseKey][annotationKey]

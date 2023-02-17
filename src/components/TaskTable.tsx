@@ -43,7 +43,7 @@ export const TaskTable: FC<TaskTableProps> = (props) => {
           minWidth: 200,
           valueGetter: ({row}) =>
             // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            row.annotations.user?.name || row.annotations.user?.email,
+            row._annotations.user?.name || row._annotations.user?.email,
           sortable: false
         },
         {
@@ -65,7 +65,7 @@ export const TaskTable: FC<TaskTableProps> = (props) => {
           type: "number",
           sortable: false,
           valueGetter: ({row}) =>
-            row.estimate ? row.annotations.totalTaskHours / row.estimate : null,
+            row.estimate ? row._annotations.totalTaskHours / row.estimate : null,
           valueFormatter: ({value}) =>
             value ? `${Math.round((value as number) * 100)}%` : "–"
         }

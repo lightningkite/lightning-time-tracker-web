@@ -32,7 +32,7 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
 
   const annotatedTimeEntryEndpoint = useAnnotatedEndpoint({
     baseKey: "timeEntry",
-    annotationKeys: ["task", "project", "user"].filter(
+    annotateWith: ["task", "project", "user"].filter(
       (key) => !hiddenColumns.includes(key)
     ) as ("task" | "project" | "user")[]
   })

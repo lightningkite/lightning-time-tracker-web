@@ -42,7 +42,7 @@ export type TypeOfEndpointKey<K extends EndpointKey> = Awaited<
   ReturnType<UserSession[K]["detail"]>
 >
 
-export type JoinedQueryAnnotation<
+export type AnnotationType<
   REFERENTIAL_SCHEMA extends ReferentialSchemaMustSatisfy,
   BASE_ENDPOINT_KEY extends EndpointKey,
   ANNOTATE_WITH_KEYS extends keyof REFERENTIAL_SCHEMA[BASE_ENDPOINT_KEY]
@@ -61,11 +61,7 @@ export type AnnotatedItemType<
   ANNOTATE_WITH_KEYS extends keyof REFERENTIAL_SCHEMA[BASE_ENDPOINT_KEY]
 > = WithAnnotations<
   TypeOfEndpointKey<BASE_ENDPOINT_KEY>,
-  JoinedQueryAnnotation<
-    REFERENTIAL_SCHEMA,
-    BASE_ENDPOINT_KEY,
-    ANNOTATE_WITH_KEYS
-  >
+  AnnotationType<REFERENTIAL_SCHEMA, BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
 >
 
 export type UseAnnotatedEndpointReturn<
@@ -75,11 +71,7 @@ export type UseAnnotatedEndpointReturn<
 > = ReturnType<
   typeof annotateEndpoint<
     TypeOfEndpointKey<BASE_ENDPOINT_KEY>,
-    JoinedQueryAnnotation<
-      REFERENTIAL_SCHEMA,
-      BASE_ENDPOINT_KEY,
-      ANNOTATE_WITH_KEYS
-    >
+    AnnotationType<REFERENTIAL_SCHEMA, BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
   >
 >
 
@@ -89,13 +81,13 @@ export function useAnnotatedEndpoint<
   ANNOTATE_WITH_KEYS extends keyof REFERENTIAL_SCHEMA[BASE_ENDPOINT_KEY]
 >(params: {
   baseKey: BASE_ENDPOINT_KEY
-  annotationKeys: ANNOTATE_WITH_KEYS[]
+  annotateWith: ANNOTATE_WITH_KEYS[]
 }): UseAnnotatedEndpointReturn<
   REFERENTIAL_SCHEMA,
   BASE_ENDPOINT_KEY,
   ANNOTATE_WITH_KEYS
 > {
-  const {baseKey, annotationKeys} = params
+  const {baseKey, annotateWith} = params
   const {session, referentialSchema} = useContext(AnnotatedEndpointContext)
 
   if (!session || !referentialSchema) {
@@ -107,49 +99,69 @@ export function useAnnotatedEndpoint<
     )
   }
 
+  type BaseItemType = TypeOfEndpointKey<BASE_ENDPOINT_KEY>
+  type ItemAnnotationType = AnnotationType<
+    REFERENTIAL_SCHEMA,
+    BASE_ENDPOINT_KEY,
+    ANNOTATE_WITH_KEYS
+  >
+
   const baseEndpoint = session[baseKey]
 
-  const annotatedEndpoint = annotateEndpoint(baseEndpoint, async (items) => {
-    const annotationEndpointKeys = annotationKeys.map(
-      (key) => referentialSchema[baseKey][key]
-    ) as unknown as EndpointKey[]
+  const endpointKeysForAnnotations = annotateWith.map(
+    (key) => referentialSchema[baseKey][key]
+  ) as EndpointKey[]
 
-    const annotationRequests: Promise<HasId[]>[] = annotationEndpointKeys.map(
-      (annotationKey) => {
-        // @ts-expect-error
-        const fkOnItem = referentialSchema[baseKey][annotationKey]
-
+  const annotatedEndpoint = annotateEndpoint<
+    BaseItemType,
+    AnnotationType<REFERENTIAL_SCHEMA, BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
+  >(baseEndpoint, async (baseItems) => {
+    const annotationRequests: Promise<HasId[]>[] =
+      endpointKeysForAnnotations.map((annotationKey) => {
         const annotationEndpoint = session[
           annotationKey
         ] as SessionRestEndpoint<any>
 
-        const annotationIds = new Set<string>()
-        items.forEach((i) => {
-          const annotationId = i[fkOnItem]
-          if (annotationId !== null && annotationId !== undefined) {
-            annotationIds.add(annotationId)
+        const foreignKeyProperty: keyof BaseItemType =
+          // @ts-expect-error
+          referentialSchema[baseKey][annotationKey]
+
+        const annotatedModelIds = new Set<string>()
+        baseItems.forEach((item) => {
+          const foreignKey = item[foreignKeyProperty]
+          if (foreignKey !== null && foreignKey !== undefined) {
+            annotatedModelIds.add(foreignKey as string)
           }
         })
 
         return annotationEndpoint.query({
-          condition: {_id: {Inside: [...annotationIds]}}
+          condition: {_id: {Inside: [...annotatedModelIds]}}
         })
-      }
-    )
+      })
 
     const annotationResponses = await Promise.all(annotationRequests)
 
-    return items.map((i) => ({
-      ...i,
-      _annotations: annotationKeys.reduce((acc, key, index) => {
-        const annotationKey = annotationEndpointKeys[index]
-        // @ts-expect-error
-        const fkOnItem = referentialSchema[baseKey][annotationKey]
-        const annotationResponse = annotationResponses[index]
-        const annotation = annotationResponse.find((a) => a._id === i[fkOnItem])
-        return {...acc, [key]: annotation}
-      }, {})
-    }))
+    return baseItems.map((item) => {
+      const itemAnnotation = annotateWith.reduce(
+        (acc, annotateWithKey, index) => {
+          const annotationKey = endpointKeysForAnnotations[index]
+          const foreignKeyProperty: keyof BaseItemType =
+            // @ts-expect-error
+            referentialSchema[baseKey][annotationKey]
+          const annotationResponse = annotationResponses[index]
+          const annotation = annotationResponse.find(
+            (a) => a._id === item[foreignKeyProperty]
+          )
+          return {...acc, [annotateWithKey]: annotation}
+        },
+        {}
+      ) as ItemAnnotationType
+
+      return {
+        ...item,
+        _annotations: itemAnnotation
+      }
+    })
   })
 
   return annotatedEndpoint

@@ -16,7 +16,7 @@ export const ProjectIndex: FC = () => {
 
   const newEndpoint = useAnnotatedEndpoint({
     baseKey: "timeEntry",
-    annotationKeys: ["task", "user", "project"]
+    annotateWith: ["task", "user", "project"]
   })
 
   ;(async () => {

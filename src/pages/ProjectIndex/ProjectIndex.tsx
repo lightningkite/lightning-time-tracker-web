@@ -20,8 +20,14 @@ export const ProjectIndex: FC = () => {
   })
 
   const testEndpoint = useAnnotatedEndpoint({
-    collection: "timeEntry"
-    // with: ["organization"],
+    collection: "user",
+    include: {
+      timeEntry: {
+        condition: {Always: true},
+        relationProperty: "user",
+        as: "timeEntries"
+      }
+    }
     // include: {timeEntry: {condition: {Always: true}, as: "timeEntries"}}
     // aggregate: {timeEntry: {sum: 'duration'}
   })

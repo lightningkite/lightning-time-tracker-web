@@ -3,6 +3,7 @@
 import {
   annotateEndpoint,
   AnnotateEndpointReturn,
+  Condition,
   HasId,
   SessionRestEndpoint,
   WithAnnotations
@@ -44,6 +45,8 @@ type RelationalSchemaMustSatisfy = {
     Record<keyof TypeOfCollectionKey<P>, CollectionKey>
   >
 }
+
+type RelationalSchema = typeof relationalSchema
 
 export interface AnnotatedEndpointContextType {
   session: UserSession
@@ -116,7 +119,18 @@ export type AnnotatedItem<
   AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES>
 >
 
-type RelationalSchema = typeof relationalSchema
+type IncludeRelation<
+  BASE_COLLECTION_KEY extends CollectionKey,
+  INCLUDE_COLLECTION_KEY extends CollectionKey
+> = {
+  condition?: Condition<TypeOfCollectionKey<INCLUDE_COLLECTION_KEY>>
+  relationProperty: keyof RelationalSchema[INCLUDE_COLLECTION_KEY]
+  as: string
+}
+
+type IncludeRelations<BASE_COLLECTION_KEY extends CollectionKey> = {
+  [K in keyof RelationalSchema]?: IncludeRelation<BASE_COLLECTION_KEY, K>
+}
 
 /** This is the limited set of endpoint keys available when using an annotated endpoint */
 type AnnotatedEndpointKeys<
@@ -139,11 +153,12 @@ export type UseAnnotatedEndpointReturn<
 
 export function useAnnotatedEndpoint<
   BASE_COLLECTION_KEY extends CollectionKey,
-  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY] = never
+  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY] = never,
+  INCLUDE_RELATIONS extends IncludeRelations<BASE_COLLECTION_KEY> = never
 >(params: {
   collection: BASE_COLLECTION_KEY
   with?: WITH_PROPERTIES[]
-  // include?: any
+  include?: INCLUDE_RELATIONS
 }): UseAnnotatedEndpointReturn<BASE_COLLECTION_KEY, WITH_PROPERTIES> {
   const {collection, with: withProperties = []} = params
   const {session} = useContext(AnnotatedEndpointContext)

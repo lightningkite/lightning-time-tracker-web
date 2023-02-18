@@ -15,14 +15,14 @@ export const ProjectIndex: FC = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const newEndpoint = useAnnotatedEndpoint({
-    baseKey: "timeEntry",
-    annotateWith: ["task", "user", "project"]
+    baseKey: "organization",
+    annotateWith: ["owner"]
   })
 
   ;(async () => {
     const val = await newEndpoint.detail("123")
 
-    console.log(val._annotations.user)
+    console.log(val._annotations.owner)
   })()
 
   return (

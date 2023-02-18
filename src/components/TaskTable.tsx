@@ -2,15 +2,14 @@ import {
   RestDataTable,
   RestDataTableProps
 } from "@lightningkite/mui-lightning-components"
+import {AnnotatedItem, useAnnotatedEndpoint} from "api/AnnotatedEndpoints"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import React, {FC} from "react"
-import {
-  AnnotatedTask,
-  useOldAnnotatedEndpoints
-} from "utils/useOldAnnotatedEndpoints"
 
 dayjs.extend(duration)
+
+export type AnnotatedTask = AnnotatedItem<"task", "user">
 
 export interface TaskTableProps
   extends Partial<RestDataTableProps<AnnotatedTask>> {
@@ -19,7 +18,10 @@ export interface TaskTableProps
 
 export const TaskTable: FC<TaskTableProps> = (props) => {
   const {...restProps} = props
-  const {annotatedTaskEndpoint} = useOldAnnotatedEndpoints()
+  const annotatedTaskEndpoint = useAnnotatedEndpoint({
+    baseKey: "task",
+    annotateWith: ["user"]
+  })
 
   return (
     <RestDataTable

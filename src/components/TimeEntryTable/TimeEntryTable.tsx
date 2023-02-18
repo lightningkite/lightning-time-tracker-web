@@ -4,7 +4,7 @@ import {
 } from "@lightningkite/mui-lightning-components"
 import {
   useAnnotatedEndpoint,
-  UseAnnotatedEndpointItemType
+  AnnotatedItem
 } from "api/AnnotatedEndpoints"
 import {TimeEntry} from "api/sdk"
 import dayjs from "dayjs"
@@ -16,7 +16,7 @@ import {TimeEntryModal} from "./TimeEntryModal"
 dayjs.extend(relativeTime)
 dayjs.extend(duration)
 
-export type AnnotatedTimeEntry = UseAnnotatedEndpointItemType<
+export type AnnotatedTimeEntry = AnnotatedItem<
   "timeEntry",
   "task" | "project" | "user"
 >

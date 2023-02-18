@@ -64,7 +64,7 @@ export type TypeOfEndpointKey<K extends EndpointKey> = Awaited<
 >
 
 /** Type of the annotation of the model used by annotated endpoint */
-type TypeOfAnnotation<
+type AnnotationType<
   BASE_ENDPOINT_KEY extends EndpointKey,
   ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
 > = {
@@ -77,12 +77,12 @@ type TypeOfAnnotation<
 }
 
 /** Type of the model used by the annotated endpoint */
-export type UseAnnotatedEndpointItemType<
+export type AnnotatedItem<
   BASE_ENDPOINT_KEY extends EndpointKey,
   ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
 > = WithAnnotations<
   TypeOfEndpointKey<BASE_ENDPOINT_KEY>,
-  TypeOfAnnotation<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
+  AnnotationType<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
 >
 
 export const referentialSchema = {
@@ -122,7 +122,7 @@ type AnnotatedEndpointKeys<
   ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
 > = keyof AnnotateEndpointReturn<
   TypeOfEndpointKey<BASE_ENDPOINT_KEY>,
-  TypeOfAnnotation<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
+  AnnotationType<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
 >
 
 // !! Don't try to simplify this by writing AnnotateEndpointReturn<...> without pick. It should work, but types start being inferred as any.
@@ -131,9 +131,7 @@ export type UseAnnotatedEndpointReturn<
   BASE_ENDPOINT_KEY extends EndpointKey,
   ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
 > = Pick<
-  SessionRestEndpoint<
-    UseAnnotatedEndpointItemType<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
-  >,
+  SessionRestEndpoint<AnnotatedItem<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>>,
   AnnotatedEndpointKeys<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
 >
 
@@ -157,7 +155,7 @@ export function useAnnotatedEndpoint<
   }
 
   type BaseItemType = TypeOfEndpointKey<BASE_ENDPOINT_KEY>
-  type ItemAnnotationType = TypeOfAnnotation<
+  type ItemAnnotationType = AnnotationType<
     BASE_ENDPOINT_KEY,
     ANNOTATE_WITH_KEYS
   >
@@ -166,7 +164,7 @@ export function useAnnotatedEndpoint<
 
   const annotatedEndpoint = annotateEndpoint<
     BaseItemType,
-    TypeOfAnnotation<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
+    AnnotationType<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
   >(baseEndpoint, async (baseItems) => {
     // Promises for each annotation
     const annotationRequests: Array<Promise<HasId[]>> = annotateWith.map(

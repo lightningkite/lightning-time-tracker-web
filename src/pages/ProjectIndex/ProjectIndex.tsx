@@ -19,21 +19,19 @@ export const ProjectIndex: FC = () => {
     with: ["owner"]
   })
 
-  // const testEndpoint = useAnnotatedEndpoint({"timeEntry"})
+  const testEndpoint = useAnnotatedEndpoint({
+    collection: "timeEntry"
+    // with: ["organization"],
+    // include: {timeEntry: {condition: {Always: true}, as: "timeEntries"}}
+    // aggregate: {timeEntry: {sum: 'duration'}
+  })
 
   ;(async () => {
     const val = await newEndpoint.detail("123")
-    // const val2 = await testEndpoint.detail("123")
+    const val2 = await testEndpoint.detail("123")
 
-    console.log(val._annotations.owner)
+    console.log(val._annotations.owner, val2._annotations)
   })()
-
-  // annotateEndpoint({
-  //   collection: "user"
-  //   // with: ["organization"],
-  //   // include: {timeEntry: {condition: {Always: true}}},
-  //   // aggregate: {timeEntry: {sum: 'duration'}
-  // })
 
   return (
     <Container maxWidth="md">

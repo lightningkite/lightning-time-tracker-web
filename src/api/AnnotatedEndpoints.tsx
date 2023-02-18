@@ -10,7 +10,36 @@ import {
 import {createContext, FC, PropsWithChildren, useContext} from "react"
 import {UserSession} from "./sdk"
 
-export type RelationalSchemaMustSatisfy = {
+export const relationalSchema = {
+  organization: {
+    owner: "user"
+  },
+  project: {
+    organization: "organization"
+  },
+  user: {
+    organization: "organization"
+  },
+  task: {
+    project: "project",
+    organization: "organization",
+    user: "user"
+  },
+  timeEntry: {
+    task: "task",
+    user: "user",
+    project: "project",
+    organization: "organization"
+  },
+  timer: {
+    user: "user",
+    task: "task",
+    project: "project",
+    organization: "organization"
+  }
+} satisfies RelationalSchemaMustSatisfy
+
+type RelationalSchemaMustSatisfy = {
   [P in CollectionKey]: Partial<
     Record<keyof TypeOfCollectionKey<P>, CollectionKey>
   >
@@ -87,35 +116,6 @@ export type AnnotatedItem<
   AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES>
 >
 
-export const relationalSchema = {
-  organization: {
-    owner: "user"
-  },
-  project: {
-    organization: "organization"
-  },
-  user: {
-    organization: "organization"
-  },
-  task: {
-    project: "project",
-    organization: "organization",
-    user: "user"
-  },
-  timeEntry: {
-    task: "task",
-    user: "user",
-    project: "project",
-    organization: "organization"
-  },
-  timer: {
-    user: "user",
-    task: "task",
-    project: "project",
-    organization: "organization"
-  }
-} satisfies RelationalSchemaMustSatisfy
-
 type RelationalSchema = typeof relationalSchema
 
 /** This is the limited set of endpoint keys available when using an annotated endpoint */
@@ -139,10 +139,10 @@ export type UseAnnotatedEndpointReturn<
 
 export function useAnnotatedEndpoint<
   BASE_COLLECTION_KEY extends CollectionKey,
-  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY]
+  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY] = never
 >(params: {
   collection: BASE_COLLECTION_KEY
-  with: WITH_PROPERTIES[]
+  with?: WITH_PROPERTIES[]
   // include?: any
 }): UseAnnotatedEndpointReturn<BASE_COLLECTION_KEY, WITH_PROPERTIES> {
   const {collection, with: withProperties = []} = params

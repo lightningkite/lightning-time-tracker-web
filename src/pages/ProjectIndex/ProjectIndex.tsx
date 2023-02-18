@@ -21,22 +21,20 @@ export const ProjectIndex: FC = () => {
 
   const testEndpoint = useAnnotatedEndpoint({
     collection: "user",
+    with: ["organization"],
     include: {
       timeEntry: {
         condition: {Always: true},
-        relationProperty: "user",
-        as: "timeEntries"
+        relationProperty: "user"
       }
     }
-    // include: {timeEntry: {condition: {Always: true}, as: "timeEntries"}}
-    // aggregate: {timeEntry: {sum: 'duration'}
   })
 
   ;(async () => {
     const val = await newEndpoint.detail("123")
     const val2 = await testEndpoint.detail("123")
 
-    console.log(val._annotations.owner, val2._annotations)
+    console.log(val._annotations.owner, val2._annotations.timeEntries)
   })()
 
   return (

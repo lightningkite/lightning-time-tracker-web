@@ -97,10 +97,19 @@ export type TypeOfCollectionKey<K extends CollectionKey> = Awaited<
   ReturnType<UserSession[K]["detail"]>
 >
 
+// Makes a string plural
+type Pluralize<T extends string> = T extends `${infer S}y` ? `${S}ies` : `${T}s`
+
+type PluralKeys<T extends Record<string, any>> = {
+  // @ts-expect-error
+  [K in keyof T as Pluralize<K>]: T[K]
+}
+
 /** Type of the annotation of the model used by annotated endpoint */
 type AnnotationType<
   BASE_COLLECTION_KEY extends CollectionKey,
-  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY]
+  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY],
+  INCLUDE_RELATIONS extends IncludeRelations
 > = {
   [K in WITH_PROPERTIES]:
     | undefined
@@ -108,58 +117,67 @@ type AnnotationType<
         // @ts-expect-error
         RelationalSchema[BASE_COLLECTION_KEY][K]
       >
-}
+} & PluralKeys<{
+  // @ts-expect-error
+  [K in keyof INCLUDE_RELATIONS]: TypeOfCollectionKey<K>[]
+}>
 
 /** Type of the model used by the annotated endpoint */
 export type AnnotatedItem<
   BASE_COLLECTION_KEY extends CollectionKey,
-  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY]
+  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY],
+  INCLUDE_RELATIONS extends IncludeRelations
 > = WithAnnotations<
   TypeOfCollectionKey<BASE_COLLECTION_KEY>,
-  AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES>
+  AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES, INCLUDE_RELATIONS>
 >
 
-type IncludeRelation<
-  BASE_COLLECTION_KEY extends CollectionKey,
-  INCLUDE_COLLECTION_KEY extends CollectionKey
-> = {
+type IncludeRelation<INCLUDE_COLLECTION_KEY extends CollectionKey> = {
   condition?: Condition<TypeOfCollectionKey<INCLUDE_COLLECTION_KEY>>
   relationProperty: keyof RelationalSchema[INCLUDE_COLLECTION_KEY]
-  as: string
+  // as: string
 }
 
-type IncludeRelations<BASE_COLLECTION_KEY extends CollectionKey> = {
-  [K in keyof RelationalSchema]?: IncludeRelation<BASE_COLLECTION_KEY, K>
+type IncludeRelations = {
+  [K in keyof RelationalSchema]?: IncludeRelation<K>
 }
 
 /** This is the limited set of endpoint keys available when using an annotated endpoint */
 type AnnotatedEndpointKeys<
   BASE_COLLECTION_KEY extends CollectionKey,
-  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY]
+  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY],
+  INCLUDE_RELATIONS extends IncludeRelations
 > = keyof AnnotateEndpointReturn<
   TypeOfCollectionKey<BASE_COLLECTION_KEY>,
-  AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES>
+  AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES, INCLUDE_RELATIONS>
 >
 
 // !! Don't try to simplify this by writing AnnotateEndpointReturn<...> without pick. It should work, but types start being inferred as any.
-/** Return type of `useQueryJoin` */
+/** Return type of `useAnnotatedEndpoint` */
 export type UseAnnotatedEndpointReturn<
   BASE_COLLECTION_KEY extends CollectionKey,
-  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY]
+  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY],
+  INCLUDE_RELATIONS extends IncludeRelations
 > = Pick<
-  SessionRestEndpoint<AnnotatedItem<BASE_COLLECTION_KEY, WITH_PROPERTIES>>,
-  AnnotatedEndpointKeys<BASE_COLLECTION_KEY, WITH_PROPERTIES>
+  SessionRestEndpoint<
+    AnnotatedItem<BASE_COLLECTION_KEY, WITH_PROPERTIES, INCLUDE_RELATIONS>
+  >,
+  AnnotatedEndpointKeys<BASE_COLLECTION_KEY, WITH_PROPERTIES, INCLUDE_RELATIONS>
 >
 
 export function useAnnotatedEndpoint<
   BASE_COLLECTION_KEY extends CollectionKey,
   WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY] = never,
-  INCLUDE_RELATIONS extends IncludeRelations<BASE_COLLECTION_KEY> = never
+  INCLUDE_RELATIONS extends IncludeRelations = {}
 >(params: {
   collection: BASE_COLLECTION_KEY
   with?: WITH_PROPERTIES[]
   include?: INCLUDE_RELATIONS
-}): UseAnnotatedEndpointReturn<BASE_COLLECTION_KEY, WITH_PROPERTIES> {
+}): UseAnnotatedEndpointReturn<
+  BASE_COLLECTION_KEY,
+  WITH_PROPERTIES,
+  INCLUDE_RELATIONS
+> {
   const {collection, with: withProperties = []} = params
   const {session} = useContext(AnnotatedEndpointContext)
 
@@ -173,13 +191,17 @@ export function useAnnotatedEndpoint<
   }
 
   type BaseCollectionName = TypeOfCollectionKey<BASE_COLLECTION_KEY>
-  type ItemAnnotationType = AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES>
+  type ItemAnnotationType = AnnotationType<
+    BASE_COLLECTION_KEY,
+    WITH_PROPERTIES,
+    INCLUDE_RELATIONS
+  >
 
   const baseEndpoint = session[collection]
 
   const annotatedEndpoint = annotateEndpoint<
     BaseCollectionName,
-    AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES>
+    AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES, INCLUDE_RELATIONS>
   >(baseEndpoint, async (baseItems) => {
     // Promises for each annotation
     const withRequests: Array<Promise<HasId[]>> = withProperties.map(

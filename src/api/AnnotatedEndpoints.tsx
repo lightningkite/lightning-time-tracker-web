@@ -10,7 +10,7 @@ import {
 import {createContext, FC, PropsWithChildren, useContext} from "react"
 import {UserSession} from "./sdk"
 
-export type ReferentialSchemaMustSatisfy = {
+export type RelationalSchemaMustSatisfy = {
   [P in CollectionKey]: Partial<
     Record<keyof TypeOfCollectionKey<P>, CollectionKey>
   >
@@ -68,26 +68,26 @@ export type TypeOfCollectionKey<K extends CollectionKey> = Awaited<
 /** Type of the annotation of the model used by annotated endpoint */
 type AnnotationType<
   BASE_COLLECTION_KEY extends CollectionKey,
-  WITH_PROPERTIES extends keyof ReferentialSchema[BASE_COLLECTION_KEY]
+  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY]
 > = {
   [K in WITH_PROPERTIES]:
     | undefined
     | TypeOfCollectionKey<
         // @ts-expect-error
-        ReferentialSchema[BASE_COLLECTION_KEY][K]
+        RelationalSchema[BASE_COLLECTION_KEY][K]
       >
 }
 
 /** Type of the model used by the annotated endpoint */
 export type AnnotatedItem<
   BASE_COLLECTION_KEY extends CollectionKey,
-  WITH_PROPERTIES extends keyof ReferentialSchema[BASE_COLLECTION_KEY]
+  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY]
 > = WithAnnotations<
   TypeOfCollectionKey<BASE_COLLECTION_KEY>,
   AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES>
 >
 
-export const referentialSchema = {
+export const relationalSchema = {
   organization: {
     owner: "user"
   },
@@ -114,14 +114,14 @@ export const referentialSchema = {
     project: "project",
     organization: "organization"
   }
-} satisfies ReferentialSchemaMustSatisfy
+} satisfies RelationalSchemaMustSatisfy
 
-type ReferentialSchema = typeof referentialSchema
+type RelationalSchema = typeof relationalSchema
 
 /** This is the limited set of endpoint keys available when using an annotated endpoint */
 type AnnotatedEndpointKeys<
   BASE_COLLECTION_KEY extends CollectionKey,
-  WITH_PROPERTIES extends keyof ReferentialSchema[BASE_COLLECTION_KEY]
+  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY]
 > = keyof AnnotateEndpointReturn<
   TypeOfCollectionKey<BASE_COLLECTION_KEY>,
   AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES>
@@ -131,7 +131,7 @@ type AnnotatedEndpointKeys<
 /** Return type of `useQueryJoin` */
 export type UseAnnotatedEndpointReturn<
   BASE_COLLECTION_KEY extends CollectionKey,
-  WITH_PROPERTIES extends keyof ReferentialSchema[BASE_COLLECTION_KEY]
+  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY]
 > = Pick<
   SessionRestEndpoint<AnnotatedItem<BASE_COLLECTION_KEY, WITH_PROPERTIES>>,
   AnnotatedEndpointKeys<BASE_COLLECTION_KEY, WITH_PROPERTIES>
@@ -139,15 +139,16 @@ export type UseAnnotatedEndpointReturn<
 
 export function useAnnotatedEndpoint<
   BASE_COLLECTION_KEY extends CollectionKey,
-  WITH_PROPERTIES extends keyof ReferentialSchema[BASE_COLLECTION_KEY]
+  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY]
 >(params: {
   collection: BASE_COLLECTION_KEY
   with: WITH_PROPERTIES[]
+  // include?: any
 }): UseAnnotatedEndpointReturn<BASE_COLLECTION_KEY, WITH_PROPERTIES> {
-  const {collection, with: withProperties} = params
+  const {collection, with: withProperties = []} = params
   const {session} = useContext(AnnotatedEndpointContext)
 
-  if (!session || !referentialSchema) {
+  if (!session || !relationalSchema) {
     console.error(
       "AnnotatedEndpointProvider not found in context. Wrap your App component in AnnotatedEndpointProvider"
     )
@@ -168,7 +169,7 @@ export function useAnnotatedEndpoint<
     // Promises for each annotation
     const withRequests: Array<Promise<HasId[]>> = withProperties.map(
       (property) => {
-        const withEndpointKey = referentialSchema[collection][
+        const withEndpointKey = relationalSchema[collection][
           property
         ] as keyof UserSession
 

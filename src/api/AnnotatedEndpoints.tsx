@@ -11,7 +11,9 @@ import {createContext, FC, PropsWithChildren, useContext} from "react"
 import {UserSession} from "./sdk"
 
 export type ReferentialSchemaMustSatisfy = {
-  [P in EndpointKey]: Partial<Record<keyof TypeOfEndpointKey<P>, EndpointKey>>
+  [P in CollectionKey]: Partial<
+    Record<keyof TypeOfCollectionKey<P>, CollectionKey>
+  >
 }
 
 export interface AnnotatedEndpointContextType {
@@ -35,23 +37,23 @@ export const AnnotatedEndpointContextProvider: FC<
 )
 
 /** Check that type has all keys of SessionRestEndpoint */
-type IsSessionRestEndpoint<T extends HasId> = Record<
+type CollectionEndpoints<T extends HasId> = Record<
   keyof SessionRestEndpoint<T>,
   any
 >
 
 /** Picks all the keys of UserSession that are rest endpoints */
-export type EndpointKey = keyof Pick<
+export type CollectionKey = keyof Pick<
   UserSession,
   {
-    [K in keyof UserSession]: UserSession[K] extends IsSessionRestEndpoint<any>
+    [K in keyof UserSession]: UserSession[K] extends CollectionEndpoints<any>
       ? K
       : never
   }[keyof UserSession]
 >
 
 /**
- * Gets the model type of a given key for a rest endpoint
+ * Gets the model type of a collection
  *
  * Example:
  * ```ts
@@ -59,30 +61,30 @@ export type EndpointKey = keyof Pick<
  * // Organization
  * ```
  */
-export type TypeOfEndpointKey<K extends EndpointKey> = Awaited<
+export type TypeOfCollectionKey<K extends CollectionKey> = Awaited<
   ReturnType<UserSession[K]["detail"]>
 >
 
 /** Type of the annotation of the model used by annotated endpoint */
 type AnnotationType<
-  BASE_ENDPOINT_KEY extends EndpointKey,
-  ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
+  BASE_COLLECTION_KEY extends CollectionKey,
+  WITH_PROPERTIES extends keyof ReferentialSchema[BASE_COLLECTION_KEY]
 > = {
-  [A in ANNOTATE_WITH_KEYS]:
+  [K in WITH_PROPERTIES]:
     | undefined
-    | TypeOfEndpointKey<
+    | TypeOfCollectionKey<
         // @ts-expect-error
-        ReferentialSchema[BASE_ENDPOINT_KEY][A]
+        ReferentialSchema[BASE_COLLECTION_KEY][K]
       >
 }
 
 /** Type of the model used by the annotated endpoint */
 export type AnnotatedItem<
-  BASE_ENDPOINT_KEY extends EndpointKey,
-  ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
+  BASE_COLLECTION_KEY extends CollectionKey,
+  WITH_PROPERTIES extends keyof ReferentialSchema[BASE_COLLECTION_KEY]
 > = WithAnnotations<
-  TypeOfEndpointKey<BASE_ENDPOINT_KEY>,
-  AnnotationType<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
+  TypeOfCollectionKey<BASE_COLLECTION_KEY>,
+  AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES>
 >
 
 export const referentialSchema = {
@@ -118,31 +120,31 @@ type ReferentialSchema = typeof referentialSchema
 
 /** This is the limited set of endpoint keys available when using an annotated endpoint */
 type AnnotatedEndpointKeys<
-  BASE_ENDPOINT_KEY extends EndpointKey,
-  ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
+  BASE_COLLECTION_KEY extends CollectionKey,
+  WITH_PROPERTIES extends keyof ReferentialSchema[BASE_COLLECTION_KEY]
 > = keyof AnnotateEndpointReturn<
-  TypeOfEndpointKey<BASE_ENDPOINT_KEY>,
-  AnnotationType<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
+  TypeOfCollectionKey<BASE_COLLECTION_KEY>,
+  AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES>
 >
 
 // !! Don't try to simplify this by writing AnnotateEndpointReturn<...> without pick. It should work, but types start being inferred as any.
 /** Return type of `useQueryJoin` */
 export type UseAnnotatedEndpointReturn<
-  BASE_ENDPOINT_KEY extends EndpointKey,
-  ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
+  BASE_COLLECTION_KEY extends CollectionKey,
+  WITH_PROPERTIES extends keyof ReferentialSchema[BASE_COLLECTION_KEY]
 > = Pick<
-  SessionRestEndpoint<AnnotatedItem<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>>,
-  AnnotatedEndpointKeys<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
+  SessionRestEndpoint<AnnotatedItem<BASE_COLLECTION_KEY, WITH_PROPERTIES>>,
+  AnnotatedEndpointKeys<BASE_COLLECTION_KEY, WITH_PROPERTIES>
 >
 
 export function useAnnotatedEndpoint<
-  BASE_ENDPOINT_KEY extends EndpointKey,
-  ANNOTATE_WITH_KEYS extends keyof ReferentialSchema[BASE_ENDPOINT_KEY]
+  BASE_COLLECTION_KEY extends CollectionKey,
+  WITH_PROPERTIES extends keyof ReferentialSchema[BASE_COLLECTION_KEY]
 >(params: {
-  baseKey: BASE_ENDPOINT_KEY
-  annotateWith: ANNOTATE_WITH_KEYS[]
-}): UseAnnotatedEndpointReturn<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS> {
-  const {baseKey, annotateWith} = params
+  collection: BASE_COLLECTION_KEY
+  with: WITH_PROPERTIES[]
+}): UseAnnotatedEndpointReturn<BASE_COLLECTION_KEY, WITH_PROPERTIES> {
+  const {collection, with: withProperties} = params
   const {session} = useContext(AnnotatedEndpointContext)
 
   if (!session || !referentialSchema) {
@@ -154,50 +156,47 @@ export function useAnnotatedEndpoint<
     )
   }
 
-  type BaseItemType = TypeOfEndpointKey<BASE_ENDPOINT_KEY>
-  type ItemAnnotationType = AnnotationType<
-    BASE_ENDPOINT_KEY,
-    ANNOTATE_WITH_KEYS
-  >
+  type BaseCollectionName = TypeOfCollectionKey<BASE_COLLECTION_KEY>
+  type ItemAnnotationType = AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES>
 
-  const baseEndpoint = session[baseKey]
+  const baseEndpoint = session[collection]
 
   const annotatedEndpoint = annotateEndpoint<
-    BaseItemType,
-    AnnotationType<BASE_ENDPOINT_KEY, ANNOTATE_WITH_KEYS>
+    BaseCollectionName,
+    AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES>
   >(baseEndpoint, async (baseItems) => {
     // Promises for each annotation
-    const annotationRequests: Array<Promise<HasId[]>> = annotateWith.map(
-      (annotateWithKey) => {
-        const annotationEndpointKey = referentialSchema[baseKey][
-          annotateWithKey
+    const withRequests: Array<Promise<HasId[]>> = withProperties.map(
+      (property) => {
+        const withEndpointKey = referentialSchema[collection][
+          property
         ] as keyof UserSession
 
-        const annotationEndpoint = session[
-          annotationEndpointKey
+        const withEndpoint = session[
+          withEndpointKey
         ] as SessionRestEndpoint<HasId>
 
-        const foreignModelIdsToFetch = baseItems
-          .map((item) => item[annotateWithKey as keyof BaseItemType])
+        const withIdsToFetch = baseItems
+          .map((item) => item[property as keyof BaseCollectionName])
           .filter((item) => item !== null && item !== undefined) as string[]
 
-        return annotationEndpoint.query({
-          condition: {_id: {Inside: [...new Set(foreignModelIdsToFetch)]}}
+        return withEndpoint.query({
+          condition: {_id: {Inside: [...new Set(withIdsToFetch)]}}
         })
       },
       {}
     )
 
-    const annotationResponses = await Promise.all(annotationRequests)
+    const withResponses = await Promise.all(withRequests)
 
     return baseItems.map((item) => {
-      const itemAnnotation = annotateWith.reduce(
-        (acc, annotateWithKey, index) => {
-          const annotationResponse = annotationResponses[index]
-          const annotation = annotationResponse.find(
-            (a) => a._id === item[annotateWithKey as keyof BaseItemType]
+      const itemAnnotation = withProperties.reduce(
+        (acc, withProperty, index) => {
+          const withResponse = withResponses[index]
+          const withAnnotation = withResponse.find(
+            (a) => a._id === item[withProperty as keyof BaseCollectionName]
           )
-          return {...acc, [annotateWithKey]: annotation}
+          return {...acc, [withProperty]: withAnnotation}
         },
         {}
       ) as ItemAnnotationType

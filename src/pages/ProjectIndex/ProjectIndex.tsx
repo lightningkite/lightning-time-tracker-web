@@ -15,15 +15,25 @@ export const ProjectIndex: FC = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const newEndpoint = useAnnotatedEndpoint({
-    baseKey: "organization",
-    annotateWith: ["owner"]
+    collection: "organization",
+    with: ["owner"]
   })
+
+  // const testEndpoint = useAnnotatedEndpoint({"timeEntry"})
 
   ;(async () => {
     const val = await newEndpoint.detail("123")
+    // const val2 = await testEndpoint.detail("123")
 
     console.log(val._annotations.owner)
   })()
+
+  // annotateEndpoint({
+  //   collection: "user"
+  //   // with: ["organization"],
+  //   // include: {timeEntry: {condition: {Always: true}}},
+  //   // aggregate: {timeEntry: {sum: 'duration'}
+  // })
 
   return (
     <Container maxWidth="md">

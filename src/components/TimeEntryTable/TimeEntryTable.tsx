@@ -29,8 +29,8 @@ export interface TimeEntryTableProps
 export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
   const {hiddenColumns = [], ...restProps} = props
   const annotatedTimeEntryEndpoint = useAnnotatedEndpoint({
-    baseKey: "timeEntry",
-    annotateWith: ["task", "project", "user"].filter(
+    collection: "timeEntry",
+    with: ["task", "project", "user"].filter(
       (k) => !hiddenColumns.includes(k)
     ) as ("task" | "project" | "user")[]
   })

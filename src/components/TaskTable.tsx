@@ -19,8 +19,8 @@ export interface TaskTableProps
 export const TaskTable: FC<TaskTableProps> = (props) => {
   const {...restProps} = props
   const annotatedTaskEndpoint = useAnnotatedEndpoint({
-    baseKey: "task",
-    annotateWith: ["user"]
+    collection: "task",
+    with: ["user"]
   })
 
   return (

@@ -105,6 +105,12 @@ type PluralKeys<T extends Record<string, any>> = {
   [K in keyof T as Pluralize<K>]: T[K]
 }
 
+function pluralize<T extends string>(key: T): Pluralize<T> {
+  return key.endsWith("y")
+    ? ((key.slice(0, -1) + "ies") as Pluralize<T>)
+    : ((key + "s") as Pluralize<T>)
+}
+
 /** Type of the annotation of the model used by annotated endpoint */
 type AnnotationType<
   BASE_COLLECTION_KEY extends CollectionKey,
@@ -178,7 +184,11 @@ export function useAnnotatedEndpoint<
   WITH_PROPERTIES,
   INCLUDE_RELATIONS
 > {
-  const {collection: baseCollection, with: withProperties = []} = params
+  const {
+    collection: baseCollection,
+    with: withProperties = [],
+    include: includeRelations = {} as INCLUDE_RELATIONS
+  } = params
   const {session} = useContext(AnnotatedEndpointContext)
 
   if (!session) {
@@ -215,6 +225,14 @@ export function useAnnotatedEndpoint<
       })
     )
 
+    const includeResponses = await Promise.all(
+      promisesForIncludeItems<BASE_COLLECTION_KEY, INCLUDE_RELATIONS>({
+        session,
+        includeRelations,
+        baseItems
+      })
+    )
+
     return baseItems.map((item) => {
       const itemAnnotation = {}
 
@@ -227,6 +245,18 @@ export function useAnnotatedEndpoint<
         // @ts-expect-error
         itemAnnotation[withProperty] = withAnnotation
       })
+
+      Object.entries(includeRelations).forEach(
+        ([includeCollection, includeRelation], index) => {
+          const includeResponse = includeResponses[index]
+          const includeAnnotation = includeResponse.filter(
+            (a) => (a as any)[includeRelation.relationProperty] === item._id
+          )
+
+          // @ts-expect-error
+          itemAnnotation[pluralize(includeCollection)] = includeAnnotation
+        }
+      )
 
       return {
         ...item,
@@ -266,4 +296,37 @@ function promisesForWithItems<
       condition: {_id: {Inside: [...new Set(withIdsToFetch)]}}
     })
   }, {})
+}
+
+function promisesForIncludeItems<
+  INCLUDE_COLLECTION_KEY extends CollectionKey,
+  INCLUDE_RELATIONS extends IncludeRelations
+>(params: {
+  session: UserSession
+  includeRelations: INCLUDE_RELATIONS
+  baseItems: TypeOfCollectionKey<INCLUDE_COLLECTION_KEY>[]
+}) {
+  const {session, includeRelations, baseItems} = params
+
+  return Object.entries(includeRelations || {}).map(
+    ([includeCollection, includeRelation]) => {
+      const includeEndpoint: CollectionEndpoints<HasId> =
+        session[includeCollection as CollectionKey]
+
+      const baseItemIds = baseItems.map((item) => item._id)
+
+      return includeEndpoint.query({
+        condition: {
+          And: [
+            includeRelation.condition || {Always: true},
+            {
+              [includeRelation.relationProperty]: {
+                Inside: [...new Set(baseItemIds)]
+              }
+            }
+          ]
+        }
+      }) as Promise<HasId[]>
+    }
+  )
 }

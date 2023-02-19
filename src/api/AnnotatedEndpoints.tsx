@@ -228,20 +228,21 @@ export function useAnnotatedEndpoint<
     const withResponses = await Promise.all(withRequests)
 
     return baseItems.map((item) => {
-      const itemAnnotation = withProperties.reduce(
-        (acc, withProperty, index) => {
-          const withResponse = withResponses[index]
-          const withAnnotation = withResponse.find(
-            (a) => a._id === item[withProperty as keyof BaseCollectionName]
-          )
-          return {...acc, [withProperty]: withAnnotation}
-        },
-        {}
-      ) as ItemAnnotationType
+      const itemAnnotation = {}
+
+      withProperties.forEach((withProperty, index) => {
+        const withResponse = withResponses[index]
+        const withAnnotation = withResponse.find(
+          (a) => a._id === item[withProperty as keyof BaseCollectionName]
+        )
+
+        // @ts-expect-error
+        itemAnnotation[withProperty] = withAnnotation
+      })
 
       return {
         ...item,
-        _annotations: itemAnnotation
+        _annotations: itemAnnotation as ItemAnnotationType
       }
     })
   })

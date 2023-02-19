@@ -14,27 +14,29 @@ export const ProjectIndex: FC = () => {
 
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
-  const newEndpoint = useAnnotatedEndpoint({
+  const annotatedOrganizationEndpoint = useAnnotatedEndpoint({
     collection: "organization",
     with: ["owner"]
   })
 
-  const testEndpoint = useAnnotatedEndpoint({
+  const annotatedUserEndpoint = useAnnotatedEndpoint({
     collection: "user",
     with: ["organization"],
     include: {
       timeEntry: {
-        condition: {Always: true},
+        relationProperty: "user"
+      },
+      task: {
         relationProperty: "user"
       }
     }
   })
 
   ;(async () => {
-    const val = await newEndpoint.detail("123")
-    const val2 = await testEndpoint.detail("123")
+    const organizations = await annotatedOrganizationEndpoint.query({limit: 5})
+    const users = await annotatedUserEndpoint.query({limit: 5})
 
-    console.log(val._annotations.owner, val2._annotations.timeEntries)
+    console.log({organizations, users})
   })()
 
   return (

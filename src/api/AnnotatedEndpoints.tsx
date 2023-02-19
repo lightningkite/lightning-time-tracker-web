@@ -115,7 +115,7 @@ function pluralize<T extends string>(key: T): Pluralize<T> {
 type AnnotationType<
   BASE_COLLECTION_KEY extends CollectionKey,
   WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY],
-  INCLUDE_RELATIONS extends IncludeRelations
+  INCLUDE_COLLECTIONS extends CollectionKey
 > = {
   [K in WITH_PROPERTIES]:
     | undefined
@@ -124,18 +124,17 @@ type AnnotationType<
         RelationalSchema[BASE_COLLECTION_KEY][K]
       >
 } & PluralKeys<{
-  // @ts-expect-error
-  [K in keyof INCLUDE_RELATIONS]: TypeOfCollectionKey<K>[]
+  [K in INCLUDE_COLLECTIONS]: TypeOfCollectionKey<K>[]
 }>
 
 /** Type of the model used by the annotated endpoint */
 export type AnnotatedItem<
   BASE_COLLECTION_KEY extends CollectionKey,
-  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY],
-  INCLUDE_RELATIONS extends IncludeRelations
+  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY] = never,
+  INCLUDE_COLLECTIONS extends CollectionKey = never
 > = WithAnnotations<
   TypeOfCollectionKey<BASE_COLLECTION_KEY>,
-  AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES, INCLUDE_RELATIONS>
+  AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES, INCLUDE_COLLECTIONS>
 >
 
 type IncludeRelation<INCLUDE_COLLECTION_KEY extends CollectionKey> = {
@@ -144,18 +143,18 @@ type IncludeRelation<INCLUDE_COLLECTION_KEY extends CollectionKey> = {
   // as: string
 }
 
-type IncludeRelations = {
-  [K in keyof RelationalSchema]?: IncludeRelation<K>
+type IncludeRelations<INCLUDE_COLLECTIONS extends CollectionKey> = {
+  [K in INCLUDE_COLLECTIONS]?: IncludeRelation<K>
 }
 
 /** This is the limited set of endpoint keys available when using an annotated endpoint */
 type AnnotatedEndpointKeys<
   BASE_COLLECTION_KEY extends CollectionKey,
   WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY],
-  INCLUDE_RELATIONS extends IncludeRelations
+  INCLUDE_COLLECTIONS extends CollectionKey = never
 > = keyof AnnotateEndpointReturn<
   TypeOfCollectionKey<BASE_COLLECTION_KEY>,
-  AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES, INCLUDE_RELATIONS>
+  AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES, INCLUDE_COLLECTIONS>
 >
 
 // !! Don't try to simplify this by writing AnnotateEndpointReturn<...> without pick. It should work, but types start being inferred as any.
@@ -163,31 +162,39 @@ type AnnotatedEndpointKeys<
 export type UseAnnotatedEndpointReturn<
   BASE_COLLECTION_KEY extends CollectionKey,
   WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY],
-  INCLUDE_RELATIONS extends IncludeRelations
+  INCLUDE_COLLECTIONS extends CollectionKey = never
 > = Pick<
   SessionRestEndpoint<
-    AnnotatedItem<BASE_COLLECTION_KEY, WITH_PROPERTIES, INCLUDE_RELATIONS>
+    AnnotatedItem<BASE_COLLECTION_KEY, WITH_PROPERTIES, INCLUDE_COLLECTIONS>
   >,
-  AnnotatedEndpointKeys<BASE_COLLECTION_KEY, WITH_PROPERTIES, INCLUDE_RELATIONS>
+  AnnotatedEndpointKeys<
+    BASE_COLLECTION_KEY,
+    WITH_PROPERTIES,
+    INCLUDE_COLLECTIONS
+  >
 >
 
 export function useAnnotatedEndpoint<
   BASE_COLLECTION_KEY extends CollectionKey,
   WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY] = never,
-  INCLUDE_RELATIONS extends IncludeRelations = {}
+  INCLUDE_COLLECTIONS extends CollectionKey = never
 >(params: {
   collection: BASE_COLLECTION_KEY
   with?: WITH_PROPERTIES[]
-  include?: INCLUDE_RELATIONS
+  include?: IncludeRelations<INCLUDE_COLLECTIONS>
+  // include?: {
+  //   [K in INCLUDE_COLLECTIONS]?: IncludeRelation<K>
+  // }
+  // include?: Record<INCLUDE_COLLECTIONS, IncludeRelation<any>>
 }): UseAnnotatedEndpointReturn<
   BASE_COLLECTION_KEY,
   WITH_PROPERTIES,
-  INCLUDE_RELATIONS
+  INCLUDE_COLLECTIONS
 > {
   const {
     collection: baseCollection,
     with: withProperties = [],
-    include: includeRelations = {} as INCLUDE_RELATIONS
+    include: includeRelations = {} as IncludeRelations<any>
   } = params
   const {session} = useContext(AnnotatedEndpointContext)
 
@@ -204,14 +211,14 @@ export function useAnnotatedEndpoint<
   type ItemAnnotationType = AnnotationType<
     BASE_COLLECTION_KEY,
     WITH_PROPERTIES,
-    INCLUDE_RELATIONS
+    INCLUDE_COLLECTIONS
   >
 
   const baseEndpoint = session[baseCollection]
 
   const annotatedEndpoint = annotateEndpoint<
     BaseCollectionName,
-    AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES, INCLUDE_RELATIONS>
+    AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES, INCLUDE_COLLECTIONS>
   >(baseEndpoint, async (baseItems) => {
     // Promises for each annotation
 
@@ -226,7 +233,7 @@ export function useAnnotatedEndpoint<
     )
 
     const includeResponses = await Promise.all(
-      promisesForIncludeItems<BASE_COLLECTION_KEY, INCLUDE_RELATIONS>({
+      promisesForIncludeItems<INCLUDE_COLLECTIONS>({
         session,
         includeRelations,
         baseItems
@@ -250,7 +257,8 @@ export function useAnnotatedEndpoint<
         ([includeCollection, includeRelation], index) => {
           const includeResponse = includeResponses[index]
           const includeAnnotation = includeResponse.filter(
-            (a) => (a as any)[includeRelation.relationProperty] === item._id
+            // @ts-expect-error
+            (a) => a[includeRelation.relationProperty] === item._id
           )
 
           // @ts-expect-error
@@ -299,11 +307,10 @@ function promisesForWithItems<
 }
 
 function promisesForIncludeItems<
-  INCLUDE_COLLECTION_KEY extends CollectionKey,
-  INCLUDE_RELATIONS extends IncludeRelations
+  INCLUDE_COLLECTION_KEY extends CollectionKey
 >(params: {
   session: UserSession
-  includeRelations: INCLUDE_RELATIONS
+  includeRelations: IncludeRelations<INCLUDE_COLLECTION_KEY>
   baseItems: TypeOfCollectionKey<INCLUDE_COLLECTION_KEY>[]
 }) {
   const {session, includeRelations, baseItems} = params
@@ -318,9 +325,11 @@ function promisesForIncludeItems<
       return includeEndpoint.query({
         condition: {
           And: [
-            includeRelation.condition || {Always: true},
+            (includeRelation as IncludeRelation<any>).condition || {
+              Always: true
+            },
             {
-              [includeRelation.relationProperty]: {
+              [(includeRelation as IncludeRelation<any>).relationProperty]: {
                 Inside: [...new Set(baseItemIds)]
               }
             }

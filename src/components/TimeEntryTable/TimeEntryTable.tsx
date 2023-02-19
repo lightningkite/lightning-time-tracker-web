@@ -2,10 +2,7 @@ import {
   RestDataTable,
   RestDataTableProps
 } from "@lightningkite/mui-lightning-components"
-import {
-  useAnnotatedEndpoint,
-  AnnotatedItem
-} from "api/AnnotatedEndpoints"
+import {AnnotatedItem, useAnnotatedEndpoint} from "api/AnnotatedEndpoints"
 import {TimeEntry} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"

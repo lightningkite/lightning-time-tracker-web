@@ -1,6 +1,5 @@
 import {RestDataTable} from "@lightningkite/mui-lightning-components"
 import {Container} from "@mui/material"
-import {useAnnotatedEndpoint} from "api/AnnotatedEndpoints"
 import PageHeader from "components/PageHeader"
 import dayjs from "dayjs"
 import React, {FC, useContext, useState} from "react"
@@ -10,34 +9,9 @@ import {AddProjectButton} from "./AddProjectButton"
 
 export const ProjectIndex: FC = () => {
   const navigate = useNavigate()
-  const {session, currentUser} = useContext(AuthContext)
+  const {currentUser, session} = useContext(AuthContext)
 
   const [refreshTrigger, setRefreshTrigger] = useState(0)
-
-  const annotatedOrganizationEndpoint = useAnnotatedEndpoint({
-    collection: "organization",
-    with: ["owner"]
-  })
-
-  const annotatedUserEndpoint = useAnnotatedEndpoint({
-    collection: "user",
-    with: ["organization"],
-    include: {
-      timeEntry: {
-        relationProperty: "user"
-      },
-      task: {
-        relationProperty: "user"
-      }
-    }
-  })
-
-  ;(async () => {
-    const organizations = await annotatedOrganizationEndpoint.query({limit: 5})
-    const users = await annotatedUserEndpoint.query({limit: 5})
-
-    console.log({organizations, users})
-  })()
 
   return (
     <Container maxWidth="md">

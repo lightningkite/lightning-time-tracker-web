@@ -178,10 +178,10 @@ export function useAnnotatedEndpoint<
   WITH_PROPERTIES,
   INCLUDE_RELATIONS
 > {
-  const {collection, with: withProperties = []} = params
+  const {collection: baseCollection, with: withProperties = []} = params
   const {session} = useContext(AnnotatedEndpointContext)
 
-  if (!session || !relationalSchema) {
+  if (!session) {
     console.error(
       "AnnotatedEndpointProvider not found in context. Wrap your App component in AnnotatedEndpointProvider"
     )
@@ -197,35 +197,23 @@ export function useAnnotatedEndpoint<
     INCLUDE_RELATIONS
   >
 
-  const baseEndpoint = session[collection]
+  const baseEndpoint = session[baseCollection]
 
   const annotatedEndpoint = annotateEndpoint<
     BaseCollectionName,
     AnnotationType<BASE_COLLECTION_KEY, WITH_PROPERTIES, INCLUDE_RELATIONS>
   >(baseEndpoint, async (baseItems) => {
     // Promises for each annotation
-    const withRequests: Array<Promise<HasId[]>> = withProperties.map(
-      (property) => {
-        const withEndpointKey = relationalSchema[collection][
-          property
-        ] as keyof UserSession
 
-        const withEndpoint = session[
-          withEndpointKey
-        ] as SessionRestEndpoint<HasId>
-
-        const withIdsToFetch = baseItems
-          .map((item) => item[property as keyof BaseCollectionName])
-          .filter((item) => item !== null && item !== undefined) as string[]
-
-        return withEndpoint.query({
-          condition: {_id: {Inside: [...new Set(withIdsToFetch)]}}
-        })
-      },
-      {}
+    // Items from the WITH collections to be used for annotations
+    const withResponses = await Promise.all(
+      promisesForWithItems<BASE_COLLECTION_KEY, WITH_PROPERTIES>({
+        session,
+        withProperties,
+        baseItems,
+        baseCollection
+      })
     )
-
-    const withResponses = await Promise.all(withRequests)
 
     return baseItems.map((item) => {
       const itemAnnotation = {}
@@ -248,4 +236,34 @@ export function useAnnotatedEndpoint<
   })
 
   return annotatedEndpoint
+}
+
+function promisesForWithItems<
+  BASE_COLLECTION_KEY extends CollectionKey,
+  WITH_PROPERTIES extends keyof RelationalSchema[BASE_COLLECTION_KEY]
+>(params: {
+  session: UserSession
+  withProperties: WITH_PROPERTIES[]
+  baseItems: TypeOfCollectionKey<BASE_COLLECTION_KEY>[]
+  baseCollection: BASE_COLLECTION_KEY
+}) {
+  const {session, withProperties, baseItems, baseCollection} = params
+
+  type BaseCollectionName = TypeOfCollectionKey<BASE_COLLECTION_KEY>
+
+  return withProperties.map((property) => {
+    const withEndpointKey = relationalSchema[baseCollection][
+      property
+    ] as keyof UserSession
+
+    const withEndpoint = session[withEndpointKey] as SessionRestEndpoint<HasId>
+
+    const withIdsToFetch = baseItems
+      .map((item) => item[property as keyof BaseCollectionName])
+      .filter((item) => item !== null && item !== undefined) as string[]
+
+    return withEndpoint.query({
+      condition: {_id: {Inside: [...new Set(withIdsToFetch)]}}
+    })
+  }, {})
 }

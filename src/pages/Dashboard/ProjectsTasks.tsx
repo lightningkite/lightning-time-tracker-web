@@ -16,16 +16,13 @@ import Loading from "components/Loading"
 import React, {FC, useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
 import {booleanCompare, compareTasksByState} from "utils/helpers"
-import {
-  AnnotatedTask,
-  useOldAnnotatedEndpoints
-} from "utils/useOldAnnotatedEndpoints"
+import {AnnotatedTask, useAnnotatedTasks} from "utils/useAnnotatedTasks"
 import {TaskListItem} from "./TaskListItem"
 
 export const ProjectsTasks: FC<{onlyMine: boolean}> = ({onlyMine}) => {
   const {session, currentOrganization, currentUser} = useContext(AuthContext)
   const {timers} = useContext(TimerContext)
-  const {annotatedTaskEndpoint} = useOldAnnotatedEndpoints()
+  const annotatedTaskEndpoint = useAnnotatedTasks()
 
   const [projects, setProjects] = useState<Project[] | null>()
   const [annotatedTasks, setAnnotatedTasks] = useState<AnnotatedTask[] | null>()

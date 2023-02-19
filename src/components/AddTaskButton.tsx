@@ -20,7 +20,7 @@ import {useFormik} from "formik"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {useFocus} from "utils/useFocus"
-import {AnnotatedTask} from "utils/useOldAnnotatedEndpoints"
+import {AnnotatedTask} from "utils/useAnnotatedTasks"
 import * as yup from "yup"
 
 const validationSchema = yup.object().shape({

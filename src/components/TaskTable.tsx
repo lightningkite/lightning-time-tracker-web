@@ -2,14 +2,10 @@ import {
   RestDataTable,
   RestDataTableProps
 } from "@lightningkite/mui-lightning-components"
-import {AnnotatedItem, useAnnotatedEndpoint} from "api/AnnotatedEndpoints"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import React, {FC} from "react"
-
-dayjs.extend(duration)
-
-export type AnnotatedTask = AnnotatedItem<"task", "user">
+import {AnnotatedTask, useAnnotatedTasks} from "utils/useAnnotatedTasks"
 
 export interface TaskTableProps
   extends Partial<RestDataTableProps<AnnotatedTask>> {
@@ -18,10 +14,7 @@ export interface TaskTableProps
 
 export const TaskTable: FC<TaskTableProps> = (props) => {
   const {...restProps} = props
-  const annotatedTaskEndpoint = useAnnotatedEndpoint({
-    collection: "task",
-    with: ["user"]
-  })
+  const annotatedTaskEndpoint = useAnnotatedTasks()
 
   return (
     <RestDataTable
@@ -58,14 +51,17 @@ export const TaskTable: FC<TaskTableProps> = (props) => {
           minWidth: 200
         },
         {
-          field: "estimate",
-          headerName: "Estimate",
+          field: "timeSpent",
+          headerName: "Time Spent",
           minWidth: 100,
-          type: "number"
+          type: "number",
+          valueGetter: ({row}) => row._annotations.totalTaskHours,
+          valueFormatter: ({value}) => value.toFixed(1),
+          sortable: false
         },
         {
           field: "budget",
-          headerName: "Budget",
+          headerName: "% Estimated",
           minWidth: 100,
           type: "number",
           sortable: false,

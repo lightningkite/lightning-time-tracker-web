@@ -85,12 +85,12 @@ export function stringToDuration(durationString: string): Duration | null {
 }
 
 export function totalHoursForTimeEntries(timeEntries: TimeEntry[]): number {
-  return timeEntries.reduce((acc, timeEntry) => {
-    const milliseconds = timeEntry.durationMilliseconds
-    const hours = milliseconds / MILLISECONDS_PER_HOUR
-    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-    return acc + hours
-  }, 0)
+  return (
+    timeEntries.reduce(
+      (acc, timeEntry) => acc + timeEntry.durationMilliseconds,
+      0
+    ) / MILLISECONDS_PER_HOUR
+  )
 }
 
 export function parsePreferences(

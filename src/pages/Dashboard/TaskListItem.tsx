@@ -19,7 +19,7 @@ import duration from "dayjs/plugin/duration"
 import React, {FC, useContext} from "react"
 import {useNavigate} from "react-router-dom"
 import {AuthContext, TimerContext} from "utils/context"
-import {AnnotatedTask} from "utils/useOldAnnotatedEndpoints"
+import {AnnotatedTask} from "utils/useAnnotatedTasks"
 
 dayjs.extend(duration)
 

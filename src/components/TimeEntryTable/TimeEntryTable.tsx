@@ -7,6 +7,7 @@ import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import relativeTime from "dayjs/plugin/relativeTime"
 import React, {FC, useState} from "react"
+import {dynamicFormatDate} from "utils/helpers"
 import {
   AnnotatedTimeEntry,
   useAnnotatedEndpoints
@@ -36,11 +37,7 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
       headerName: "Date",
       type: "date",
       width: 130,
-      valueFormatter: ({value}) => {
-        if (dayjs().isSame(value, "day")) return "Today"
-        if (dayjs().subtract(1, "day").isSame(value, "day")) return "Yesterday"
-        return dayjs(value).fromNow()
-      }
+      valueFormatter: ({value}) => dynamicFormatDate(dayjs(value))
     },
     {
       field: "duration",

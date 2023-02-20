@@ -1,5 +1,5 @@
 import {Task, TaskState, TimeEntry} from "api/sdk"
-import dayjs from "dayjs"
+import dayjs, {Dayjs} from "dayjs"
 import duration, {Duration} from "dayjs/plugin/duration"
 import {WebPreferences} from "pages/Settings/Settings"
 import {Timer} from "./context"
@@ -122,4 +122,19 @@ export function formatLongDuration(duration: Duration): string {
   const justHours = Math.floor(duration.asHours())
 
   return `${justHours} : ${duration.format("mm : ss")}`
+}
+
+export function dynamicFormatDate(date: Dayjs): string {
+  const now = dayjs()
+  const yesterday = now.subtract(1, "day")
+  const isToday = now.isSame(date, "day")
+  const isYesterday = yesterday.isSame(date, "day")
+
+  if (isToday) return "Today"
+  if (isYesterday) return "Yesterday"
+
+  if (now.year() === date.year() || now.diff(date, "month") < 9)
+    return date.format("MMM D")
+
+  return date.format("YYYY-MM-DD")
 }

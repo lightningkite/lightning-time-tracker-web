@@ -26,9 +26,13 @@ dayjs.extend(duration)
 
 export interface TaskListItemProps {
   annotatedTask: AnnotatedTask
+  refreshDashboard: () => Promise<void>
 }
 
-export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
+export const TaskListItem: FC<TaskListItemProps> = ({
+  annotatedTask,
+  refreshDashboard
+}) => {
   const navigate = useNavigate()
   const {currentUser} = useContext(AuthContext)
   const theme = useTheme()
@@ -52,10 +56,13 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
       key={annotatedTask._id}
       disablePadding
       secondaryAction={
-        <>
-          <TaskStateActionButton annotatedTask={annotatedTask} />
+        <Stack direction="row" alignItems="center">
+          <TaskStateActionButton
+            annotatedTask={annotatedTask}
+            refreshDashboard={refreshDashboard}
+          />
           <TaskPlayActionButton annotatedTask={annotatedTask} />
-        </>
+        </Stack>
       }
       sx={
         {

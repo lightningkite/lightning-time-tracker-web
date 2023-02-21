@@ -28,7 +28,7 @@ export const ProjectsTasks: FC<{onlyMine: boolean}> = ({onlyMine}) => {
   const [annotatedTasks, setAnnotatedTasks] = useState<AnnotatedTask[] | null>()
   const [initialSorting, setInitialSorting] = useState<string[]>()
 
-  useEffect(() => {
+  const refreshDashboardData = async () => {
     session.project
       .query({condition: {organization: {Equal: currentOrganization._id}}})
       .then(setProjects)
@@ -46,7 +46,7 @@ export const ProjectsTasks: FC<{onlyMine: boolean}> = ({onlyMine}) => {
 
     filterConditions.length === 0 && filterConditions.push({Always: true})
 
-    annotatedTaskEndpoint
+    await annotatedTaskEndpoint
       .query({
         condition: {
           And: [
@@ -69,6 +69,10 @@ export const ProjectsTasks: FC<{onlyMine: boolean}> = ({onlyMine}) => {
       })
       .then(setAnnotatedTasks)
       .catch(() => setAnnotatedTasks(null))
+  }
+
+  useEffect(() => {
+    refreshDashboardData()
   }, [Object.values(timers).length])
 
   const tasksByProject = useMemo(() => {
@@ -161,7 +165,11 @@ export const ProjectsTasks: FC<{onlyMine: boolean}> = ({onlyMine}) => {
                       )
                     })
                     .map((task) => (
-                      <TaskListItem annotatedTask={task} key={task._id} />
+                      <TaskListItem
+                        annotatedTask={task}
+                        refreshDashboard={refreshDashboardData}
+                        key={task._id}
+                      />
                     ))}
                 </List>
               </AccordionDetails>

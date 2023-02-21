@@ -135,7 +135,9 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
             onChange={setTask}
             getOptionLabel={(task) => task.summary}
             searchProperties={["summary"]}
-            additionalQueryConditions={[{project: {Equal: project?._id ?? ""}}]}
+            additionalQueryConditions={[
+              project ? {project: {Equal: project._id}} : {Never: true}
+            ]}
             dependencies={[project?._id]}
             disabled={!project}
           />

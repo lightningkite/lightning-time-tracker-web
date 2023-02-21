@@ -1,14 +1,14 @@
-import {Project} from "api/sdk"
+import {User} from "api/sdk"
 import {AddTaskButton} from "components/AddTaskButton"
 import {TaskTable} from "components/TaskTable"
 import React, {FC, useState} from "react"
 import {useNavigate} from "react-router-dom"
 
 export interface TaskTabProps {
-  project: Project
+  user: User
 }
 
-export const TaskTab: FC<TaskTabProps> = ({project}) => {
+export const TaskTab: FC<TaskTabProps> = ({user}) => {
   const navigate = useNavigate()
 
   const [refreshTrigger, setRefreshTrigger] = useState(0)
@@ -17,18 +17,16 @@ export const TaskTab: FC<TaskTabProps> = ({project}) => {
     <>
       <div style={{textAlign: "right"}}>
         <AddTaskButton
-          project={project}
+          user={user}
           afterSubmit={() => setRefreshTrigger((prev) => prev + 1)}
           sx={{mb: 1}}
         />
       </div>
 
       <TaskTable
-        additionalQueryConditions={[{project: {Equal: project._id}}]}
+        additionalQueryConditions={[{user: {Equal: user._id}}]}
         dependencies={[refreshTrigger]}
-        onRowClick={(task) =>
-          navigate(`/projects/${project._id}/tasks/${task._id}`)
-        }
+        onRowClick={(task) => navigate(`/users/${user._id}/tasks/${task._id}`)}
       />
     </>
   )

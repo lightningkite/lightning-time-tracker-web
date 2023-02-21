@@ -5,6 +5,7 @@ import dayjs from "dayjs"
 import React, {FC, useContext, useState} from "react"
 import {useNavigate} from "react-router-dom"
 import {AuthContext} from "utils/context"
+import {dynamicFormatDate} from "utils/helpers"
 import {AddProjectButton} from "./AddProjectButton"
 
 export const ProjectIndex: FC = () => {
@@ -35,7 +36,7 @@ export const ProjectIndex: FC = () => {
             headerName: "Created",
             width: 130,
             type: "date",
-            valueFormatter: ({value}) => dayjs(value).format("MMM D, YYYY")
+            valueFormatter: ({value}) => dynamicFormatDate(dayjs(value))
           },
           {
             field: "rate",

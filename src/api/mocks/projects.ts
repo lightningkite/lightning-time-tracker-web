@@ -12,6 +12,7 @@ export function generateProjects(
         _id: randUuid(),
         name: randCompanyName(),
         organization: rand(organizations)._id,
+        notes: "",
         rate: 100,
         createdAt: randPastDate().toISOString()
       }

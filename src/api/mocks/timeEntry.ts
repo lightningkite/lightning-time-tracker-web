@@ -1,7 +1,6 @@
 import {
   rand,
   randFloat,
-  randNumber,
   randRecentDate,
   randSentence,
   randUuid
@@ -28,9 +27,13 @@ export function generateTimeEntries(params: {
     return {
       _id: randUuid(),
       task: task._id,
+      taskSummary: task.summary,
       project: task.project,
+      projectName: task.projectName,
       organization: task.organization,
+      organizationName: task.organizationName,
       user: user._id,
+      userName: user.name,
       summary: randSentence(),
       durationMilliseconds: dayjs
         .duration({

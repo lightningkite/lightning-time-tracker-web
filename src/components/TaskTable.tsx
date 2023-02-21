@@ -5,7 +5,10 @@ import {
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import React, {FC} from "react"
+import {dynamicFormatDate} from "utils/helpers"
 import {AnnotatedTask, useAnnotatedTasks} from "utils/useAnnotatedTasks"
+
+dayjs.extend(duration)
 
 export interface TaskTableProps
   extends Partial<RestDataTableProps<AnnotatedTask>> {
@@ -33,10 +36,10 @@ export const TaskTable: FC<TaskTableProps> = (props) => {
           headerName: "Created",
           type: "date",
           width: 130,
-          valueFormatter: ({value}) => dayjs(value).fromNow()
+          valueFormatter: ({value}) => dynamicFormatDate(dayjs(value))
         },
         {
-          field: "user",
+          field: "userName",
           headerName: "User",
           minWidth: 200,
           valueGetter: ({row}) =>

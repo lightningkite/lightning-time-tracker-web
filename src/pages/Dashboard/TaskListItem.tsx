@@ -1,8 +1,7 @@
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
-import {Add, Pause, Person, PlayArrow, Warning} from "@mui/icons-material"
+import {Person, Warning} from "@mui/icons-material"
 import {
   Box,
-  IconButton,
   LinearProgress,
   LinearProgressProps,
   ListItem,
@@ -18,28 +17,28 @@ import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import React, {FC, useContext} from "react"
 import {useNavigate} from "react-router-dom"
-import {AuthContext, TimerContext} from "utils/context"
+import {AuthContext} from "utils/context"
 import {AnnotatedTask} from "utils/useAnnotatedTasks"
+import {TaskPlayActionButton} from "./TaskPlayActionButton"
+import {TaskStateActionButton} from "./TaskStateActionButton"
 
 dayjs.extend(duration)
 
 export interface TaskListItemProps {
   annotatedTask: AnnotatedTask
+  refreshDashboard: () => Promise<void>
 }
 
-export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
+export const TaskListItem: FC<TaskListItemProps> = ({
+  annotatedTask,
+  refreshDashboard
+}) => {
   const navigate = useNavigate()
   const {currentUser} = useContext(AuthContext)
-  const {newTimer, timers, toggleTimer} = useContext(TimerContext)
   const theme = useTheme()
 
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
   const isMine = currentUser._id === annotatedTask.user
-
-  const [timerKey] = Object.entries(timers).find(
-    ([_key, timer]) => timer.task === annotatedTask._id
-  ) ?? [undefined]
-  const isPlaying = !!timerKey && !!timers[timerKey].lastStarted
 
   const taskPercentBudget = annotatedTask.estimate
     ? (annotatedTask._annotations.totalTaskHours / annotatedTask.estimate) * 100
@@ -56,37 +55,15 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
     <ListItem
       key={annotatedTask._id}
       disablePadding
-      secondaryAction={(() => {
-        if (!timerKey) {
-          return (
-            <IconButton
-              onClick={() =>
-                newTimer({
-                  project: annotatedTask.project,
-                  task: annotatedTask._id
-                })
-              }
-              sx={{color: "text.disabled"}}
-            >
-              <Add />
-            </IconButton>
-          )
-        }
-
-        if (isPlaying) {
-          return (
-            <IconButton onClick={() => toggleTimer(timerKey)}>
-              <Pause color="success" />
-            </IconButton>
-          )
-        }
-
-        return (
-          <IconButton onClick={() => toggleTimer(timerKey)}>
-            <PlayArrow />
-          </IconButton>
-        )
-      })()}
+      secondaryAction={
+        <Stack direction="row" alignItems="center">
+          <TaskStateActionButton
+            annotatedTask={annotatedTask}
+            refreshDashboard={refreshDashboard}
+          />
+          <TaskPlayActionButton annotatedTask={annotatedTask} />
+        </Stack>
+      }
       sx={
         {
           // Divider between items
@@ -111,7 +88,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
             </ListItemIcon>
           </HoverHelp>
         )}
-        <ListItemText sx={{width: "100%", mr: 3}} inset={!isMine}>
+        <ListItemText sx={{width: "100%", mr: 7}} inset={!isMine}>
           <Stack
             direction="row"
             alignItems="flex-end"
@@ -120,12 +97,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
           >
             <Typography variant="body2" color="text.secondary">
               {annotatedTask.state.toUpperCase()} &nbsp;&#x2022;&nbsp;{" "}
-              {
-                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                (annotatedTask._annotations.user?.name ||
-                  annotatedTask._annotations.user?.email) ??
-                  "Unknown user"
-              }
+              {annotatedTask.userName}
             </Typography>
             {!isMobile && (
               <Box sx={{width: "8rem"}}>
@@ -139,12 +111,16 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
                   }
                 >
                   {annotatedTask.estimate
-                    ? `${annotatedTask._annotations.totalTaskHours.toFixed(
-                        1
-                      )} of ${annotatedTask.estimate} hours`
-                    : `${annotatedTask._annotations.totalTaskHours.toFixed(
-                        1
-                      )} hours`}
+                    ? `${
+                        annotatedTask._annotations.totalTaskHours.toFixed(
+                          1
+                        ) as string
+                      } of ${annotatedTask.estimate} hours`
+                    : `${
+                        annotatedTask._annotations.totalTaskHours.toFixed(
+                          1
+                        ) as string
+                      } hours`}
                 </Typography>
                 <LinearProgress
                   variant="determinate"
@@ -161,7 +137,8 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              mr: 2
+              mr: 2,
+              color: annotatedTask.emergency ? "error.main" : "text.primary"
             }}
           >
             {annotatedTask.summary}

@@ -3,11 +3,11 @@ import {
   RestDataTableProps
 } from "@lightningkite/mui-lightning-components"
 import {AnnotatedItem, useAnnotatedEndpoint} from "api/AnnotatedEndpoints"
-import {TimeEntry} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import relativeTime from "dayjs/plugin/relativeTime"
 import React, {FC, useState} from "react"
+import {dynamicFormatDate} from "utils/helpers"
 import {TimeEntryModal} from "./TimeEntryModal"
 
 dayjs.extend(relativeTime)
@@ -25,6 +25,7 @@ export interface TimeEntryTableProps
 
 export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
   const {hiddenColumns = [], ...restProps} = props
+
   const annotatedTimeEntryEndpoint = useAnnotatedEndpoint({
     collection: "timeEntry",
     with: ["task", "project", "user"].filter(
@@ -33,9 +34,8 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
   })
 
   const [refreshTrigger, setRefreshTrigger] = useState(0)
-  const [selectedTimeEntry, setSelectedTimeEntry] = useState<TimeEntry | null>(
-    null
-  )
+  const [selectedTimeEntry, setSelectedTimeEntry] =
+    useState<AnnotatedTimeEntry | null>(null)
 
   const columns: RestDataTableProps<AnnotatedTimeEntry>["columns"] = [
     {
@@ -43,11 +43,7 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
       headerName: "Date",
       type: "date",
       width: 130,
-      valueFormatter: ({value}) => {
-        if (dayjs().isSame(value, "day")) return "Today"
-        if (dayjs().subtract(1, "day").isSame(value, "day")) return "Yesterday"
-        return dayjs(value).fromNow()
-      }
+      valueFormatter: ({value}) => dynamicFormatDate(dayjs(value))
     },
     {
       field: "duration",
@@ -58,21 +54,21 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
           .format("H : mm : ss")
     },
     {
-      field: "project",
+      field: "projectName",
       headerName: "Project",
       flex: 1,
       minWidth: 200,
       valueGetter: (params) => params.row._annotations.project?.name
     },
     {
-      field: "task",
+      field: "taskSummary",
       headerName: "Task",
       flex: 2,
       minWidth: 200,
       valueGetter: (params) => params.row._annotations.task?.summary
     },
     {
-      field: "user",
+      field: "userName",
       headerName: "User",
       flex: 1,
       minWidth: 200,

@@ -1,14 +1,15 @@
 import {Aggregate, Condition} from "@lightningkite/lightning-server-simplified"
+import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {ExpandMore} from "@mui/icons-material"
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Alert,
   Box,
   List,
   ListItem,
   ListItemText,
+  Stack,
   Typography
 } from "@mui/material"
 import {Project, Task, TimeEntry} from "api/sdk"
@@ -145,9 +146,16 @@ export const RevenueReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
                 <Typography variant="h2">
                   {project.name ?? "Not found"}
                 </Typography>
-                <Typography fontSize="1.2rem" sx={{ml: "auto", mr: 1}}>
-                  {formatDollars((project.rate ?? 0) * totalHours, false)}
-                </Typography>
+                <Stack sx={{ml: "auto", mr: 1}} alignItems="flex-end">
+                  <Typography fontSize="1.2rem">
+                    {formatDollars((project.rate ?? 0) * totalHours, false)}
+                  </Typography>
+                  <HoverHelp description={totalHours.toFixed(2)}>
+                    <Typography variant="body2" color="text.secondary">
+                      {Math.round(totalHours)} hr.
+                    </Typography>
+                  </HoverHelp>
+                </Stack>
               </AccordionSummary>
               <AccordionDetails sx={{p: 0}}>
                 <List>
@@ -171,7 +179,6 @@ export const RevenueReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
                         </ListItem>
                       )
                     })}
-
                   {orphanHours > 0 && (
                     <ListItem>
                       <ListItemText
@@ -180,12 +187,6 @@ export const RevenueReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
                       />
                     </ListItem>
                   )}
-
-                  <Alert severity="info" sx={{mx: 2, mt: 1}}>
-                    <Typography fontWeight="bold">
-                      Total hours: {totalHours.toFixed(2)}
-                    </Typography>
-                  </Alert>
                 </List>
               </AccordionDetails>
             </Accordion>

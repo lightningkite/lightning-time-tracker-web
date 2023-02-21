@@ -139,7 +139,9 @@ export const TimeEntryModal: FC<TimeEntryModalProps> = (props) => {
             disabled={!formik.values.project}
             dependencies={[formik.values.project]}
             additionalQueryConditions={[
-              {project: {Equal: formik.values.project?._id ?? ""}}
+              formik.values.project
+                ? {project: {Equal: formik.values.project._id}}
+                : {Never: true}
             ]}
             {...makeFormikAutocompleteProps(formik, "task")}
           />

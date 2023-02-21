@@ -3,7 +3,7 @@ import {IconButton} from "@mui/material"
 import {FC} from "react"
 import {AnnotatedTask} from "utils/useAnnotatedEndpoints"
 
-const TaskStateActionButton: FC<{
+export const TaskStateActionButton: FC<{
   annotatedTask: AnnotatedTask
 }> = ({annotatedTask}) => {
   return (

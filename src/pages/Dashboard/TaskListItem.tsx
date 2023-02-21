@@ -20,6 +20,7 @@ import {useNavigate} from "react-router-dom"
 import {AuthContext} from "utils/context"
 import {AnnotatedTask} from "utils/useAnnotatedEndpoints"
 import {TaskPlayActionButton} from "./TaskPlayActionButton"
+import {TaskStateActionButton} from "./TaskStateActionButton"
 
 dayjs.extend(duration)
 
@@ -52,7 +53,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
       disablePadding
       secondaryAction={
         <>
-          <TaskPlayActionButton annotatedTask={annotatedTask} />
+          <TaskStateActionButton annotatedTask={annotatedTask} />
           <TaskPlayActionButton annotatedTask={annotatedTask} />
         </>
       }

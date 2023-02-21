@@ -30,16 +30,10 @@ export interface TaskListItemProps {
 export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
   const navigate = useNavigate()
   const {currentUser} = useContext(AuthContext)
-  const {newTimer, timers, toggleTimer} = useContext(TimerContext)
   const theme = useTheme()
 
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
   const isMine = currentUser._id === annotatedTask.user
-
-  const [timerKey] = Object.entries(timers).find(
-    ([_key, timer]) => timer.task === annotatedTask._id
-  ) ?? [undefined]
-  const isPlaying = !!timerKey && !!timers[timerKey].lastStarted
 
   const taskPercentBudget = annotatedTask.estimate
     ? (annotatedTask.annotations.totalTaskHours / annotatedTask.estimate) * 100
@@ -56,37 +50,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
     <ListItem
       key={annotatedTask._id}
       disablePadding
-      secondaryAction={(() => {
-        if (!timerKey) {
-          return (
-            <IconButton
-              onClick={() =>
-                newTimer({
-                  project: annotatedTask.project,
-                  task: annotatedTask._id
-                })
-              }
-              sx={{color: "text.disabled"}}
-            >
-              <Add />
-            </IconButton>
-          )
-        }
-
-        if (isPlaying) {
-          return (
-            <IconButton onClick={() => toggleTimer(timerKey)}>
-              <Pause color="success" />
-            </IconButton>
-          )
-        }
-
-        return (
-          <IconButton onClick={() => toggleTimer(timerKey)}>
-            <PlayArrow />
-          </IconButton>
-        )
-      })()}
+      secondaryAction={<TaskPlayActionButton annotatedTask={annotatedTask} />}
       sx={
         {
           // Divider between items
@@ -165,5 +129,47 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
         </ListItemText>
       </ListItemButton>
     </ListItem>
+  )
+}
+
+const TaskPlayActionButton: FC<{
+  annotatedTask: AnnotatedTask
+}> = ({annotatedTask}) => {
+  const {newTimer, timers, toggleTimer} = useContext(TimerContext)
+
+  const [timerKey] = Object.entries(timers).find(
+    ([_key, timer]) => timer.task === annotatedTask._id
+  ) ?? [undefined]
+
+  const isPlaying = !!timerKey && !!timers[timerKey].lastStarted
+
+  if (!timerKey) {
+    return (
+      <IconButton
+        onClick={() =>
+          newTimer({
+            project: annotatedTask.project,
+            task: annotatedTask._id
+          })
+        }
+        sx={{color: "text.disabled"}}
+      >
+        <Add />
+      </IconButton>
+    )
+  }
+
+  if (isPlaying) {
+    return (
+      <IconButton onClick={() => toggleTimer(timerKey)}>
+        <Pause color="success" />
+      </IconButton>
+    )
+  }
+
+  return (
+    <IconButton onClick={() => toggleTimer(timerKey)}>
+      <PlayArrow />
+    </IconButton>
   )
 }

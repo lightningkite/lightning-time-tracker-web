@@ -39,13 +39,9 @@ export const TaskTable: FC<TaskTableProps> = (props) => {
           valueFormatter: ({value}) => dynamicFormatDate(dayjs(value))
         },
         {
-          field: "user",
+          field: "userName",
           headerName: "User",
-          minWidth: 200,
-          valueGetter: ({row}) =>
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            row.annotations.user?.name || row.annotations.user?.email,
-          sortable: false
+          minWidth: 200
         },
         {
           field: "summary",

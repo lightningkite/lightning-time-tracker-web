@@ -65,8 +65,11 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
         ...values,
         _id: crypto.randomUUID(),
         user: values.user._id,
+        userName: undefined,
         project: projectId,
+        projectName: undefined,
         organization: currentUser.organization,
+        organizationName: undefined,
         state: TaskState.Active,
         attachments: [],
         estimate: values.estimate ? +values.estimate : null,
@@ -77,7 +80,6 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
       afterSubmit({
         ...task,
         annotations: {
-          user: values.user,
           totalTaskHours: 0
         }
       })

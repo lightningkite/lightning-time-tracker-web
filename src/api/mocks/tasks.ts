@@ -8,15 +8,16 @@ import {
   randUuid,
   randVerb
 } from "@ngneat/falso"
-import {Project, Task, TaskState, User} from "api/sdk"
+import {Organization, Project, Task, TaskState, User} from "api/sdk"
 
 export function generateTasks(params: {
   perProjectMonth: number
   months: number
   projects: Project[]
+  organizations: Organization[]
   users: User[]
 }): Task[] {
-  const {perProjectMonth, months, projects, users} = params
+  const {perProjectMonth, months, projects, users, organizations} = params
 
   return Array.from(
     {length: perProjectMonth * projects.length * months},
@@ -29,8 +30,13 @@ export function generateTasks(params: {
       return {
         _id: randUuid(),
         project: project._id,
+        projectName: project.name,
         organization: project.organization,
+        organizationName: organizations.find(
+          (o) => o._id === project.organization
+        )?.name,
         user: user._id,
+        userName: user.name,
         state: rand(Object.values(TaskState)),
         summary: capitalize(randVerb() + " " + randCatchPhrase().toLowerCase()),
         description: randParagraph(),

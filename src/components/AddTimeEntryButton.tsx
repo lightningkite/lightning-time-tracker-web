@@ -70,7 +70,11 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
           stringToDuration(values.duration) as Duration
         ).asMilliseconds(),
         date: dateToISO(values.date),
-        user: currentUser._id
+        user: currentUser._id,
+        taskSummary: undefined,
+        projectName: undefined,
+        organizationName: undefined,
+        userName: undefined
       })
 
       afterSubmit()

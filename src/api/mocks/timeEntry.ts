@@ -6,7 +6,7 @@ import {
   randSentence,
   randUuid
 } from "@ngneat/falso"
-import {Task, TimeEntry, User} from "api/sdk"
+import {Project, Task, TimeEntry, User} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import {dateToISO} from "utils/helpers"
@@ -28,9 +28,13 @@ export function generateTimeEntries(params: {
     return {
       _id: randUuid(),
       task: task._id,
+      taskSummary: task.summary,
       project: task.project,
+      projectName: task.projectName,
       organization: task.organization,
+      organizationName: task.organizationName,
       user: user._id,
+      userName: user.name,
       summary: randSentence(),
       durationMilliseconds: dayjs
         .duration({

@@ -1,6 +1,6 @@
 import {Add, Pause, PlayArrow} from "@mui/icons-material"
 import {IconButton} from "@mui/material"
-import {FC, useContext} from "react"
+import React, {FC, useContext} from "react"
 import {TimerContext} from "utils/context"
 import {AnnotatedTask} from "utils/useAnnotatedEndpoints"
 

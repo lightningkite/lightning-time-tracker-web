@@ -404,9 +404,11 @@ export class UserSession {
   getServerHealth(): Promise<ServerHealth> {
     return this.api.getServerHealth(this.userToken)
   }
+
   uploadFileForRequest(): Promise<UploadInformation> {
     return this.api.uploadFileForRequest()
   }
+
   readonly auth = {
     refreshToken: (): Promise<string> => {
       return this.api.auth.refreshToken(this.userToken)
@@ -424,6 +426,7 @@ export class UserSession {
       return this.api.auth.emailPINLogin(input)
     }
   }
+
   readonly organization = {
     default: (): Promise<Organization> => {
       return this.api.organization.default(this.userToken)
@@ -489,6 +492,7 @@ export class UserSession {
       return this.api.organization.groupAggregate(input, this.userToken)
     }
   }
+
   readonly project = {
     default: (): Promise<Project> => {
       return this.api.project.default(this.userToken)
@@ -551,6 +555,7 @@ export class UserSession {
       return this.api.project.groupAggregate(input, this.userToken)
     }
   }
+
   readonly task = {
     default: (): Promise<Task> => {
       return this.api.task.default(this.userToken)
@@ -613,6 +618,7 @@ export class UserSession {
       return this.api.task.groupAggregate(input, this.userToken)
     }
   }
+
   readonly timeEntry = {
     default: (): Promise<TimeEntry> => {
       return this.api.timeEntry.default(this.userToken)
@@ -678,6 +684,7 @@ export class UserSession {
       return this.api.timeEntry.groupAggregate(input, this.userToken)
     }
   }
+
   readonly timer = {
     default: (): Promise<Timer> => {
       return this.api.timer.default(this.userToken)
@@ -740,6 +747,7 @@ export class UserSession {
       return this.api.timer.groupAggregate(input, this.userToken)
     }
   }
+
   readonly user = {
     default: (): Promise<User> => {
       return this.api.user.default(this.userToken)
@@ -810,11 +818,13 @@ export class LiveApi implements Api {
     public socketUrl: string = httpUrl,
     public extraHeaders: Record<string, string> = {}
   ) {}
+
   uploadFileForRequest(): Promise<UploadInformation> {
     return apiCall(`${this.httpUrl}/upload-early`, undefined, {
       method: "GET"
     }).then((x) => x.json())
   }
+
   getServerHealth(userToken: string): Promise<ServerHealth> {
     return apiCall(`${this.httpUrl}/meta/health`, undefined, {
       method: "GET",
@@ -823,6 +833,7 @@ export class LiveApi implements Api {
         : this.extraHeaders
     }).then((x) => x.json())
   }
+
   readonly auth = {
     refreshToken: (userToken: string): Promise<string> => {
       return apiCall(`${this.httpUrl}/auth/refresh-token`, undefined, {
@@ -859,6 +870,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     }
   }
+
   readonly organization = {
     default: (userToken: string): Promise<Organization> => {
       return apiCall(
@@ -1048,6 +1060,7 @@ export class LiveApi implements Api {
       ).then((x) => x.json())
     }
   }
+
   readonly project = {
     default: (userToken: string): Promise<Project> => {
       return apiCall(`${this.httpUrl}/projects/rest/_default_`, undefined, {
@@ -1226,6 +1239,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     }
   }
+
   readonly task = {
     default: (userToken: string): Promise<Task> => {
       return apiCall(`${this.httpUrl}/tasks/rest/_default_`, undefined, {
@@ -1393,6 +1407,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     }
   }
+
   readonly timeEntry = {
     default: (userToken: string): Promise<TimeEntry> => {
       return apiCall(`${this.httpUrl}/time-entries/rest/_default_`, undefined, {
@@ -1578,6 +1593,7 @@ export class LiveApi implements Api {
       ).then((x) => x.json())
     }
   }
+
   readonly timer = {
     default: (userToken: string): Promise<Timer> => {
       return apiCall(`${this.httpUrl}/timers/rest/_default_`, undefined, {
@@ -1745,6 +1761,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     }
   }
+
   readonly user = {
     default: (userToken: string): Promise<User> => {
       return apiCall(`${this.httpUrl}/users/rest/_default_`, undefined, {

@@ -7,13 +7,43 @@ import {
   MenuItem
 } from "@mui/material"
 import {TaskState} from "api/sdk"
-import {FC, useContext, useState} from "react"
+import React, {FC, useContext, useState} from "react"
 import {AuthContext} from "utils/context"
 import {AnnotatedTask} from "utils/useAnnotatedEndpoints"
 
 interface TaskStateAction {
   label: string
   nextState: TaskState
+}
+
+const actions: Record<
+  TaskState,
+  {back: TaskStateAction | null; next: TaskStateAction | null}
+> = {
+  [TaskState.Hold]: {
+    back: null,
+    next: {label: "Set Active", nextState: TaskState.Active}
+  },
+  [TaskState.Active]: {
+    back: {label: "Hold", nextState: TaskState.Hold},
+    next: {label: "Ready to Test", nextState: TaskState.Testing}
+  },
+  [TaskState.Testing]: {
+    back: {label: "Needs Development", nextState: TaskState.Active},
+    next: {label: "Approved", nextState: TaskState.Approved}
+  },
+  [TaskState.Approved]: {
+    back: null,
+    next: {label: "Delivered", nextState: TaskState.Delivered}
+  },
+  [TaskState.Delivered]: {
+    back: null,
+    next: null
+  },
+  [TaskState.Cancelled]: {
+    back: null,
+    next: null
+  }
 }
 
 export interface TaskStateActionButtonProps {
@@ -32,6 +62,9 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
 
   const open = !!anchorEl
 
+  const next = actions[annotatedTask.state].next
+  const back = actions[annotatedTask.state].back
+
   const handleClose = () => {
     setAnchorEl(null)
   }
@@ -47,36 +80,6 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
       await refreshDashboard()
     }
     setIsChangingState(false)
-  }
-
-  const actions: Record<
-    TaskState,
-    {back: TaskStateAction | null; next: TaskStateAction | null}
-  > = {
-    [TaskState.Hold]: {
-      back: null,
-      next: {label: "Set Active", nextState: TaskState.Active}
-    },
-    [TaskState.Active]: {
-      back: {label: "Hold", nextState: TaskState.Hold},
-      next: {label: "Ready to Test", nextState: TaskState.Testing}
-    },
-    [TaskState.Testing]: {
-      back: {label: "Needs Development", nextState: TaskState.Active},
-      next: {label: "Approved", nextState: TaskState.Approved}
-    },
-    [TaskState.Approved]: {
-      back: null,
-      next: {label: "Delivered", nextState: TaskState.Delivered}
-    },
-    [TaskState.Delivered]: {
-      back: null,
-      next: null
-    },
-    [TaskState.Cancelled]: {
-      back: null,
-      next: null
-    }
   }
 
   return (
@@ -95,29 +98,29 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
       )}
 
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-        {actions[annotatedTask.state].next && (
+        {next && (
           <MenuItem
-            onClick={() =>
-              changeTaskStatus(actions[annotatedTask.state].next!.nextState)
-            }
+            onClick={() => {
+              changeTaskStatus(next.nextState)
+            }}
           >
             <ListItemIcon>
               <CheckCircle fontSize="small" />
             </ListItemIcon>
-            {actions[annotatedTask.state].next!.label}
+            {next.label}
           </MenuItem>
         )}
 
-        {actions[annotatedTask.state].back && (
+        {back && (
           <MenuItem
-            onClick={() =>
-              changeTaskStatus(actions[annotatedTask.state].back!.nextState)
-            }
+            onClick={() => {
+              changeTaskStatus(back.nextState)
+            }}
           >
             <ListItemIcon>
               <Undo fontSize="small" />
             </ListItemIcon>
-            {actions[annotatedTask.state].back!.label}
+            {back.label}
           </MenuItem>
         )}
       </Menu>

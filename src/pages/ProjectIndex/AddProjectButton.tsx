@@ -8,7 +8,6 @@ import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import {useFormik} from "formik"
 import React, {FC, useContext, useState} from "react"
 import {AuthContext} from "utils/context"
-import {dateToISO} from "utils/helpers"
 import * as yup from "yup"
 
 // Form validation schema. See: https://www.npmjs.com/package/yup#object

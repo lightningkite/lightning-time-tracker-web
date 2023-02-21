@@ -1,4 +1,4 @@
-import {Project, User} from "api/sdk"
+import {User} from "api/sdk"
 import {AddTaskButton} from "components/AddTaskButton"
 import {TaskTable} from "components/TaskTable"
 import React, {FC, useState} from "react"
@@ -26,9 +26,7 @@ export const TaskTab: FC<TaskTabProps> = ({user}) => {
       <TaskTable
         additionalQueryConditions={[{user: {Equal: user._id}}]}
         dependencies={[refreshTrigger]}
-        onRowClick={(task) =>
-          navigate(`/users/${user._id}/tasks/${task._id}`)
-        }
+        onRowClick={(task) => navigate(`/users/${user._id}/tasks/${task._id}`)}
       />
     </>
   )

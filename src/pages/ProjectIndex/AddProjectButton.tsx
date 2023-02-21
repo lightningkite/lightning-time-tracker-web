@@ -43,7 +43,8 @@ export const AddProjectButton: FC<AddProjectButtonProps> = (props) => {
         _id: crypto.randomUUID(),
         organization: currentUser.organization,
         rate: values.rate ? +values.rate : undefined,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        notes: ""
       })
 
       props.afterSubmit()

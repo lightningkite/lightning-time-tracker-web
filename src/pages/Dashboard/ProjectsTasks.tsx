@@ -51,7 +51,8 @@ export const ProjectsTasks: FC<{onlyMine: boolean}> = ({onlyMine}) => {
         condition: {
           And: [
             {organization: {Equal: currentOrganization._id}},
-            {state: {NotEqual: TaskState.Done}},
+            {state: {NotEqual: TaskState.Cancelled}},
+            {state: {NotEqual: TaskState.Delivered}},
             {Or: [{And: filterConditions}, {user: {Equal: currentUser._id}}]}
           ]
         }

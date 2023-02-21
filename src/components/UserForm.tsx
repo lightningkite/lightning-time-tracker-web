@@ -112,7 +112,11 @@ export const UserForm: FC<UserFormProps> = (props) => {
             </FormHelperText>
             <FormGroup>
               {Object.values(TaskState)
-                .filter((state) => state !== TaskState.Done)
+                .filter(
+                  (state) =>
+                    state !== TaskState.Cancelled &&
+                    state !== TaskState.Delivered
+                )
                 .map((state) => (
                   <FormControlLabel
                     key={state}

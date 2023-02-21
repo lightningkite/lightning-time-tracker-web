@@ -59,9 +59,10 @@ export function getTimerSeconds(timer: Timer): number {
 const taskStateOrder: Record<TaskState, number> = {
   [TaskState.Hold]: 0,
   [TaskState.Active]: 1,
-  [TaskState.Completed]: 2,
-  [TaskState.Tested]: 3,
-  [TaskState.Done]: 4
+  [TaskState.Testing]: 2,
+  [TaskState.Approved]: 3,
+  [TaskState.Delivered]: 4,
+  [TaskState.Cancelled]: 5
 }
 
 export function compareTasksByState(a: Task, b: Task): number {

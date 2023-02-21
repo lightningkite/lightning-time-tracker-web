@@ -48,6 +48,7 @@ export interface Project {
   organization: string
   name: string
   rate: number | null | undefined
+  notes: string
   createdAt: string
 }
 export interface ServerHealth {
@@ -74,11 +75,12 @@ export interface Task {
   createdAt: string
 }
 export enum TaskState {
+  Cancelled = "Cancelled",
   Hold = "Hold",
   Active = "Active",
-  Completed = "Completed",
-  Tested = "Tested",
-  Done = "Done"
+  Testing = "Testing",
+  Approved = "Approved",
+  Delivered = "Delivered"
 }
 export interface TimeEntry {
   _id: string

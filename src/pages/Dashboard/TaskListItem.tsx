@@ -156,7 +156,8 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              mr: 2
+              mr: 2,
+              color: annotatedTask.emergency ? "error.main" : "text.primary"
             }}
           >
             {annotatedTask.summary}

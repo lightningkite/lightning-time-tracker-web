@@ -17,7 +17,7 @@ export const TaskTab: FC<TaskTabProps> = ({project}) => {
     <>
       <div style={{textAlign: "right"}}>
         <AddTaskButton
-          projectId={project._id}
+          project={project}
           afterSubmit={() => setRefreshTrigger((prev) => prev + 1)}
           sx={{mb: 1}}
         />

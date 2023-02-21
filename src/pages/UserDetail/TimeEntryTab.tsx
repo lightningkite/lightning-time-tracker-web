@@ -14,13 +14,13 @@ export const TimeEntryTab: FC<TimeEntryTabProps> = ({user}) => {
     <>
       <div style={{textAlign: "right"}}>
         <AddTimeEntryButton
-          project={project}
+          user={user}
           afterSubmit={() => setRefreshTrigger((prev) => prev + 1)}
           sx={{mb: 1}}
         />
       </div>
       <TimeEntryTable
-        additionalQueryConditions={[{project: {Equal: project._id}}]}
+        additionalQueryConditions={[{user: {Equal: user._id}}]}
         hiddenColumns={["project"]}
         dependencies={[refreshTrigger]}
       />

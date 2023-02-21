@@ -155,7 +155,7 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
         sx={{my: 2}}
         fullWidth
       />
-      <Stack direction="row" spacing={1}>
+      <Stack direction="row" justifyContent="space-between" spacing={1}>
         <AutoLoadingButton
           onClick={() =>
             submitTimer(timerKey).catch((e) => alert("Error submitting timer"))
@@ -163,12 +163,15 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
           variant="contained"
           disabled={!project || !summary}
           fullWidth
+          sx={{maxWidth: 100}}
         >
           Submit
         </AutoLoadingButton>
         <Button
           variant={timer.lastStarted ? "contained" : "outlined"}
           onClick={() => toggleTimer(timerKey)}
+          fullWidth
+          sx={{maxWidth: 100}}
         >
           {timer.lastStarted ? <Pause /> : <PlayArrow />}
         </Button>

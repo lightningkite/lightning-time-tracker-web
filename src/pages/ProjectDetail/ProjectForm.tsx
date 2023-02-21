@@ -32,7 +32,8 @@ export const ProjectForm: FC<ProjectFormProps> = (props) => {
   const formik = useFormik({
     initialValues: {
       name: project.name,
-      rate: project.rate?.toString() ?? ""
+      rate: project.rate?.toString() ?? "",
+      notes: project.notes
     },
     validationSchema,
     // When the form is submitted, this function is called if the form values are valid
@@ -76,6 +77,12 @@ export const ProjectForm: FC<ProjectFormProps> = (props) => {
         InputProps={{
           startAdornment: <InputAdornment position="start">$</InputAdornment>
         }}
+      />
+      <TextField
+        label="Notes"
+        multiline
+        minRows={2}
+        {...makeFormikTextFieldProps(formik, "notes")}
       />
 
       {error && <Alert severity="error">{error}</Alert>}

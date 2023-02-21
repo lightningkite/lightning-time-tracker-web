@@ -1,8 +1,7 @@
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
-import {Add, Pause, Person, PlayArrow, Warning} from "@mui/icons-material"
+import {Person, Warning} from "@mui/icons-material"
 import {
   Box,
-  IconButton,
   LinearProgress,
   LinearProgressProps,
   ListItem,
@@ -18,8 +17,9 @@ import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import React, {FC, useContext} from "react"
 import {useNavigate} from "react-router-dom"
-import {AuthContext, TimerContext} from "utils/context"
+import {AuthContext} from "utils/context"
 import {AnnotatedTask} from "utils/useAnnotatedEndpoints"
+import {TaskPlayActionButton} from "./TaskPlayActionButton"
 
 dayjs.extend(duration)
 
@@ -50,7 +50,12 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
     <ListItem
       key={annotatedTask._id}
       disablePadding
-      secondaryAction={<TaskPlayActionButton annotatedTask={annotatedTask} />}
+      secondaryAction={
+        <>
+          <TaskPlayActionButton annotatedTask={annotatedTask} />
+          <TaskPlayActionButton annotatedTask={annotatedTask} />
+        </>
+      }
       sx={
         {
           // Divider between items
@@ -75,7 +80,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
             </ListItemIcon>
           </HoverHelp>
         )}
-        <ListItemText sx={{width: "100%", mr: 3}} inset={!isMine}>
+        <ListItemText sx={{width: "100%", mr: 7}} inset={!isMine}>
           <Stack
             direction="row"
             alignItems="flex-end"
@@ -129,47 +134,5 @@ export const TaskListItem: FC<TaskListItemProps> = ({annotatedTask}) => {
         </ListItemText>
       </ListItemButton>
     </ListItem>
-  )
-}
-
-const TaskPlayActionButton: FC<{
-  annotatedTask: AnnotatedTask
-}> = ({annotatedTask}) => {
-  const {newTimer, timers, toggleTimer} = useContext(TimerContext)
-
-  const [timerKey] = Object.entries(timers).find(
-    ([_key, timer]) => timer.task === annotatedTask._id
-  ) ?? [undefined]
-
-  const isPlaying = !!timerKey && !!timers[timerKey].lastStarted
-
-  if (!timerKey) {
-    return (
-      <IconButton
-        onClick={() =>
-          newTimer({
-            project: annotatedTask.project,
-            task: annotatedTask._id
-          })
-        }
-        sx={{color: "text.disabled"}}
-      >
-        <Add />
-      </IconButton>
-    )
-  }
-
-  if (isPlaying) {
-    return (
-      <IconButton onClick={() => toggleTimer(timerKey)}>
-        <Pause color="success" />
-      </IconButton>
-    )
-  }
-
-  return (
-    <IconButton onClick={() => toggleTimer(timerKey)}>
-      <PlayArrow />
-    </IconButton>
   )
 }

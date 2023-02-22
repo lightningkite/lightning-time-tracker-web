@@ -6,6 +6,7 @@ import {HoursByDateReport} from "./HoursByDateReport"
 import {HoursByProjectReport} from "./HoursByProjectReport"
 import {DateRange, DateRangeSelector} from "./ReportFilters"
 import {RevenueReport} from "./RevenueReport"
+import { TimeEntriesReport } from "./TimeEntriesReport"
 
 export interface ReportFilterValues {
   dateRange: DateRange | null
@@ -36,6 +37,7 @@ const ReportsPage: FC = () => {
                 <Tab label="Revenue" value="1" />
                 <Tab label="Hours by Date" value="2" />
                 <Tab label="Hours by Project" value="3" />
+                <Tab label="Time Entries" value="4" />
               </TabList>
             </Box>
             <TabPanel value="1" sx={{px: 0}}>
@@ -46,6 +48,9 @@ const ReportsPage: FC = () => {
             </TabPanel>
             <TabPanel value="3" sx={{px: 0}}>
               <HoursByProjectReport reportFilterValues={reportFilterValues} />
+            </TabPanel>
+            <TabPanel value="4" sx={{px: 0}}>
+              <TimeEntriesReport reportFilterValues={reportFilterValues} />
             </TabPanel>
           </TabContext>
         </>

@@ -13,7 +13,7 @@ const ProjectIndex = React.lazy(() => import("pages/ProjectIndex"))
 const ProjectDetail = React.lazy(() => import("pages/ProjectDetail"))
 const TaskDetail = React.lazy(() => import("pages/TaskDetail"))
 const MyTimeEntries = React.lazy(() => import("pages/MyTimeEntries"))
-const Reports = React.lazy(() => import("pages/Reports"))
+const Reports = React.lazy(() => import("pages/ReportsPage"))
 
 const AuthRoutes: FC = () => {
   return (

@@ -1,19 +1,22 @@
 import {Aggregate} from "@lightningkite/lightning-server-simplified"
-import {Card} from "@mui/material"
+import {Alert, Card} from "@mui/material"
 import {DataGrid, GridEnrichedColDef} from "@mui/x-data-grid"
 import {User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO, MILLISECONDS_PER_HOUR} from "utils/helpers"
-import {DateRange} from "./ReportFilters"
+import {ReportProps} from "./ReportsPage"
 
 interface HoursTableRow {
   user: User
   dayMilliseconds: Record<string, number | null | undefined>
 }
 
-export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
+export const HoursReport: FC<ReportProps> = (props) => {
+  const {
+    reportFilterValues: {dateRange}
+  } = props
   const {session} = useContext(AuthContext)
 
   const [tableData, setTableData] = useState<HoursTableRow[]>()
@@ -31,7 +34,7 @@ export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
   useEffect(() => {
     setTableData(undefined)
 
-    if (!users) {
+    if (!users || !dateRange) {
       return
     }
 
@@ -65,6 +68,14 @@ export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
 
   if (error) {
     return <ErrorAlert>{error}</ErrorAlert>
+  }
+
+  if (!dateRange) {
+    return (
+      <Alert severity="info">
+        Select a date range to view the hours report.
+      </Alert>
+    )
   }
 
   return (

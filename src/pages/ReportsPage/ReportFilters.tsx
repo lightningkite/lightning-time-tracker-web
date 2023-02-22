@@ -1,6 +1,7 @@
 import {FilterBar} from "@lightningkite/mui-lightning-components"
 import dayjs, {Dayjs} from "dayjs"
 import React, {FC} from "react"
+import {ReportFilterValues} from "./ReportsPage"
 
 export interface DateRange {
   start: Dayjs
@@ -73,11 +74,11 @@ enum FilterNames {
 }
 
 export interface ReportFiltersProps {
-  setDateRange: (dateRange: DateRange) => void
+  setReportFilterValues: (reportFilterValues: ReportFilterValues) => void
 }
 
 export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
-  const {setDateRange} = props
+  const {setReportFilterValues} = props
 
   return (
     <FilterBar
@@ -98,9 +99,7 @@ export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
           (filter) => filter.filterOption.name === FilterNames.DATE_RANGE
         )?.value?.value
 
-        if (dateRange) {
-          setDateRange(dateRange)
-        }
+        setReportFilterValues({dateRange: dateRange ?? null})
       }}
     />
   )

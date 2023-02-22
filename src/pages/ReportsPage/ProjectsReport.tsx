@@ -1,19 +1,22 @@
-import {Aggregate} from "@lightningkite/lightning-server-simplified"
+import {Aggregate, Condition} from "@lightningkite/lightning-server-simplified"
 import {Card} from "@mui/material"
 import {DataGrid, GridEnrichedColDef} from "@mui/x-data-grid"
-import {Project, User} from "api/sdk"
+import {Project, TimeEntry, User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO, MILLISECONDS_PER_HOUR} from "utils/helpers"
-import {DateRange} from "./ReportFilters"
+import {ReportProps} from "./ReportsPage"
 
 interface HoursTableRow {
   user: User
   projectMilliseconds: Record<string, number | null | undefined>
 }
 
-export const ProjectsReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
+export const ProjectsReport: FC<ReportProps> = (props) => {
+  const {
+    reportFilterValues: {dateRange}
+  } = props
   const {session} = useContext(AuthContext)
 
   const [tableData, setTableData] = useState<HoursTableRow[]>()
@@ -36,16 +39,20 @@ export const ProjectsReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
       .catch(() => setError("Error fetching projects"))
   }, [])
 
+  const dateConditions: Condition<TimeEntry>[] = dateRange
+    ? [
+        {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
+        {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
+      ]
+    : [{Always: true}]
+
   useEffect(() => {
     setMsByProject(undefined)
 
     session.timeEntry
       .groupAggregate({
         condition: {
-          And: [
-            {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
-            {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
-          ]
+          And: dateConditions
         },
         aggregate: Aggregate.Sum,
         property: "durationMilliseconds",
@@ -67,11 +74,7 @@ export const ProjectsReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
     >[] = users.map((user) =>
       session.timeEntry.groupAggregate({
         condition: {
-          And: [
-            {user: {Equal: user._id}},
-            {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
-            {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
-          ]
+          And: [{user: {Equal: user._id}}, ...dateConditions]
         },
         aggregate: Aggregate.Sum,
         property: "durationMilliseconds",

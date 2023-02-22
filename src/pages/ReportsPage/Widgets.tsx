@@ -5,16 +5,14 @@ import dayjs from "dayjs"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO, formatDollars, MILLISECONDS_PER_HOUR} from "utils/helpers"
-import {DateRange} from "./ReportFilters"
+import {ReportProps} from "./ReportsPage"
 import {projectedRevenue} from "./widgetHelpers"
 import {WidgetLayout} from "./WidgetLayout"
 
-export interface WidgetsProps {
-  dateRange: DateRange
-}
-
-export const Widgets: FC<WidgetsProps> = (props) => {
-  const {dateRange} = props
+export const Widgets: FC<ReportProps> = (props) => {
+  const {
+    reportFilterValues: {dateRange}
+  } = props
   const {session} = useContext(AuthContext)
 
   const [totalHours, setTotalHours] = useState<number>()
@@ -22,10 +20,12 @@ export const Widgets: FC<WidgetsProps> = (props) => {
     useState<number>()
   const [revenueDollarsToDate, setRevenueDollarsToDate] = useState<number>()
 
-  const timeEntryDateRangeConditions: Condition<TimeEntry>[] = [
-    {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
-    {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
-  ]
+  const timeEntryDateRangeConditions: Condition<TimeEntry>[] = dateRange
+    ? [
+        {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
+        {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
+      ]
+    : [{Always: true}]
 
   useEffect(() => {
     setTotalHours(undefined)
@@ -50,10 +50,12 @@ export const Widgets: FC<WidgetsProps> = (props) => {
     const pastMillisecondsByProjectRequest = session.timeEntry.groupAggregate({
       aggregate: Aggregate.Sum,
       condition: {
-        And: [
-          {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
-          {date: {LessThan: dateToISO(dateRange.end.toDate())}}
-        ]
+        And: dateRange
+          ? [
+              {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
+              {date: {LessThan: dateToISO(dateRange.end.toDate())}}
+            ]
+          : [{Always: true}]
       },
       groupBy: "project",
       property: "durationMilliseconds"
@@ -88,6 +90,7 @@ export const Widgets: FC<WidgetsProps> = (props) => {
   }, [dateRange])
 
   const isTodayWithinRange =
+    dateRange &&
     !dayjs().isAfter(dateRange.end, "day") &&
     !dayjs().isBefore(dateRange.start, "day")
 

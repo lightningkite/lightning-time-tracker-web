@@ -18,7 +18,7 @@ import Loading from "components/Loading"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO, formatDollars, MILLISECONDS_PER_HOUR} from "utils/helpers"
-import {DateRange} from "./ReportFilters"
+import {ReportProps} from "./ReportsPage"
 import {Widgets} from "./Widgets"
 
 export type SummarizeByProject = Record<
@@ -26,7 +26,8 @@ export type SummarizeByProject = Record<
   {projectTasks: Task[]; projectHours: number}
 >
 
-export const RevenueReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
+export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
+  const {dateRange} = reportFilterValues
   const {session} = useContext(AuthContext)
 
   const [projects, setProjects] = useState<Project[]>()
@@ -51,10 +52,12 @@ export const RevenueReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
     setMsPerTask(undefined)
     setOrphanMsPerTask(undefined)
 
-    const timeEntryDateRangeConditions: Condition<TimeEntry>[] = [
-      {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
-      {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
-    ]
+    const timeEntryDateRangeConditions: Condition<TimeEntry>[] = dateRange
+      ? [
+          {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
+          {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
+        ]
+      : [{Always: true}]
 
     const millisecondsPerTaskRequest = session.timeEntry.groupAggregate({
       aggregate: Aggregate.Sum,
@@ -84,7 +87,7 @@ export const RevenueReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
         setOrphanMsPerTask(orphanMillisecondsPerProject)
       })
       .catch(() => setError("Error fetching time entries"))
-  }, [dateRange])
+  }, [reportFilterValues])
 
   useEffect(() => {
     if (!msPerTask) return
@@ -109,7 +112,7 @@ export const RevenueReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
 
   return (
     <Box>
-      <Widgets dateRange={dateRange} />
+      <Widgets reportFilterValues={reportFilterValues} />
 
       {projects
         .map((project) => {

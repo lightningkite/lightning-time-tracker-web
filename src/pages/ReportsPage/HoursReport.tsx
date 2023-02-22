@@ -36,7 +36,7 @@ export const HoursReport: FC<ReportProps> = (props) => {
 
     setUsers(users)
 
-    const userHoursRequest: Promise<HoursTableRow["dayMilliseconds"]>[] =
+    const userTimeRequests: Promise<HoursTableRow["dayMilliseconds"]>[] =
       users.map((user) =>
         session.timeEntry.groupAggregate({
           condition: {
@@ -51,10 +51,10 @@ export const HoursReport: FC<ReportProps> = (props) => {
         })
       )
 
-    const userHoursResponse = await Promise.all(userHoursRequest)
+    const userTimeResponses = await Promise.all(userTimeRequests)
 
     setTableData(
-      userHoursResponse.map((dayMilliseconds, i) => ({
+      userTimeResponses.map((dayMilliseconds, i) => ({
         user: users[i],
         dayMilliseconds
       }))

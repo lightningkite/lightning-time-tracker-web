@@ -1,11 +1,16 @@
-import {Aggregate, Condition} from "@lightningkite/lightning-server-simplified"
+import {Aggregate} from "@lightningkite/lightning-server-simplified"
 import {Card} from "@mui/material"
 import {DataGrid, GridEnrichedColDef} from "@mui/x-data-grid"
-import {Project, TimeEntry, User} from "api/sdk"
+import {Project, User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
-import {dateToISO, MILLISECONDS_PER_HOUR} from "utils/helpers"
+import {MILLISECONDS_PER_HOUR} from "utils/helpers"
+import {
+  filtersToProjectCondition,
+  filtersToTimeEntryCondition,
+  filtersToUserCondition
+} from "./ReportFilters"
 import {ReportProps} from "./ReportsPage"
 
 interface HoursTableRow {
@@ -14,9 +19,7 @@ interface HoursTableRow {
 }
 
 export const ProjectsReport: FC<ReportProps> = (props) => {
-  const {
-    reportFilterValues: {dateRange}
-  } = props
+  const {reportFilterValues} = props
   const {session} = useContext(AuthContext)
 
   const [tableData, setTableData] = useState<HoursTableRow[]>()
@@ -27,54 +30,35 @@ export const ProjectsReport: FC<ReportProps> = (props) => {
 
   const [error, setError] = useState("")
 
-  useEffect(() => {
-    session.user
-      .query({})
-      .then(setUsers)
-      .catch(() => setError("Error fetching users"))
+  async function fetchReportData() {
+    setTableData(undefined)
 
-    session.project
-      .query({})
-      .then(setProjects)
-      .catch(() => setError("Error fetching projects"))
-  }, [])
-
-  const dateConditions: Condition<TimeEntry>[] = dateRange
-    ? [
-        {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
-        {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
-      ]
-    : [{Always: true}]
-
-  useEffect(() => {
-    setMsByProject(undefined)
-
-    session.timeEntry
-      .groupAggregate({
-        condition: {
-          And: dateConditions
-        },
+    const [users, projects, timeByProject] = await Promise.all([
+      session.user.query({
+        condition: filtersToUserCondition(reportFilterValues)
+      }),
+      session.project.query({
+        condition: filtersToProjectCondition(reportFilterValues)
+      }),
+      session.timeEntry.groupAggregate({
+        condition: filtersToTimeEntryCondition(reportFilterValues),
         aggregate: Aggregate.Sum,
         property: "durationMilliseconds",
         groupBy: "project"
       })
-      .then(setMsByProject)
-      .catch(() => setError("Error fetching hours per project"))
-  }, [dateRange])
+    ])
 
-  useEffect(() => {
-    setTableData(undefined)
+    setUsers(users)
+    setProjects(projects)
+    setMsByProject(timeByProject)
 
-    if (!users) {
-      return
-    }
-
-    const userProjectMillisecondsRequests: Promise<
-      HoursTableRow["projectMilliseconds"]
-    >[] = users.map((user) =>
+    const userTimeRequests = users.map((user) =>
       session.timeEntry.groupAggregate({
         condition: {
-          And: [{user: {Equal: user._id}}, ...dateConditions]
+          And: [
+            {user: {Equal: user._id}},
+            filtersToTimeEntryCondition(reportFilterValues)
+          ]
         },
         aggregate: Aggregate.Sum,
         property: "durationMilliseconds",
@@ -82,17 +66,19 @@ export const ProjectsReport: FC<ReportProps> = (props) => {
       })
     )
 
-    Promise.all(userProjectMillisecondsRequests)
-      .then((r) =>
-        setTableData(
-          r.map((projectMilliseconds, i) => ({
-            user: users[i],
-            projectMilliseconds
-          }))
-        )
-      )
-      .catch(() => setError("Error fetching table data"))
-  }, [dateRange, users])
+    const userTimeResponses = await Promise.all(userTimeRequests)
+
+    setTableData(
+      userTimeResponses.map((projectMilliseconds, i) => ({
+        user: users[i],
+        projectMilliseconds
+      }))
+    )
+  }
+
+  useEffect(() => {
+    fetchReportData().catch(() => setError("Error fetching report data"))
+  }, [reportFilterValues])
 
   if (error) {
     return <ErrorAlert>{error}</ErrorAlert>

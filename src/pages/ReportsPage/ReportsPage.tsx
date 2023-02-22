@@ -2,8 +2,8 @@ import {TabContext, TabList, TabPanel} from "@mui/lab"
 import {Box, Container, Tab} from "@mui/material"
 import PageHeader from "components/PageHeader"
 import React, {FC, useState} from "react"
-import {HoursReport} from "./HoursReport"
-import {ProjectsReport} from "./ProjectsReport"
+import {HoursByDateReport} from "./HoursByDateReport"
+import {HoursByProjectReport} from "./HoursByProjectReport"
 import {DateRange, DateRangeSelector} from "./ReportFilters"
 import {RevenueReport} from "./RevenueReport"
 
@@ -34,18 +34,18 @@ const ReportsPage: FC = () => {
             <Box sx={{borderBottom: 1, borderColor: "divider", mt: 2}}>
               <TabList onChange={(_e, newValue) => setValue(newValue)}>
                 <Tab label="Revenue" value="1" />
-                <Tab label="Employee Hours" value="2" />
-                <Tab label="Projects" value="3" />
+                <Tab label="Hours by Date" value="2" />
+                <Tab label="Hours by Project" value="3" />
               </TabList>
             </Box>
             <TabPanel value="1" sx={{px: 0}}>
               <RevenueReport reportFilterValues={reportFilterValues} />
             </TabPanel>
             <TabPanel value="2" sx={{px: 0}}>
-              <HoursReport reportFilterValues={reportFilterValues} />
+              <HoursByDateReport reportFilterValues={reportFilterValues} />
             </TabPanel>
             <TabPanel value="3" sx={{px: 0}}>
-              <ProjectsReport reportFilterValues={reportFilterValues} />
+              <HoursByProjectReport reportFilterValues={reportFilterValues} />
             </TabPanel>
           </TabContext>
         </>

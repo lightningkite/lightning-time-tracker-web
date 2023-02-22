@@ -17,7 +17,7 @@ interface HoursTableRow {
   dayMilliseconds: Record<string, number | null | undefined>
 }
 
-export const HoursReport: FC<ReportProps> = (props) => {
+export const HoursByDateReport: FC<ReportProps> = (props) => {
   const {reportFilterValues} = props
   const {dateRange} = reportFilterValues
   const {session} = useContext(AuthContext)

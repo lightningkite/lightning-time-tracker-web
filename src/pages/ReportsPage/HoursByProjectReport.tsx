@@ -18,7 +18,7 @@ interface HoursTableRow {
   projectMilliseconds: Record<string, number | null | undefined>
 }
 
-export const ProjectsReport: FC<ReportProps> = (props) => {
+export const HoursByProjectReport: FC<ReportProps> = (props) => {
   const {reportFilterValues} = props
   const {session} = useContext(AuthContext)
 

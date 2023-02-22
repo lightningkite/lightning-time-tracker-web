@@ -6,7 +6,7 @@ import ErrorAlert from "components/ErrorAlert"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO, MILLISECONDS_PER_HOUR} from "utils/helpers"
-import {DateRange} from "./DateRangeSelector"
+import {DateRange} from "./ReportFilters"
 
 interface HoursTableRow {
   user: User

@@ -2,7 +2,7 @@ import {TabContext, TabList, TabPanel} from "@mui/lab"
 import {Box, Container, Tab} from "@mui/material"
 import PageHeader from "components/PageHeader"
 import React, {FC, useState} from "react"
-import {DateRange, DateRangeSelector} from "./DateRangeSelector"
+import {DateRange, DateRangeSelector} from "./ReportFilters"
 import {HoursReport} from "./HoursReport"
 import {ProjectsReport} from "./ProjectsReport"
 import {RevenueReport} from "./RevenueReport"
@@ -15,7 +15,7 @@ const Reports: FC = () => {
     <Container maxWidth="xl">
       <PageHeader title="Reports" />
 
-      <DateRangeSelector setDateRange={setDateRange} dateRange={dateRange} />
+      <DateRangeSelector setDateRange={setDateRange} />
 
       {dateRange && (
         <>

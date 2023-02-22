@@ -18,7 +18,7 @@ import Loading from "components/Loading"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO, formatDollars, MILLISECONDS_PER_HOUR} from "utils/helpers"
-import {DateRange} from "./DateRangeSelector"
+import {DateRange} from "./ReportFilters"
 import {Widgets} from "./Widgets"
 
 export type SummarizeByProject = Record<

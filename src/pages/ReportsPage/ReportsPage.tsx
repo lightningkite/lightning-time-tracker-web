@@ -1,5 +1,6 @@
 import {TabContext, TabList, TabPanel} from "@mui/lab"
 import {Box, Container, Tab} from "@mui/material"
+import { Project, User } from "api/sdk"
 import PageHeader from "components/PageHeader"
 import React, {FC, useState} from "react"
 import {HoursByDateReport} from "./HoursByDateReport"
@@ -10,8 +11,8 @@ import { TimeEntriesReport } from "./TimeEntriesReport"
 
 export interface ReportFilterValues {
   dateRange: DateRange | null
-  users: string[] | null
-  projects: string[] | null
+  users: User[] | null
+  projects: Project[] | null
 }
 
 export interface ReportProps {

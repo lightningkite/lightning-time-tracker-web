@@ -143,8 +143,8 @@ export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
 
         setReportFilterValues({
           dateRange: dateRange ?? null,
-          users: users?.map((u) => u._id) ?? null,
-          projects: projects?.map((p) => p._id) ?? null
+          users: users ?? null,
+          projects: projects ?? null
         })
       }}
     />
@@ -156,7 +156,7 @@ export function filtersToProjectCondition(
 ): Condition<Project> {
   const {projects} = filters
 
-  return projects ? {_id: {Inside: projects}} : {Always: true}
+  return projects ? {_id: {Inside: projects.map((p) => p._id)}} : {Always: true}
 }
 
 export function filtersToUserCondition(
@@ -164,7 +164,7 @@ export function filtersToUserCondition(
 ): Condition<User> {
   const {users} = filters
 
-  return users ? {_id: {Inside: users}} : {Always: true}
+  return users ? {_id: {Inside: users.map((u) => u._id)}} : {Always: true}
 }
 
 export function filtersToTaskCondition(
@@ -175,11 +175,11 @@ export function filtersToTaskCondition(
   const conditions: Condition<Task>[] = []
 
   if (projects) {
-    conditions.push({project: {Inside: projects}})
+    conditions.push({project: {Inside: projects.map((p) => p._id)}})
   }
 
   if (users) {
-    conditions.push({user: {Inside: users}})
+    conditions.push({user: {Inside: users.map((u) => u._id)}})
   }
 
   return {And: conditions}
@@ -206,11 +206,11 @@ export function filtersToTimeEntryCondition(
   }
 
   if (users) {
-    conditions.push({user: {Inside: users}})
+    conditions.push({user: {Inside: users.map((u) => u._id)}})
   }
 
   if (projects) {
-    conditions.push({project: {Inside: projects}})
+    conditions.push({project: {Inside: projects.map((p) => p._id)}})
   }
 
   return {And: conditions}

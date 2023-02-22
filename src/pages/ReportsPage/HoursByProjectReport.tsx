@@ -6,6 +6,7 @@ import ErrorAlert from "components/ErrorAlert"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {MILLISECONDS_PER_HOUR} from "utils/helpers"
+import {CustomToolbar} from "./CustomToolbar"
 import {
   filtersToProjectCondition,
   filtersToTimeEntryCondition,
@@ -125,7 +126,9 @@ export const HoursByProjectReport: FC<ReportProps> = (props) => {
               type: "number",
               valueGetter: ({row}) => row.projectMilliseconds[project._id] ?? 0,
               valueFormatter: ({value}) =>
-                value ? (value / MILLISECONDS_PER_HOUR).toFixed(1) : "–"
+                (value / MILLISECONDS_PER_HOUR).toFixed(1),
+              renderCell: ({formattedValue, value}) =>
+                value === 0 ? "–" : formattedValue
             }
 
             return column
@@ -139,6 +142,13 @@ export const HoursByProjectReport: FC<ReportProps> = (props) => {
         rows={tableData ?? []}
         getRowId={(r) => r.user._id}
         hideFooter
+        components={{Toolbar: CustomToolbar}}
+        componentsProps={{
+          toolbar: {
+            filters: reportFilterValues,
+            filePrefix: "Hours by Project"
+          }
+        }}
         sx={{
           "& .MuiDataGrid-cell, .MuiDataGrid-columnHeader": {
             outline: "none !important"

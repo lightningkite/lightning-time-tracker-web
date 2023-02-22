@@ -6,7 +6,8 @@ import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
-import {dynamicFormatDate} from "utils/helpers"
+import {dynamicFormatDate, MILLISECONDS_PER_HOUR} from "utils/helpers"
+import {CustomToolbar} from "./CustomToolbar"
 import {filtersToTimeEntryCondition} from "./ReportFilters"
 import {ReportProps} from "./ReportsPage"
 
@@ -52,7 +53,7 @@ export const TimeEntriesReport: FC<ReportProps> = (props) => {
             headerName: "Date",
             type: "date",
             width: 130,
-            valueFormatter: ({value}) => dynamicFormatDate(dayjs(value))
+            renderCell: ({value}) => dynamicFormatDate(dayjs(value))
           },
           {
             field: "userName",
@@ -63,9 +64,10 @@ export const TimeEntriesReport: FC<ReportProps> = (props) => {
             field: "duration",
             headerName: "Duration",
             valueGetter: (params) =>
-              dayjs
-                .duration(params.row.durationMilliseconds, "millisecond")
-                .format("H : mm : ss")
+              params.row.durationMilliseconds / MILLISECONDS_PER_HOUR,
+            valueFormatter: ({value}) => value.toFixed(2),
+            renderCell: ({value}) =>
+              dayjs.duration(value, "hour").format("HH : mm : ss")
           },
           {
             field: "projectName",
@@ -92,6 +94,13 @@ export const TimeEntriesReport: FC<ReportProps> = (props) => {
         }}
         rows={tableData ?? []}
         getRowId={(r) => r._id}
+        components={{Toolbar: CustomToolbar}}
+        componentsProps={{
+          toolbar: {
+            filters: reportFilterValues,
+            filePrefix: "Time Entries"
+          }
+        }}
         sx={{
           "& .MuiDataGrid-cell, .MuiDataGrid-columnHeader": {
             outline: "none !important"

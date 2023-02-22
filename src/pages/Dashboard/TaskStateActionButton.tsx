@@ -1,3 +1,4 @@
+import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {CheckCircle, Done, Undo} from "@mui/icons-material"
 import {
   CircularProgress,
@@ -89,12 +90,14 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
           <CircularProgress size={20} />
         </IconButton>
       ) : (
-        <IconButton
-          sx={{color: "text.secondary"}}
-          onClick={(e) => setAnchorEl(e.currentTarget)}
-        >
-          <Done />
-        </IconButton>
+        <HoverHelp description="Update status">
+          <IconButton
+            sx={{color: "text.secondary"}}
+            onClick={(e) => setAnchorEl(e.currentTarget)}
+          >
+            <Done />
+          </IconButton>
+        </HoverHelp>
       )}
 
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>

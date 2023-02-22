@@ -1,3 +1,4 @@
+import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {Add, Pause, PlayArrow} from "@mui/icons-material"
 import {IconButton} from "@mui/material"
 import React, {FC, useContext} from "react"
@@ -17,17 +18,19 @@ export const TaskPlayActionButton: FC<{
 
   if (!timerKey) {
     return (
-      <IconButton
-        onClick={() =>
-          newTimer({
-            project: annotatedTask.project,
-            task: annotatedTask._id
-          })
-        }
-        sx={{color: "text.disabled"}}
-      >
-        <Add />
-      </IconButton>
+      <HoverHelp description="New timer">
+        <IconButton
+          onClick={() =>
+            newTimer({
+              project: annotatedTask.project,
+              task: annotatedTask._id
+            })
+          }
+          sx={{color: "text.disabled"}}
+        >
+          <Add />
+        </IconButton>
+      </HoverHelp>
     )
   }
 

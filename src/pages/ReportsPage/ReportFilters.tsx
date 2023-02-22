@@ -1,6 +1,11 @@
+import {Condition} from "@lightningkite/lightning-server-simplified"
 import {FilterBar} from "@lightningkite/mui-lightning-components"
+import {Skeleton} from "@mui/material"
+import {Project, Task, TimeEntry, User} from "api/sdk"
 import dayjs, {Dayjs} from "dayjs"
-import React, {FC} from "react"
+import React, {FC, useContext, useEffect, useState} from "react"
+import {AuthContext} from "utils/context"
+import {dateToISO} from "utils/helpers"
 import {ReportFilterValues} from "./ReportsPage"
 
 export interface DateRange {
@@ -70,7 +75,9 @@ const dateRangeOptions: {label: string; value: DateRange}[] = [
 ]
 
 enum FilterNames {
-  DATE_RANGE = "Date Range"
+  DATE_RANGE = "Date Range",
+  USERS = "Users",
+  PROJECTS = "Projects"
 }
 
 export interface ReportFiltersProps {
@@ -79,6 +86,17 @@ export interface ReportFiltersProps {
 
 export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
   const {setReportFilterValues} = props
+  const {session} = useContext(AuthContext)
+
+  const [users, setUsers] = useState<User[]>()
+  const [projects, setProjects] = useState<Project[]>()
+
+  useEffect(() => {
+    session.user.query({}).then(setUsers).catch(console.error)
+    session.project.query({}).then(setProjects).catch(console.error)
+  }, [])
+
+  if (!users || !projects) return <Skeleton height={70} />
 
   return (
     <FilterBar
@@ -88,10 +106,26 @@ export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
           name: FilterNames.DATE_RANGE,
           placeholder: "Date Range",
           options: dateRangeOptions,
-          optionToID: (option) => option.label,
-          optionToLabel: (option) => option.label,
+          optionToID: (o) => o.label,
+          optionToLabel: (o) => o.label,
           defaultValue: dateRangeOptions[0],
           includeByDefault: true
+        },
+        {
+          type: "multiSelect",
+          name: FilterNames.USERS,
+          placeholder: "Users",
+          options: users,
+          optionToID: (u) => u._id,
+          optionToLabel: (u) => u.name
+        },
+        {
+          type: "multiSelect",
+          name: FilterNames.PROJECTS,
+          placeholder: "Projects",
+          options: projects,
+          optionToID: (p) => p._id,
+          optionToLabel: (p) => p.name
         }
       ]}
       onActiveFiltersChange={(activeFilters) => {
@@ -99,8 +133,85 @@ export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
           (filter) => filter.filterOption.name === FilterNames.DATE_RANGE
         )?.value?.value
 
-        setReportFilterValues({dateRange: dateRange ?? null})
+        const users: User[] | undefined = activeFilters.find(
+          (filter) => filter.filterOption.name === FilterNames.USERS
+        )?.value
+
+        const projects: Project[] | undefined = activeFilters.find(
+          (filter) => filter.filterOption.name === FilterNames.PROJECTS
+        )?.value
+
+        setReportFilterValues({
+          dateRange: dateRange ?? null,
+          users: users?.map((u) => u._id) ?? null,
+          projects: projects?.map((p) => p._id) ?? null
+        })
       }}
     />
   )
+}
+
+export function filtersToProjectCondition(
+  filters: ReportFilterValues
+): Condition<Project> {
+  const {projects} = filters
+
+  return projects ? {_id: {Inside: projects}} : {Always: true}
+}
+
+export function filtersToUserCondition(
+  filters: ReportFilterValues
+): Condition<User> {
+  const {users} = filters
+
+  return users ? {_id: {Inside: users}} : {Always: true}
+}
+
+export function filtersToTaskCondition(
+  filters: ReportFilterValues
+): Condition<Task> {
+  const {projects, users} = filters
+
+  const conditions: Condition<Task>[] = []
+
+  if (projects) {
+    conditions.push({project: {Inside: projects}})
+  }
+
+  if (users) {
+    conditions.push({user: {Inside: users}})
+  }
+
+  return {And: conditions}
+}
+
+export function filtersToTimeEntryCondition(
+  filters: ReportFilterValues
+): Condition<TimeEntry> {
+  const {dateRange, users, projects} = filters
+  const conditions: Condition<TimeEntry>[] = []
+
+  if (dateRange) {
+    conditions.push({
+      date: {
+        LessThanOrEqual: dateToISO(dateRange.end.toDate())
+      }
+    })
+
+    conditions.push({
+      date: {
+        GreaterThanOrEqual: dateToISO(dateRange.start.toDate())
+      }
+    })
+  }
+
+  if (users) {
+    conditions.push({user: {Inside: users}})
+  }
+
+  if (projects) {
+    conditions.push({project: {Inside: projects}})
+  }
+
+  return {And: conditions}
 }

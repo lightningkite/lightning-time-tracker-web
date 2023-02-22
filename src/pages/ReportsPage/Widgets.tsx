@@ -1,18 +1,18 @@
-import {Aggregate, Condition} from "@lightningkite/lightning-server-simplified"
+import {Aggregate} from "@lightningkite/lightning-server-simplified"
 import {Stack, Typography} from "@mui/material"
-import {Project, TimeEntry} from "api/sdk"
+import {Project} from "api/sdk"
 import dayjs from "dayjs"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO, formatDollars, MILLISECONDS_PER_HOUR} from "utils/helpers"
+import {filtersToTimeEntryCondition} from "./ReportFilters"
 import {ReportProps} from "./ReportsPage"
 import {projectedRevenue} from "./widgetHelpers"
 import {WidgetLayout} from "./WidgetLayout"
 
 export const Widgets: FC<ReportProps> = (props) => {
-  const {
-    reportFilterValues: {dateRange}
-  } = props
+  const {reportFilterValues} = props
+  const {dateRange} = reportFilterValues
   const {session} = useContext(AuthContext)
 
   const [totalHours, setTotalHours] = useState<number>()
@@ -20,21 +20,14 @@ export const Widgets: FC<ReportProps> = (props) => {
     useState<number>()
   const [revenueDollarsToDate, setRevenueDollarsToDate] = useState<number>()
 
-  const timeEntryDateRangeConditions: Condition<TimeEntry>[] = dateRange
-    ? [
-        {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
-        {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
-      ]
-    : [{Always: true}]
+  const timeEntryCondition = filtersToTimeEntryCondition(reportFilterValues)
 
   useEffect(() => {
     setTotalHours(undefined)
 
     const totalMillisecondsRequest = session.timeEntry.aggregate({
       aggregate: Aggregate.Sum,
-      condition: {
-        And: timeEntryDateRangeConditions
-      },
+      condition: timeEntryCondition,
       property: "durationMilliseconds"
     })
 
@@ -42,7 +35,7 @@ export const Widgets: FC<ReportProps> = (props) => {
 
     const millisecondsByProjectRequest = session.timeEntry.groupAggregate({
       aggregate: Aggregate.Sum,
-      condition: {And: timeEntryDateRangeConditions},
+      condition: timeEntryCondition,
       groupBy: "project",
       property: "durationMilliseconds"
     })
@@ -50,12 +43,18 @@ export const Widgets: FC<ReportProps> = (props) => {
     const pastMillisecondsByProjectRequest = session.timeEntry.groupAggregate({
       aggregate: Aggregate.Sum,
       condition: {
-        And: dateRange
-          ? [
-              {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
-              {date: {LessThan: dateToISO(dateRange.end.toDate())}}
-            ]
-          : [{Always: true}]
+        And: [
+          timeEntryCondition,
+          ...(dateRange
+            ? [
+                {
+                  date: {
+                    LessThan: dateToISO(dateRange.end.toDate())
+                  }
+                }
+              ]
+            : [])
+        ]
       },
       groupBy: "project",
       property: "durationMilliseconds"
@@ -87,7 +86,7 @@ export const Widgets: FC<ReportProps> = (props) => {
         )
       }
     )
-  }, [dateRange])
+  }, [reportFilterValues])
 
   const isTodayWithinRange =
     dateRange &&

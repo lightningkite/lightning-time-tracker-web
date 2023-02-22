@@ -9,6 +9,8 @@ import {RevenueReport} from "./RevenueReport"
 
 export interface ReportFilterValues {
   dateRange: DateRange | null
+  users: string[] | null
+  projects: string[] | null
 }
 
 export interface ReportProps {

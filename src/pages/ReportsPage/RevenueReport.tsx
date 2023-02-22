@@ -1,4 +1,4 @@
-import {Aggregate, Condition} from "@lightningkite/lightning-server-simplified"
+import {Aggregate} from "@lightningkite/lightning-server-simplified"
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {ExpandMore} from "@mui/icons-material"
 import {
@@ -12,12 +12,16 @@ import {
   Stack,
   Typography
 } from "@mui/material"
-import {Project, Task, TimeEntry} from "api/sdk"
+import {Project, Task} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
-import {dateToISO, formatDollars, MILLISECONDS_PER_HOUR} from "utils/helpers"
+import {formatDollars, MILLISECONDS_PER_HOUR} from "utils/helpers"
+import {
+  filtersToProjectCondition,
+  filtersToTimeEntryCondition
+} from "./ReportFilters"
 import {ReportProps} from "./ReportsPage"
 import {Widgets} from "./Widgets"
 
@@ -27,7 +31,6 @@ export type SummarizeByProject = Record<
 >
 
 export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
-  const {dateRange} = reportFilterValues
   const {session} = useContext(AuthContext)
 
   const [projects, setProjects] = useState<Project[]>()
@@ -41,28 +44,16 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
   const [expanded, setExpanded] = useState<string | null>(null)
 
   useEffect(() => {
-    session.project
-      .query({})
-      .then(setProjects)
-      .catch(() => setError("Error fetching projects"))
-  }, [])
-
-  useEffect(() => {
     setTasks(undefined)
     setMsPerTask(undefined)
     setOrphanMsPerTask(undefined)
 
-    const timeEntryDateRangeConditions: Condition<TimeEntry>[] = dateRange
-      ? [
-          {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
-          {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
-        ]
-      : [{Always: true}]
+    const timeEntryCondition = filtersToTimeEntryCondition(reportFilterValues)
 
     const millisecondsPerTaskRequest = session.timeEntry.groupAggregate({
       aggregate: Aggregate.Sum,
       condition: {
-        And: [...timeEntryDateRangeConditions, {task: {NotEqual: null}}]
+        And: [timeEntryCondition, {task: {NotEqual: null}}]
       },
       groupBy: "task",
       property: "durationMilliseconds"
@@ -72,21 +63,33 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
       session.timeEntry.groupAggregate({
         aggregate: Aggregate.Sum,
         condition: {
-          And: [...timeEntryDateRangeConditions, {task: {Equal: null}}]
+          And: [timeEntryCondition, {task: {Equal: null}}]
         },
         groupBy: "project",
         property: "durationMilliseconds"
       })
 
+    const projectsRequest = session.project.query({
+      condition: filtersToProjectCondition(reportFilterValues)
+    })
+
     Promise.all([
       millisecondsPerTaskRequest,
-      orphanMillisecondsPerProjectRequest
+      orphanMillisecondsPerProjectRequest,
+      projectsRequest
     ])
-      .then(([millisecondsPerTask, orphanMillisecondsPerProject]) => {
-        setMsPerTask(millisecondsPerTask)
-        setOrphanMsPerTask(orphanMillisecondsPerProject)
-      })
-      .catch(() => setError("Error fetching time entries"))
+      .then(
+        ([
+          millisecondsPerTask,
+          orphanMillisecondsPerProject,
+          projectsResponse
+        ]) => {
+          setMsPerTask(millisecondsPerTask)
+          setOrphanMsPerTask(orphanMillisecondsPerProject)
+          setProjects(projectsResponse)
+        }
+      )
+      .catch(() => setError("Error fetching data"))
   }, [reportFilterValues])
 
   useEffect(() => {

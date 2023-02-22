@@ -5,7 +5,11 @@ import {User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
-import {dateToISO, MILLISECONDS_PER_HOUR} from "utils/helpers"
+import {MILLISECONDS_PER_HOUR} from "utils/helpers"
+import {
+  filtersToTimeEntryCondition,
+  filtersToUserCondition
+} from "./ReportFilters"
 import {ReportProps} from "./ReportsPage"
 
 interface HoursTableRow {
@@ -14,9 +18,8 @@ interface HoursTableRow {
 }
 
 export const HoursReport: FC<ReportProps> = (props) => {
-  const {
-    reportFilterValues: {dateRange}
-  } = props
+  const {reportFilterValues} = props
+  const {dateRange} = reportFilterValues
   const {session} = useContext(AuthContext)
 
   const [tableData, setTableData] = useState<HoursTableRow[]>()
@@ -24,47 +27,43 @@ export const HoursReport: FC<ReportProps> = (props) => {
 
   const [error, setError] = useState("")
 
-  useEffect(() => {
-    session.user
-      .query({})
-      .then(setUsers)
-      .catch(() => setError("Error fetching users"))
-  }, [])
-
-  useEffect(() => {
+  async function fetchReportData() {
     setTableData(undefined)
 
-    if (!users || !dateRange) {
-      return
-    }
+    const users = await session.user.query({
+      condition: filtersToUserCondition(reportFilterValues)
+    })
 
-    const requests: Promise<HoursTableRow["dayMilliseconds"]>[] = users.map(
-      (user) =>
+    setUsers(users)
+
+    const userHoursRequest: Promise<HoursTableRow["dayMilliseconds"]>[] =
+      users.map((user) =>
         session.timeEntry.groupAggregate({
           condition: {
             And: [
               {user: {Equal: user._id}},
-              {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
-              {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
+              filtersToTimeEntryCondition(reportFilterValues)
             ]
           },
           aggregate: Aggregate.Sum,
           property: "durationMilliseconds",
           groupBy: "date"
         })
-    )
-
-    Promise.all(requests)
-      .then((r) =>
-        setTableData(
-          r.map((dayMilliseconds, i) => ({
-            user: users[i],
-            dayMilliseconds
-          }))
-        )
       )
-      .catch(() => setError("Error fetching table data"))
-  }, [dateRange, users])
+
+    const userHoursResponse = await Promise.all(userHoursRequest)
+
+    setTableData(
+      userHoursResponse.map((dayMilliseconds, i) => ({
+        user: users[i],
+        dayMilliseconds
+      }))
+    )
+  }
+
+  useEffect(() => {
+    fetchReportData().catch(() => setError("Error fetching report data"))
+  }, [reportFilterValues])
 
   if (error) {
     return <ErrorAlert>{error}</ErrorAlert>

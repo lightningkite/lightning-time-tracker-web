@@ -3,6 +3,7 @@ import {Stack, Typography} from "@mui/material"
 import {Project} from "api/sdk"
 import dayjs from "dayjs"
 import React, {FC, useContext, useEffect, useState} from "react"
+import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
 import {dateToISO, formatDollars, MILLISECONDS_PER_HOUR} from "utils/helpers"
 import {filtersToTimeEntryCondition} from "./ReportFilters"
@@ -31,7 +32,9 @@ export const Widgets: FC<ReportProps> = (props) => {
       property: "durationMilliseconds"
     })
 
-    const projectsRequest = session.project.query({})
+    const projectsRequest = session.project.query({
+      limit: QUERY_LIMIT
+    })
 
     const millisecondsByProjectRequest = session.timeEntry.groupAggregate({
       aggregate: Aggregate.Sum,

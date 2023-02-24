@@ -4,6 +4,7 @@ import {DataGrid, GridEnrichedColDef} from "@mui/x-data-grid"
 import {Project, User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import React, {FC, useContext, useEffect, useState} from "react"
+import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
 import {MILLISECONDS_PER_HOUR} from "utils/helpers"
 import {CustomToolbar} from "./CustomToolbar"
@@ -36,10 +37,12 @@ export const HoursByProjectReport: FC<ReportProps> = (props) => {
 
     const [users, projects, timeByProject] = await Promise.all([
       session.user.query({
-        condition: filtersToUserCondition(reportFilterValues)
+        condition: filtersToUserCondition(reportFilterValues),
+        limit: QUERY_LIMIT
       }),
       session.project.query({
-        condition: filtersToProjectCondition(reportFilterValues)
+        condition: filtersToProjectCondition(reportFilterValues),
+        limit: QUERY_LIMIT
       }),
       session.timeEntry.groupAggregate({
         condition: filtersToTimeEntryCondition(reportFilterValues),

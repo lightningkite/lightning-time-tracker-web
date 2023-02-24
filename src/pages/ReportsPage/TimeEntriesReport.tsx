@@ -5,6 +5,7 @@ import ErrorAlert from "components/ErrorAlert"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import React, {FC, useContext, useEffect, useState} from "react"
+import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
 import {dynamicFormatDate, MILLISECONDS_PER_HOUR} from "utils/helpers"
 import {CustomToolbar} from "./CustomToolbar"
@@ -26,7 +27,7 @@ export const TimeEntriesReport: FC<ReportProps> = (props) => {
 
     const timeEntries = await session.timeEntry.query({
       condition: filtersToTimeEntryCondition(reportFilterValues),
-      limit: 10000
+      limit: QUERY_LIMIT
     })
 
     setTableData(timeEntries)

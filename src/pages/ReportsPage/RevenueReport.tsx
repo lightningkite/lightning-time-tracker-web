@@ -16,6 +16,7 @@ import {Project, Task} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import React, {FC, useContext, useEffect, useState} from "react"
+import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
 import {formatDollars, MILLISECONDS_PER_HOUR} from "utils/helpers"
 import {
@@ -70,7 +71,8 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
       })
 
     const projectsRequest = session.project.query({
-      condition: filtersToProjectCondition(reportFilterValues)
+      condition: filtersToProjectCondition(reportFilterValues),
+      limit: QUERY_LIMIT
     })
 
     Promise.all([
@@ -99,7 +101,8 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
 
     session.task
       .query({
-        condition: {_id: {Inside: Array.from(uniqueTaskIds)}}
+        condition: {_id: {Inside: Array.from(uniqueTaskIds)}},
+        limit: QUERY_LIMIT
       })
       .then(setTasks)
       .catch(() => setError("Error fetching tasks"))

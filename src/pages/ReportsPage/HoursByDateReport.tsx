@@ -4,6 +4,7 @@ import {DataGrid, GridEnrichedColDef} from "@mui/x-data-grid"
 import {User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import React, {FC, useContext, useEffect, useState} from "react"
+import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
 import {MILLISECONDS_PER_HOUR} from "utils/helpers"
 import {CustomToolbar} from "./CustomToolbar"
@@ -32,7 +33,8 @@ export const HoursByDateReport: FC<ReportProps> = (props) => {
     setTableData(undefined)
 
     const users = await session.user.query({
-      condition: filtersToUserCondition(reportFilterValues)
+      condition: filtersToUserCondition(reportFilterValues),
+      limit: QUERY_LIMIT
     })
 
     setUsers(users)

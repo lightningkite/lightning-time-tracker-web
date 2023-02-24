@@ -4,3 +4,5 @@ export enum LocalStorageKey {
   BACKEND_URL = "lk-time-backendURL",
   TIMERS = "lk-time-timers"
 }
+
+export const QUERY_LIMIT = 10_000;

@@ -1,4 +1,3 @@
-import {SessionRestEndpoint} from "@lightningkite/lightning-server-simplified"
 import {Send} from "@mui/icons-material"
 import {
   Divider,
@@ -10,14 +9,10 @@ import {
   Typography
 } from "@mui/material"
 import {Comment, Task} from "api/sdk"
-import dayjs, {extend} from "dayjs"
-import relativeTime from "dayjs/plugin/relativeTime"
+import Loading from "components/Loading"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
-import {dateFromISO} from "utils/helpers"
-import Loading from "./Loading"
-
-extend(relativeTime)
+import {CommentItem} from "./CommentItem"
 
 export interface CommentSectionProps {
   task: Task
@@ -68,6 +63,16 @@ export const CommentSection: FC<CommentSectionProps> = (props) => {
       .finally(() => setIsSubmitting(false))
   }
 
+  function handleDeleteComment(commentId: string) {
+    if (!comments) return
+    const prevComments = [...comments]
+    setComments((comments) => comments?.filter((c) => c._id !== commentId))
+    session.comment.delete(commentId).catch(() => {
+      alert("Error deleting comment")
+      setComments(prevComments)
+    })
+  }
+
   if (!comments) return <Loading />
 
   return (
@@ -110,33 +115,23 @@ export const CommentSection: FC<CommentSectionProps> = (props) => {
               <ListItemText
                 primary={`You - sending...`}
                 secondary={newComment}
+                primaryTypographyProps={{
+                  variant: "body2",
+                  color: "textSecondary"
+                }}
+                secondaryTypographyProps={{variant: "body1", color: "text"}}
               />
             </ListItem>
             <Divider />
           </>
         )}
-        {comments.map((comment, index) => {
-          const displayTime = dayjs(comment.createdAt).fromNow()
-          const displayName =
-            comment.user === currentUser._id
-              ? "You"
-              : comment.userName ?? "Unknown User"
-
+        {comments.map((comment) => {
           return (
-            <>
-              <ListItem key={comment._id} disableGutters>
-                <ListItemText
-                  primary={`${displayName} - ${displayTime}`}
-                  secondary={comment.content}
-                  primaryTypographyProps={{
-                    variant: "body2",
-                    color: "textSecondary"
-                  }}
-                  secondaryTypographyProps={{variant: "body1", color: "text"}}
-                />
-              </ListItem>
-              {index + 1 < comments.length && <Divider />}
-            </>
+            <CommentItem
+              comment={comment}
+              handleDeleteComment={handleDeleteComment}
+              key={comment._id}
+            />
           )
         })}
       </List>

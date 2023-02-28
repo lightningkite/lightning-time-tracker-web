@@ -1,5 +1,5 @@
 import {Card, CardContent, Container, Typography} from "@mui/material"
-import {Project, Task} from "api/sdk"
+import {Task} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import PageHeader from "components/PageHeader"
@@ -17,26 +17,19 @@ const TaskDetail: FC = () => {
   const {session} = useContext(AuthContext)
 
   const [task, setTask] = useState<Task | null>()
-  const [project, setProject] = useState<Project | null>()
 
   useEffect(() => {
     session.task
       .detail(taskId as string)
       .then(setTask)
       .catch(() => setTask(null))
-
-    projectId &&
-      session.project
-        .detail(projectId)
-        .then(setProject)
-        .catch(() => setProject(null))
   }, [taskId])
 
-  if (task === undefined || (projectId && project === undefined)) {
+  if (task === undefined) {
     return <Loading />
   }
 
-  if (task === null || project === null) {
+  if (task === null) {
     return <ErrorAlert>Error loading task</ErrorAlert>
   }
 
@@ -50,10 +43,13 @@ const TaskDetail: FC = () => {
       <PageHeader
         title={shortSummary}
         breadcrumbs={
-          project
+          projectId !== undefined
             ? [
                 ["All Projects", "/projects"],
-                [project.name, `/projects/${project._id}`],
+                [
+                  task.projectName ?? "Unknown Project",
+                  `/projects/${projectId}`
+                ],
                 [shortSummary, ""]
               ]
             : [

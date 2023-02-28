@@ -79,7 +79,11 @@ const TaskDetail: FC = () => {
         </Paper>
 
         <TabPanel value="1" sx={{p: 0, pt: 2}}>
-          <CommentSection task={task} />
+          <Card>
+            <CardContent>
+              <CommentSection task={task} />
+            </CardContent>
+          </Card>
         </TabPanel>
         <TabPanel value="2" sx={{p: 0}}>
           <TimeEntryTab task={task} />

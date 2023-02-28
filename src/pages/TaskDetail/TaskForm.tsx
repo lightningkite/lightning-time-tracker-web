@@ -10,6 +10,7 @@ import {LoadingButton} from "@mui/lab"
 import {
   Alert,
   Checkbox,
+  Divider,
   FormControlLabel,
   InputAdornment,
   MenuItem,
@@ -17,6 +18,7 @@ import {
   TextField
 } from "@mui/material"
 import {Project, Task, TaskState, User} from "api/sdk"
+import FormSection from "components/FormSection"
 import {useFormik} from "formik"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
@@ -98,69 +100,91 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
   }, [])
 
   return (
-    <Stack gap={3}>
-      <RestAutocompleteInput
-        label="User"
-        restEndpoint={session.user}
-        getOptionLabel={(user) => user.name || user.email}
-        searchProperties={["email"]}
-        disabled={!loadedInitialAsyncValues}
-        {...makeFormikAutocompleteProps(formik, "user")}
-      />
-      <RestAutocompleteInput
-        label="Project"
-        restEndpoint={session.project}
-        getOptionLabel={(project) => project.name}
-        searchProperties={["name"]}
-        disabled={!loadedInitialAsyncValues}
-        {...makeFormikAutocompleteProps(formik, "project")}
-      />
-      <TextField
-        label="Summary"
-        {...makeFormikTextFieldProps(formik, "summary")}
-      />
-      <TextField
-        label="Description"
-        multiline
-        {...makeFormikTextFieldProps(formik, "description")}
-      />
-      <TextField
-        select
-        label="State"
-        {...makeFormikTextFieldProps(formik, "state")}
-      >
-        {Object.values(TaskState).map((option) => (
-          <MenuItem key={option} value={option}>
-            {option}
-          </MenuItem>
-        ))}
-      </TextField>
-      <TextField
-        label="Estimate (hours)"
-        {...makeFormikNumericTextFieldProps(formik, "estimate")}
-        InputProps={{
-          endAdornment: <InputAdornment position="end">hours</InputAdornment>
-        }}
-      />
-      <FormControlLabel
-        control={<Checkbox {...makeFormikCheckboxProps(formik, "emergency")} />}
-        label="Emergency"
-      />
+    <>
+      <FormSection disableTopPadding>
+        <TextField
+          label="Summary"
+          {...makeFormikTextFieldProps(formik, "summary")}
+        />
 
-      {error && <Alert severity="error">{error}</Alert>}
+        <TextField
+          label="Description"
+          multiline
+          {...makeFormikTextFieldProps(formik, "description")}
+          minRows={3}
+          sx={{mb: 3}}
+        />
+      </FormSection>
 
-      <LoadingButton
-        onClick={() => {
-          formik.submitForm()
-        }}
-        variant="contained"
-        color="primary"
-        loading={formik.isSubmitting}
-        style={{alignSelf: "end"}}
-        disabled={!formik.dirty}
-      >
-        {formik.dirty ? "Save Changes" : "Saved"}
-      </LoadingButton>
-    </Stack>
+      <FormSection title="More Details">
+        <Stack
+          direction="row"
+          gap={3}
+          sx={{
+            alignItems: "center",
+            flexWrap: "wrap",
+            "& > *": {flexGrow: 1, minWidth: 150}
+          }}
+        >
+          <RestAutocompleteInput
+            label="User"
+            restEndpoint={session.user}
+            getOptionLabel={(user) => user.name || user.email}
+            searchProperties={["email"]}
+            disabled={!loadedInitialAsyncValues}
+            {...makeFormikAutocompleteProps(formik, "user")}
+          />
+          <TextField
+            select
+            label="State"
+            {...makeFormikTextFieldProps(formik, "state")}
+          >
+            {Object.values(TaskState).map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Stack>
+
+        <RestAutocompleteInput
+          label="Project"
+          restEndpoint={session.project}
+          getOptionLabel={(project) => project.name}
+          searchProperties={["name"]}
+          disabled={!loadedInitialAsyncValues}
+          {...makeFormikAutocompleteProps(formik, "project")}
+        />
+
+        <TextField
+          label="Estimate (hours)"
+          {...makeFormikNumericTextFieldProps(formik, "estimate")}
+          InputProps={{
+            endAdornment: <InputAdornment position="end">hours</InputAdornment>
+          }}
+        />
+        <FormControlLabel
+          control={
+            <Checkbox {...makeFormikCheckboxProps(formik, "emergency")} />
+          }
+          label="Emergency"
+        />
+
+        {error && <Alert severity="error">{error}</Alert>}
+
+        <LoadingButton
+          onClick={() => {
+            formik.submitForm()
+          }}
+          variant="contained"
+          color="primary"
+          loading={formik.isSubmitting}
+          style={{alignSelf: "end"}}
+          disabled={!formik.dirty}
+        >
+          {formik.dirty ? "Save Changes" : "Saved"}
+        </LoadingButton>
+      </FormSection>
+    </>
   )
 }

@@ -21,7 +21,9 @@ export function generateUsers(
           states: [],
           users: []
         },
-        webPreferences: ""
+        webPreferences: "",
+        permissions: 0,
+        limitToProjects: null
       }
     }
   )

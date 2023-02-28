@@ -1,6 +1,7 @@
 import {TabContext, TabList, TabPanel} from "@mui/lab"
 import {Card, CardContent, Container, Paper, Tab} from "@mui/material"
 import {Task} from "api/sdk"
+import {CommentSection} from "components/CommentSection"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import PageHeader from "components/PageHeader"
@@ -77,8 +78,8 @@ const TaskDetail: FC = () => {
           </TabList>
         </Paper>
 
-        <TabPanel value="1" sx={{p: 0}}>
-          {/* Comments */}
+        <TabPanel value="1" sx={{p: 0, pt: 2}}>
+          <CommentSection task={task} />
         </TabPanel>
         <TabPanel value="2" sx={{p: 0}}>
           <TimeEntryTab task={task} />

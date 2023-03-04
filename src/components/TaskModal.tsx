@@ -1,0 +1,112 @@
+import {Close, Edit} from "@mui/icons-material"
+import {TabContext, TabList, TabPanel} from "@mui/lab"
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Paper,
+  Stack,
+  Tab,
+  Tooltip
+} from "@mui/material"
+import {borderColor} from "@mui/system"
+import {Task} from "api/sdk"
+import dayjs from "dayjs"
+import React, {FC, useState} from "react"
+import {Link} from "react-router-dom"
+import {dynamicFormatDate} from "utils/helpers"
+import {CommentSection} from "./CommentSection"
+import {LabeledInfo} from "./LabeledInfo"
+import {TimeEntryTable} from "./TimeEntryTable"
+
+export interface TaskModalProps {
+  task: Task | null
+  handleClose: () => void
+}
+
+export const TaskModal: FC<TaskModalProps> = (props) => {
+  const {task, handleClose} = props
+  const [tab, setTab] = useState("1")
+
+  return (
+    <Dialog open={!!task} onClose={handleClose} maxWidth="md" fullWidth>
+      <DialogTitle sx={{pr: 5}}>
+        {task?.summary}
+
+        <Tooltip title="Close">
+          <IconButton
+            onClick={handleClose}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500]
+            }}
+          >
+            <Close />
+          </IconButton>
+        </Tooltip>
+      </DialogTitle>
+
+      {task && (
+        <DialogContent>
+          <LabeledInfo label="Description">
+            {task.description || "None"}
+          </LabeledInfo>
+
+          <Stack direction="row" spacing={2} mt={2}>
+            <LabeledInfo label="User">{task.userName}</LabeledInfo>
+            <LabeledInfo label="State">{task.state}</LabeledInfo>
+            <LabeledInfo label="Created">
+              {dynamicFormatDate(dayjs(task.createdAt))}
+            </LabeledInfo>
+            <div>
+              <Button
+                variant="text"
+                color="primary"
+                startIcon={<Edit />}
+                component={Link}
+                to={`/projects/${task.project}/tasks/${task._id}`}
+              >
+                Edit
+              </Button>
+            </div>
+          </Stack>
+
+          <TabContext value={tab}>
+            <Box
+              sx={{
+                mt: 4,
+                mb: 1,
+                borderBottom: 1,
+                borderColor: "divider"
+              }}
+            >
+              <TabList onChange={(_e, v) => setTab(v as string)}>
+                <Tab label="Comments" value="1" />
+                <Tab label="Time Entries" value="2" />
+              </TabList>
+            </Box>
+
+            <TabPanel value="1" sx={{p: 0, pt: 2}}>
+              <CommentSection task={task} />
+            </TabPanel>
+            <TabPanel value="2" sx={{p: 0, pt: 2}}>
+              <TimeEntryTable
+                additionalQueryConditions={[{task: {Equal: task._id}}]}
+                hiddenColumns={["projectName", "taskSummary"]}
+              />
+            </TabPanel>
+          </TabContext>
+        </DialogContent>
+      )}
+
+      <DialogContent sx={{pb: 2}}></DialogContent>
+    </Dialog>
+  )
+}

@@ -21,7 +21,7 @@ export const TimeEntryTab: FC<TimeEntryTabProps> = ({task}) => {
       </div>
       <TimeEntryTable
         additionalQueryConditions={[{task: {Equal: task._id}}]}
-        hiddenColumns={["project", "task"]}
+        hiddenColumns={["projectName", "taskSummary"]}
         dependencies={[refreshTrigger]}
       />
     </>

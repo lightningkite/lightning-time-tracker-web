@@ -1,19 +1,10 @@
-import {
-  Autocomplete,
-  Container,
-  Divider,
-  MenuItem,
-  Stack,
-  TextField
-} from "@mui/material"
-import {Project, Task, TaskState} from "api/sdk"
+import {Autocomplete, Container, Divider, Stack, TextField} from "@mui/material"
+import {Project, TaskState} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import PageHeader from "components/PageHeader"
-import dayjs from "dayjs"
 import React, {FC, useContext, useEffect, useMemo, useReducer} from "react"
 import {AuthContext} from "utils/context"
-import {dynamicFormatDate} from "utils/helpers"
 import {AnnotatedTask, useAnnotatedEndpoints} from "utils/useAnnotatedEndpoints"
 import {TaskStateColumn} from "./TaskStateColumn"
 
@@ -72,11 +63,13 @@ export const ProjectIndex: FC = () => {
   if (state.status === "error") return <ErrorAlert>Error occurred</ErrorAlert>
 
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="xl">
       <PageHeader title="Project View">
         <Autocomplete
           disableClearable
-          options={state.projects}
+          options={state.projects.sort((a, _) =>
+            currentUser.defaultFilters.projects.includes(a._id) ? -1 : 1
+          )}
           onChange={(_, newValue) =>
             dispatch({type: "changeProject", selected: newValue})
           }
@@ -85,6 +78,11 @@ export const ProjectIndex: FC = () => {
           renderInput={(params) => <TextField {...params} label="Project" />}
           getOptionLabel={(option) => option.name}
           isOptionEqualToValue={(option, value) => option._id === value._id}
+          groupBy={(option) =>
+            currentUser.defaultFilters.projects.includes(option._id)
+              ? "My Projects"
+              : "Other Projects"
+          }
         />
       </PageHeader>
 
@@ -100,7 +98,7 @@ export const ProjectIndex: FC = () => {
             <TaskStateColumn
               key={taskState}
               state={taskState}
-              tasks={tasksByState[taskState]}
+              tasks={"tasks" in state ? tasksByState[taskState] : undefined}
             />
           ))}
       </Stack>

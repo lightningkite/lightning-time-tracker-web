@@ -118,6 +118,7 @@ export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
       <TaskModal
         task={selectedTask}
         handleClose={() => setSelectedTask(null)}
+        getEditRoute={(task) => `/projects/${task.project}/tasks/${task._id}`}
       />
     </>
   )

@@ -3,18 +3,14 @@ import {TabContext, TabList, TabPanel} from "@mui/lab"
 import {
   Box,
   Button,
-  Card,
-  CardContent,
   Dialog,
   DialogContent,
   DialogTitle,
   IconButton,
-  Paper,
   Stack,
   Tab,
   Tooltip
 } from "@mui/material"
-import {borderColor} from "@mui/system"
 import {Task} from "api/sdk"
 import dayjs from "dayjs"
 import React, {FC, useState} from "react"
@@ -27,10 +23,11 @@ import {TimeEntryTable} from "./TimeEntryTable"
 export interface TaskModalProps {
   task: Task | null
   handleClose: () => void
+  getEditRoute: (task: Task) => string
 }
 
 export const TaskModal: FC<TaskModalProps> = (props) => {
-  const {task, handleClose} = props
+  const {task, handleClose, getEditRoute} = props
   const [tab, setTab] = useState("1")
 
   return (
@@ -71,7 +68,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                 color="primary"
                 startIcon={<Edit />}
                 component={Link}
-                to={`/projects/${task.project}/tasks/${task._id}`}
+                to={getEditRoute(task)}
               >
                 Edit
               </Button>

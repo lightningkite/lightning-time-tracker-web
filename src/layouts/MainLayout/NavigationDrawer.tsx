@@ -4,7 +4,9 @@ import {
   Dashboard,
   Insights,
   People,
-  Settings
+  Settings,
+  ViewColumn,
+  ViewWeek
 } from "@mui/icons-material"
 import {
   Drawer,
@@ -28,6 +30,7 @@ export interface NavItem {
 
 const navItems: NavItem[] = [
   {label: "Dashboard", to: "/dashboard", icon: Dashboard},
+  {label: "Project View", to: "/project-view", icon: ViewColumn},
   {label: "My Time", to: "/my-time", icon: AccessTime},
   {label: "Projects", to: "/projects", icon: AccountTree},
   {label: "Reports", to: "/reports", icon: Insights},

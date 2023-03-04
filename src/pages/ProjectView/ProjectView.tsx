@@ -14,10 +14,14 @@ import dayjs from "dayjs"
 import React, {FC, useContext, useEffect, useMemo, useReducer} from "react"
 import {AuthContext} from "utils/context"
 import {dynamicFormatDate} from "utils/helpers"
+import {AnnotatedTask, useAnnotatedEndpoints} from "utils/useAnnotatedEndpoints"
 import {TaskStateColumn} from "./TaskStateColumn"
 
+const hiddenTaskStates: TaskState[] = [TaskState.Cancelled, TaskState.Delivered]
+
 export const ProjectIndex: FC = () => {
-  const {session} = useContext(AuthContext)
+  const {session, currentUser} = useContext(AuthContext)
+  const {annotatedTaskEndpoint} = useAnnotatedEndpoints()
 
   const [state, dispatch] = useReducer(reducer, {status: "loadingProjects"})
 
@@ -31,27 +35,34 @@ export const ProjectIndex: FC = () => {
   useEffect(() => {
     if (!("selected" in state)) return
 
-    session.task
+    annotatedTaskEndpoint
       .query({
-        condition: {project: {Equal: state.selected._id}}
+        condition: {
+          And: [
+            {project: {Equal: state.selected._id}},
+            {state: {NotInside: hiddenTaskStates}}
+          ]
+        }
       })
       .then((tasks) => dispatch({type: "setTasks", tasks}))
   }, ["selected" in state && state.selected._id])
 
-  const tasksByState: Record<TaskState, Task[]> = useMemo(() => {
-    const map: Record<TaskState, Task[]> = {
+  const tasksByState: Record<TaskState, AnnotatedTask[]> = useMemo(() => {
+    const map: Record<TaskState, AnnotatedTask[]> = {
       [TaskState.Active]: [],
-      [TaskState.Approved]: [],
-      [TaskState.Cancelled]: [],
       [TaskState.Delivered]: [],
       [TaskState.Hold]: [],
-      [TaskState.Testing]: []
+      [TaskState.Testing]: [],
+      [TaskState.Approved]: [], // Unused
+      [TaskState.Cancelled]: [] // Unused
     }
 
     if ("tasks" in state) {
-      for (const task of state.tasks) {
-        map[task.state].push(task)
-      }
+      state.tasks
+        .sort((a, _) =>
+          a.emergency ? -1 : a.user === currentUser._id ? -1 : 1
+        )
+        .forEach((task) => map[task.state].push(task))
     }
 
     return map
@@ -83,13 +94,15 @@ export const ProjectIndex: FC = () => {
         sx={{overflowX: "auto"}}
         divider={<Divider orientation="vertical" flexItem />}
       >
-        {Object.values(TaskState).map((taskState) => (
-          <TaskStateColumn
-            key={taskState}
-            state={taskState}
-            tasks={tasksByState[taskState]}
-          />
-        ))}
+        {Object.values(TaskState)
+          .filter((taskState) => !hiddenTaskStates.includes(taskState))
+          .map((taskState) => (
+            <TaskStateColumn
+              key={taskState}
+              state={taskState}
+              tasks={tasksByState[taskState]}
+            />
+          ))}
       </Stack>
     </Container>
   )
@@ -98,13 +111,18 @@ export const ProjectIndex: FC = () => {
 type State =
   | {status: "loadingProjects"}
   | {status: "loadingTasks"; projects: Project[]; selected: Project}
-  | {status: "ready"; projects: Project[]; tasks: Task[]; selected: Project}
+  | {
+      status: "ready"
+      projects: Project[]
+      tasks: AnnotatedTask[]
+      selected: Project
+    }
   | {status: "error"}
 
 type Action =
   | {type: "loadingProjects"}
   | {type: "setProjects"; projects: Project[]}
-  | {type: "setTasks"; tasks: Task[]}
+  | {type: "setTasks"; tasks: AnnotatedTask[]}
   | {type: "changeProject"; selected: Project}
   | {type: "error"}
 

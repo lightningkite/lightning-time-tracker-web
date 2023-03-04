@@ -19,7 +19,16 @@ export const ProjectIndex: FC = () => {
   useEffect(() => {
     session.project
       .query({orderBy: ["name"]})
-      .then((projects) => dispatch({type: "setProjects", projects}))
+      .then((projects) =>
+        dispatch({
+          type: "setProjects",
+          projects,
+          selected:
+            projects.find((p) =>
+              currentUser.defaultFilters.projects.includes(p._id)
+            ) ?? projects[0]
+        })
+      )
       .catch(() => dispatch({type: "error"}))
   }, [])
 
@@ -119,8 +128,9 @@ type State =
 
 type Action =
   | {type: "loadingProjects"}
-  | {type: "setProjects"; projects: Project[]}
+  | {type: "setProjects"; projects: Project[]; selected: Project}
   | {type: "setTasks"; tasks: AnnotatedTask[]}
+  | {type: "updateTask"; taskId: string; updates: Partial<AnnotatedTask>}
   | {type: "changeProject"; selected: Project}
   | {type: "error"}
 
@@ -132,7 +142,7 @@ function reducer(state: State, action: Action): State {
       return {
         status: "loadingTasks",
         projects: action.projects,
-        selected: action.projects[0]
+        selected: action.selected
       }
     case "setTasks":
       if (state.status !== "loadingTasks") {
@@ -142,6 +152,18 @@ function reducer(state: State, action: Action): State {
         status: "ready",
         projects: state.projects,
         tasks: action.tasks,
+        selected: state.selected
+      }
+    case "updateTask":
+      if (state.status !== "ready") {
+        throw new Error("Cannot update task when not ready")
+      }
+      return {
+        status: "ready",
+        projects: state.projects,
+        tasks: state.tasks.map((task) =>
+          task._id === action.taskId ? {...task, ...action.updates} : task
+        ),
         selected: state.selected
       }
     case "changeProject":

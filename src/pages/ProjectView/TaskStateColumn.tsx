@@ -1,3 +1,4 @@
+import {Star} from "@mui/icons-material"
 import {
   Box,
   Card,
@@ -11,7 +12,8 @@ import {TaskState} from "api/sdk"
 import {TaskModal} from "components/TaskModal"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
-import React, {FC, useState} from "react"
+import React, {FC, useContext, useState} from "react"
+import {AuthContext} from "utils/context"
 import {AnnotatedTask} from "utils/useAnnotatedEndpoints"
 
 dayjs.extend(duration)
@@ -23,15 +25,27 @@ export interface TaskStateColumnProps {
 
 export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
   const {state, tasks} = props
+  const {currentUser} = useContext(AuthContext)
 
   const [selectedTask, setSelectedTask] = useState<AnnotatedTask | null>(null)
 
   return (
     <>
       <Box sx={{minWidth: 300, flexGrow: 1, flexBasis: 0, pb: 3}}>
-        <Typography variant="h3" sx={{mb: 2}}>
-          {state}
-        </Typography>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{mb: 2}}
+        >
+          <Typography variant="h3">{state}</Typography>
+          {tasks && (
+            <Typography variant="h3" color="text.secondary">
+              {tasks.length}
+            </Typography>
+          )}
+        </Stack>
+
         {(() => {
           if (tasks === undefined)
             return (
@@ -71,7 +85,18 @@ export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
                         <CardContent sx={{p: 1}}>
                           <Stack direction="row" justifyContent="space-between">
                             <Typography variant="body2" color="text.secondary">
-                              {task.userName}
+                              {task.user === currentUser._id ? (
+                                <span>
+                                  <Star
+                                    color="primary"
+                                    fontSize="inherit"
+                                    sx={{mr: 1}}
+                                  />
+                                  {task.userName}
+                                </span>
+                              ) : (
+                                task.userName
+                              )}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
                               {hoursEstimated

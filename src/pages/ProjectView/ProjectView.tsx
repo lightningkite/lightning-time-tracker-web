@@ -150,6 +150,8 @@ export const ProjectView: FC = () => {
                 state={taskState}
                 tasks={"tasks" in state ? tasksByState[taskState] : undefined}
                 handleDrop={handleDrop}
+                project={state.selected}
+                onAddedTask={(task) => dispatch({type: "addTask", task})}
               />
             ))}
         </Stack>
@@ -174,6 +176,7 @@ type Action =
   | {type: "setProjects"; projects: Project[]; selected: Project}
   | {type: "setTasks"; tasks: AnnotatedTask[]}
   | {type: "updateTask"; taskId: string; updates: Partial<AnnotatedTask>}
+  | {type: "addTask"; task: AnnotatedTask}
   | {type: "changeProject"; selected: Project}
   | {type: "error"}
 
@@ -192,30 +195,37 @@ function reducer(state: State, action: Action): State {
         throw new Error("Cannot set tasks when not loading tasks")
       }
       return {
+        ...state,
         status: "ready",
-        projects: state.projects,
-        tasks: action.tasks,
-        selected: state.selected
+        tasks: action.tasks
       }
     case "updateTask":
       if (state.status !== "ready") {
         throw new Error("Cannot update task when not ready")
       }
       return {
+        ...state,
         status: "ready",
-        projects: state.projects,
         tasks: state.tasks.map((task) =>
           task._id === action.taskId ? {...task, ...action.updates} : task
-        ),
-        selected: state.selected
+        )
+      }
+    case "addTask":
+      if (state.status !== "ready") {
+        throw new Error("Cannot add task when not ready")
+      }
+      return {
+        ...state,
+        status: "ready",
+        tasks: [...state.tasks, action.task]
       }
     case "changeProject":
       if (!("projects" in state)) {
         throw new Error("Cannot change project when loading projects")
       }
       return {
+        ...state,
         status: "loadingTasks",
-        projects: state.projects,
         selected: action.selected
       }
     case "error":

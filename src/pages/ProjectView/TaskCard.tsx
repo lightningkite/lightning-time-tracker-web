@@ -29,7 +29,7 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
       type: task.state,
       item: task,
       collect: (monitor) => ({
-        opacity: monitor.isDragging() ? 0.4 : 1
+        opacity: monitor.isDragging() ? 0 : 1
       })
     }),
     [task]

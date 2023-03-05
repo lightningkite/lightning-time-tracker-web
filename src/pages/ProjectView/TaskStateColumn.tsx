@@ -1,5 +1,6 @@
 import {Box, Skeleton, Stack, Typography} from "@mui/material"
-import {TaskState} from "api/sdk"
+import {Project, TaskState} from "api/sdk"
+import {AddTaskButton} from "components/AddTaskButton"
 import {TaskModal} from "components/TaskModal"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
@@ -11,13 +12,15 @@ import {TaskCard} from "./TaskCard"
 dayjs.extend(duration)
 
 export interface TaskStateColumnProps {
+  project: Project
   state: TaskState
   tasks: AnnotatedTask[] | undefined
   handleDrop: (task: AnnotatedTask, newState: TaskState) => void
+  onAddedTask: (task: AnnotatedTask) => void
 }
 
 export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
-  const {state, tasks, handleDrop} = props
+  const {state, tasks, handleDrop, project, onAddedTask} = props
 
   const [selectedTask, setSelectedTask] = useState<AnnotatedTask | null>(null)
 
@@ -37,7 +40,6 @@ export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
           minWidth: 300,
           flexGrow: 1,
           flexBasis: 0,
-          pb: 3,
           bgcolor: isOver && canDrop ? "primary.dark" : "transparent",
           borderRadius: 1,
           p: 1
@@ -68,30 +70,41 @@ export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
               </Stack>
             )
 
-          if (tasks.length === 0)
-            return (
-              <Typography color="text.disabled" fontStyle="italic">
-                No tasks
-              </Typography>
-            )
-
           return (
-            <Stack
-              spacing={1.5}
-              sx={{
-                opacity: isOver && canDrop ? 0.5 : 1
-              }}
-            >
-              {tasks
-                .filter((t) => t.state === state)
-                .map((task) => (
-                  <TaskCard
-                    key={task._id}
-                    task={task}
-                    onClick={() => setSelectedTask(task)}
-                  />
-                ))}
-            </Stack>
+            <>
+              <AddTaskButton
+                afterSubmit={onAddedTask}
+                sx={{mb: 1.5}}
+                fullWidth
+                variant="outlined"
+                project={project}
+                state={state}
+              />
+
+              {tasks.length === 0 && (
+                <Typography color="text.disabled" fontStyle="italic">
+                  No tasks
+                </Typography>
+              )}
+
+              <Stack
+                spacing={1.5}
+                sx={{
+                  opacity: isOver && canDrop ? 0.5 : 1,
+                  mb: 2
+                }}
+              >
+                {tasks
+                  .filter((t) => t.state === state)
+                  .map((task) => (
+                    <TaskCard
+                      key={task._id}
+                      task={task}
+                      onClick={() => setSelectedTask(task)}
+                    />
+                  ))}
+              </Stack>
+            </>
           )
         })()}
       </Box>

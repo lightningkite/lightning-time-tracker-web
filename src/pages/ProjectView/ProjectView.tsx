@@ -3,6 +3,7 @@ import {Project, TaskState} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import PageHeader from "components/PageHeader"
+import dayjs from "dayjs"
 import React, {
   FC,
   useCallback,
@@ -68,9 +69,14 @@ export const ProjectView: FC = () => {
 
     if ("tasks" in state) {
       state.tasks
-        .sort((a, _) =>
-          a.emergency ? -1 : a.user === currentUser._id ? -1 : 1
-        )
+        .sort((a, b) => {
+          if (a.emergency && !b.emergency) return -1
+          if (!a.emergency && b.emergency) return 1
+          if (a.user === currentUser._id && b.user !== currentUser._id)
+            return -1
+          if (a.user !== currentUser._id && b.user === currentUser._id) return 1
+          return dayjs(a.createdAt).diff(dayjs(b.createdAt))
+        })
         .forEach((task) => map[task.state].push(task))
     }
 
@@ -132,7 +138,7 @@ export const ProjectView: FC = () => {
       <DndProvider backend={HTML5Backend}>
         <Stack
           direction="row"
-          spacing={2}
+          spacing={1}
           sx={{overflowX: "auto"}}
           divider={<Divider orientation="vertical" flexItem />}
         >

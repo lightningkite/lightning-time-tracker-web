@@ -1,31 +1,22 @@
-import {Star} from "@mui/icons-material"
-import {
-  Box,
-  Card,
-  CardActionArea,
-  CardContent,
-  Skeleton,
-  Stack,
-  Typography
-} from "@mui/material"
+import {Box, Skeleton, Stack, Typography} from "@mui/material"
 import {TaskState} from "api/sdk"
 import {TaskModal} from "components/TaskModal"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
-import React, {FC, useContext, useState} from "react"
-import {AuthContext} from "utils/context"
+import React, {FC, useState} from "react"
 import {AnnotatedTask} from "utils/useAnnotatedEndpoints"
+import {TaskCard} from "./TaskCard"
 
 dayjs.extend(duration)
 
 export interface TaskStateColumnProps {
   state: TaskState
   tasks: AnnotatedTask[] | undefined
+  handleDrop: (task: AnnotatedTask, newState: TaskState) => void
 }
 
 export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
   const {state, tasks} = props
-  const {currentUser} = useContext(AuthContext)
 
   const [selectedTask, setSelectedTask] = useState<AnnotatedTask | null>(null)
 
@@ -67,49 +58,13 @@ export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
             <Stack spacing={1.5}>
               {tasks
                 .filter((t) => t.state === state)
-                .map((task) => {
-                  const hoursSpent = dayjs
-                    .duration(task.annotations.totalTaskHours, "hours")
-                    .asHours()
-                    .toFixed(1)
-                  const hoursEstimated = !!task.estimate
-                    ? dayjs
-                        .duration(task.estimate, "hours")
-                        .asHours()
-                        .toFixed(1)
-                    : null
-
-                  return (
-                    <Card key={task._id}>
-                      <CardActionArea onClick={() => setSelectedTask(task)}>
-                        <CardContent sx={{p: 1}}>
-                          <Stack direction="row" justifyContent="space-between">
-                            <Typography variant="body2" color="text.secondary">
-                              {task.user === currentUser._id ? (
-                                <span>
-                                  <Star
-                                    color="primary"
-                                    fontSize="inherit"
-                                    sx={{mr: 1}}
-                                  />
-                                  {task.userName}
-                                </span>
-                              ) : (
-                                task.userName
-                              )}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {hoursEstimated
-                                ? `${hoursSpent} / ${hoursEstimated} hr`
-                                : `${hoursSpent} hr`}
-                            </Typography>
-                          </Stack>
-                          <Typography>{task.summary}</Typography>
-                        </CardContent>
-                      </CardActionArea>
-                    </Card>
-                  )
-                })}
+                .map((task) => (
+                  <TaskCard
+                    key={task._id}
+                    task={task}
+                    onClick={() => setSelectedTask(task)}
+                  />
+                ))}
             </Stack>
           )
         })()}

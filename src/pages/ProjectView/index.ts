@@ -1,3 +1,3 @@
-import {ProjectIndex} from "./ProjectView"
+import {ProjectView} from "./ProjectView"
 
-export default ProjectIndex
+export default ProjectView

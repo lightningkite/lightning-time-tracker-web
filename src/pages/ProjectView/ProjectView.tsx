@@ -3,14 +3,23 @@ import {Project, TaskState} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import PageHeader from "components/PageHeader"
-import React, {FC, useContext, useEffect, useMemo, useReducer} from "react"
+import React, {
+  FC,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer
+} from "react"
+import {DndProvider} from "react-dnd"
+import {HTML5Backend} from "react-dnd-html5-backend"
 import {AuthContext} from "utils/context"
 import {AnnotatedTask, useAnnotatedEndpoints} from "utils/useAnnotatedEndpoints"
 import {TaskStateColumn} from "./TaskStateColumn"
 
 const hiddenTaskStates: TaskState[] = [TaskState.Cancelled, TaskState.Delivered]
 
-export const ProjectIndex: FC = () => {
+export const ProjectView: FC = () => {
   const {session, currentUser} = useContext(AuthContext)
   const {annotatedTaskEndpoint} = useAnnotatedEndpoints()
 
@@ -68,6 +77,31 @@ export const ProjectIndex: FC = () => {
     return map
   }, ["tasks" in state && state.tasks])
 
+  const handleDrop = useCallback(
+    (task: AnnotatedTask, newState: TaskState) => {
+      if (!("tasks" in state)) return
+
+      const previousState = task.state
+      dispatch({
+        type: "updateTask",
+        taskId: task._id,
+        updates: {state: newState}
+      })
+
+      annotatedTaskEndpoint
+        .modify(task._id, {state: {Assign: newState}})
+        .catch(() => {
+          alert("Error updating task state")
+          dispatch({
+            type: "updateTask",
+            taskId: task._id,
+            updates: {state: previousState}
+          })
+        })
+    },
+    [state]
+  )
+
   if (state.status === "loadingProjects") return <Loading />
   if (state.status === "error") return <ErrorAlert>Error occurred</ErrorAlert>
 
@@ -95,22 +129,25 @@ export const ProjectIndex: FC = () => {
         />
       </PageHeader>
 
-      <Stack
-        direction="row"
-        spacing={2}
-        sx={{overflowX: "auto"}}
-        divider={<Divider orientation="vertical" flexItem />}
-      >
-        {Object.values(TaskState)
-          .filter((taskState) => !hiddenTaskStates.includes(taskState))
-          .map((taskState) => (
-            <TaskStateColumn
-              key={taskState}
-              state={taskState}
-              tasks={"tasks" in state ? tasksByState[taskState] : undefined}
-            />
-          ))}
-      </Stack>
+      <DndProvider backend={HTML5Backend}>
+        <Stack
+          direction="row"
+          spacing={2}
+          sx={{overflowX: "auto"}}
+          divider={<Divider orientation="vertical" flexItem />}
+        >
+          {Object.values(TaskState)
+            .filter((taskState) => !hiddenTaskStates.includes(taskState))
+            .map((taskState) => (
+              <TaskStateColumn
+                key={taskState}
+                state={taskState}
+                tasks={"tasks" in state ? tasksByState[taskState] : undefined}
+                handleDrop={handleDrop}
+              />
+            ))}
+        </Stack>
+      </DndProvider>
     </Container>
   )
 }

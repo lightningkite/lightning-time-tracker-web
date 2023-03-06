@@ -3,7 +3,7 @@ import {AuthContext} from "../utils/context"
 
 export function usePermissions() {
   const {
-    currentUser: {isSuperUser, permissions}
+    currentUser: {permissions, isSuperUser}
   } = useContext(AuthContext)
 
   // Permissions is a number where each bit represents a boolean permission
@@ -14,14 +14,13 @@ export function usePermissions() {
     .reverse()
 
   const usePermissionsReturn = {
-    isSuperUser,
-    manageProjects: !!permissionsBits.at(1),
-    tasks: !!permissionsBits.at(2),
-    manageTasks: !!permissionsBits.at(3),
-    timeEntries: !!permissionsBits.at(4),
-    manageTimeEntries: !!permissionsBits.at(5),
-    comments: !!permissionsBits.at(7),
-    manageComments: !!permissionsBits.at(8)
+    manageProjects: isSuperUser || !!permissionsBits.at(1),
+    tasks: isSuperUser || !!permissionsBits.at(2),
+    manageTasks: isSuperUser || !!permissionsBits.at(3),
+    timeEntries: isSuperUser || !!permissionsBits.at(4),
+    manageTimeEntries: isSuperUser || !!permissionsBits.at(5),
+    comments: isSuperUser || !!permissionsBits.at(7),
+    manageComments: isSuperUser || !!permissionsBits.at(8)
   } satisfies Record<string, boolean>
 
   return usePermissionsReturn

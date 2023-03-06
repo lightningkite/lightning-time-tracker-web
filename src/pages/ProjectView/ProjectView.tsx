@@ -1,8 +1,7 @@
-import {Autocomplete, Container, Divider, Stack, TextField} from "@mui/material"
+import {Container, Divider, Stack} from "@mui/material"
 import {Project, TaskState} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
-import PageHeader from "components/PageHeader"
 import dayjs from "dayjs"
 import React, {
   FC,
@@ -16,6 +15,7 @@ import {DndProvider} from "react-dnd"
 import {HTML5Backend} from "react-dnd-html5-backend"
 import {AuthContext} from "utils/context"
 import {AnnotatedTask, useAnnotatedEndpoints} from "utils/useAnnotatedEndpoints"
+import {DeliveredColumn} from "./DeliveredColumn"
 import {ProjectSwitcher} from "./ProjectSwitcher"
 import {TaskStateColumn} from "./TaskStateColumn"
 
@@ -141,6 +141,7 @@ export const ProjectView: FC = () => {
                 onAddedTask={(task) => dispatch({type: "addTask", task})}
               />
             ))}
+          <DeliveredColumn handleDrop={handleDrop} />
         </Stack>
       </DndProvider>
     </Container>

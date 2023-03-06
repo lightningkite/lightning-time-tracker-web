@@ -115,7 +115,7 @@ export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
           type: "multiSelect",
           name: FilterNames.USERS,
           placeholder: "Users",
-          options: users,
+          options: users.sort((a, b) => a.name.localeCompare(b.name)),
           optionToID: (u) => u._id,
           optionToLabel: (u) => u.name
         },
@@ -123,7 +123,7 @@ export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
           type: "multiSelect",
           name: FilterNames.PROJECTS,
           placeholder: "Projects",
-          options: projects,
+          options: projects.sort((a, b) => a.name.localeCompare(b.name)),
           optionToID: (p) => p._id,
           optionToLabel: (p) => p.name
         }
@@ -205,11 +205,11 @@ export function filtersToTimeEntryCondition(
     })
   }
 
-  if (users) {
+  if (!!users?.length) {
     conditions.push({user: {Inside: users.map((u) => u._id)}})
   }
 
-  if (projects) {
+  if (!!projects?.length) {
     conditions.push({project: {Inside: projects.map((p) => p._id)}})
   }
 

@@ -11,11 +11,17 @@ export function usePermissions() {
     .toString(2)
     .split("")
     .map((bit) => bit === "1")
+    .reverse()
 
   const usePermissionsReturn = {
     isSuperUser,
-    canViewUsers: isSuperUser || permissionsBits[0],
-    canEditUsers: isSuperUser || permissionsBits[1]
+    manageProjects: !!permissionsBits.at(1),
+    tasks: !!permissionsBits.at(2),
+    manageTasks: !!permissionsBits.at(3),
+    timeEntries: !!permissionsBits.at(4),
+    manageTimeEntries: !!permissionsBits.at(5),
+    comments: !!permissionsBits.at(7),
+    manageComments: !!permissionsBits.at(8)
   } satisfies Record<string, boolean>
 
   return usePermissionsReturn

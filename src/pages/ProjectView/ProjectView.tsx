@@ -162,7 +162,6 @@ type State =
   | {status: "error"}
 
 type Action =
-  | {type: "loadingProjects"}
   | {type: "setProjects"; projects: Project[]; selected: Project}
   | {type: "setTasks"; tasks: AnnotatedTask[]}
   | {type: "updateTask"; taskId: string; updates: Partial<AnnotatedTask>}
@@ -172,14 +171,13 @@ type Action =
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case "loadingProjects":
-      return {status: "loadingProjects"}
     case "setProjects":
       return {
         status: "loadingTasks",
         projects: action.projects,
         selected: action.selected
       }
+
     case "setTasks":
       if (state.status !== "loadingTasks") {
         throw new Error("Cannot set tasks when not loading tasks")
@@ -189,6 +187,7 @@ function reducer(state: State, action: Action): State {
         status: "ready",
         tasks: action.tasks
       }
+
     case "updateTask":
       if (state.status !== "ready") {
         throw new Error("Cannot update task when not ready")
@@ -200,6 +199,7 @@ function reducer(state: State, action: Action): State {
           task._id === action.taskId ? {...task, ...action.updates} : task
         )
       }
+
     case "addTask":
       if (state.status !== "ready") {
         throw new Error("Cannot add task when not ready")
@@ -209,6 +209,7 @@ function reducer(state: State, action: Action): State {
         status: "ready",
         tasks: [...state.tasks, action.task]
       }
+
     case "changeProject":
       if (!("projects" in state)) {
         throw new Error("Cannot change project when loading projects")
@@ -218,6 +219,7 @@ function reducer(state: State, action: Action): State {
         status: "loadingTasks",
         selected: action.selected
       }
+
     case "error":
       return {status: "error"}
   }

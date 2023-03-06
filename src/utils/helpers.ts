@@ -161,3 +161,18 @@ export function dynamicFormatDate(date: Dayjs): string {
 
   return date.format("YYYY-MM-DD")
 }
+
+export async function uploadToS3(uploadUrl: string, file: File) {
+  await fetch(uploadUrl, {
+    method: "PUT",
+    body: file,
+    headers: {
+      "Content-type": file.type
+    }
+  }).then((res) => {
+    if (!res.ok) {
+      console.log("Error uploading file", res)
+      throw new Error("Error uploading file")
+    }
+  })
+}

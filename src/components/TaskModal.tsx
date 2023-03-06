@@ -1,4 +1,4 @@
-import {Close, Edit} from "@mui/icons-material"
+import {AttachFile, Close, Edit} from "@mui/icons-material"
 import {TabContext, TabList, TabPanel} from "@mui/lab"
 import {
   Box,
@@ -7,6 +7,11 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
   Stack,
   Tab,
   Tooltip
@@ -56,7 +61,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
             {task.description || "None"}
           </LabeledInfo>
 
-          <Stack direction="row" spacing={2} mt={2}>
+          <Stack direction="row" spacing={2} my={2}>
             <LabeledInfo label="User">{task.userName}</LabeledInfo>
             <LabeledInfo label="State">{task.state}</LabeledInfo>
             <LabeledInfo label="Created">
@@ -74,6 +79,29 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
               </Button>
             </div>
           </Stack>
+
+          <LabeledInfo label="Attachments">
+            {task.attachments.length === 0 && "None"}
+            <List>
+              {task.attachments.map(({file, name}) => (
+                <ListItem key={file} disablePadding>
+                  <ListItemButton
+                    component="a"
+                    dense
+                    href={file}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <ListItemIcon>
+                      <AttachFile />
+                    </ListItemIcon>
+
+                    <ListItemText primary={name} />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+          </LabeledInfo>
 
           <TabContext value={tab}>
             <Box

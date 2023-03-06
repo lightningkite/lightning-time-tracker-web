@@ -17,6 +17,7 @@ import {
   TextField
 } from "@mui/material"
 import {Project, Task, TaskState, User} from "api/sdk"
+import {AttachmentsInput} from "components/AttachmentsInput"
 import FormSection from "components/FormSection"
 import {useFormik} from "formik"
 import React, {FC, useContext, useEffect, useState} from "react"
@@ -51,6 +52,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       project: null as Project | null,
       state: task.state,
       summary: task.summary,
+      attachments: task.attachments,
       description: task.description,
       estimate: task.estimate?.toString() ?? "",
       emergency: task.emergency
@@ -112,6 +114,18 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
           {...makeFormikTextFieldProps(formik, "description")}
           minRows={3}
           sx={{mb: 3}}
+        />
+
+        <AttachmentsInput
+          attachments={formik.values.attachments}
+          onChange={(value) => {
+            formik.setFieldValue("attachments", value)
+          }}
+          error={
+            formik.submitCount
+              ? (formik.errors.attachments as string)
+              : undefined
+          }
         />
       </FormSection>
 

@@ -56,7 +56,8 @@ export const UserForm: FC<UserFormProps> = (props) => {
       name: user.name,
       isSuperUser: user.isSuperUser,
       defaultStates: user.defaultFilters.states,
-      defaultProjects: user.defaultFilters.projects
+      defaultProjects: user.defaultFilters.projects,
+      active: user.active
     },
     validationSchema,
     // When the form is submitted, this function is called if the form values are valid
@@ -68,6 +69,7 @@ export const UserForm: FC<UserFormProps> = (props) => {
         email: values.email,
         name: values.name,
         isSuperUser: values.isSuperUser,
+        active: values.active,
         defaultFilters: {
           ...user.defaultFilters,
           states: values.defaultStates,
@@ -185,6 +187,14 @@ export const UserForm: FC<UserFormProps> = (props) => {
           <Checkbox {...makeFormikCheckboxProps(formik, "isSuperUser")} />
         }
         label="Is Super User"
+        disabled={currentUser._id === user._id}
+      />
+
+      <FormControlLabel
+        control={
+          <Checkbox {...makeFormikCheckboxProps(formik, "active")} />
+        }
+        label="Active"
         disabled={currentUser._id === user._id}
       />
 

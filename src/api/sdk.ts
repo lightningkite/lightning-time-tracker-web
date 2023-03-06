@@ -138,6 +138,7 @@ export interface User {
   currentTask: UUID | null | undefined
   permissions: number
   limitToProjects: Array<UUID> | null | undefined
+  active: boolean
 }
 
 export interface Api {

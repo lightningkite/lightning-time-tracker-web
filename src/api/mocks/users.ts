@@ -16,6 +16,7 @@ export function generateUsers(
         organization,
         currentTask: null,
         isSuperUser: true,
+        active: true,
         defaultFilters: {
           projects: [],
           states: [],

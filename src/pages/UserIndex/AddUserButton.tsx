@@ -57,7 +57,8 @@ export const AddUserButton: FC<AddUserProps> = (props) => {
         },
         webPreferences: "",
         permissions: 0,
-        limitToProjects: null
+        limitToProjects: null,
+        active: true
       })
 
       props.afterSubmit()

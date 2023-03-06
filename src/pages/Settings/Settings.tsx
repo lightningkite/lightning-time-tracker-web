@@ -21,9 +21,10 @@ import {parsePreferences} from "utils/helpers"
 import {ColorPicker} from "./ColorPicker"
 
 export interface WebPreferences {
-  mode?: "light" | "dark"
-  color?: string
-  summaryTime?: "day" | "week"
+  mode: "light" | "dark"
+  color: string
+  colorBrightness: number
+  summaryTime: "day" | "week"
 }
 
 const Settings: FC = () => {
@@ -31,7 +32,9 @@ const Settings: FC = () => {
 
   const preferences = parsePreferences(currentUser?.webPreferences)
 
-  const updatePreferences = (newPartialPreferences: WebPreferences) => {
+  const updatePreferences = (
+    newPartialPreferences: Partial<WebPreferences>
+  ) => {
     const previousPreferences = structuredClone(preferences)
 
     const newPreferencesJSON = JSON.stringify({

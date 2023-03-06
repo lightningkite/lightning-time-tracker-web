@@ -97,12 +97,34 @@ export function totalHoursForTimeEntries(timeEntries: TimeEntry[]): number {
 export function parsePreferences(
   preferencesJSON: string | null | undefined
 ): WebPreferences {
-  try {
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    return JSON.parse(preferencesJSON || "{}")
-  } catch {
-    return {}
+  const defaultPreferences: WebPreferences = {
+    mode: "dark",
+    color: "lightBlue",
+    colorBrightness: 500,
+    summaryTime: "week"
   }
+  try {
+    const parsed = JSON.parse(
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+      preferencesJSON || "{}"
+    ) as Partial<WebPreferences> // Probably
+
+    const isValidBrightness =
+      !!parsed.colorBrightness &&
+      [100, 200, 300, 400, 500, 600, 700, 800, 900].includes(
+        parsed.colorBrightness
+      )
+
+    if (!isValidBrightness) {
+      delete parsed.colorBrightness
+    }
+
+    return {...defaultPreferences, ...parsed}
+  } catch (e) {
+    console.error("Error parsing preferences", e)
+  }
+
+  return defaultPreferences
 }
 
 export function booleanCompare<T>(

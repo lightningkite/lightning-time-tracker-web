@@ -16,6 +16,7 @@ import {DndProvider} from "react-dnd"
 import {HTML5Backend} from "react-dnd-html5-backend"
 import {AuthContext} from "utils/context"
 import {AnnotatedTask, useAnnotatedEndpoints} from "utils/useAnnotatedEndpoints"
+import {ProjectSwitcher} from "./ProjectSwitcher"
 import {TaskStateColumn} from "./TaskStateColumn"
 
 const hiddenTaskStates: TaskState[] = [TaskState.Cancelled, TaskState.Delivered]
@@ -112,34 +113,20 @@ export const ProjectView: FC = () => {
   if (state.status === "error") return <ErrorAlert>Error occurred</ErrorAlert>
 
   return (
-    <Container maxWidth="xl">
-      <PageHeader title="Project View">
-        <Autocomplete
-          disableClearable
-          options={state.projects.sort((a, _) =>
-            currentUser.defaultFilters.projects.includes(a._id) ? -1 : 1
-          )}
-          onChange={(_, newValue) =>
-            dispatch({type: "changeProject", selected: newValue})
-          }
-          value={state.selected}
-          sx={{width: 300}}
-          renderInput={(params) => <TextField {...params} label="Project" />}
-          getOptionLabel={(option) => option.name}
-          isOptionEqualToValue={(option, value) => option._id === value._id}
-          groupBy={(option) =>
-            currentUser.defaultFilters.projects.includes(option._id)
-              ? "My Projects"
-              : "Other Projects"
-          }
-        />
-      </PageHeader>
+    <Container maxWidth="xl" disableGutters>
+      <ProjectSwitcher
+        projects={state.projects}
+        selected={state.selected}
+        onSelect={(project) =>
+          dispatch({type: "changeProject", selected: project})
+        }
+      />
 
       <DndProvider backend={HTML5Backend}>
         <Stack
           direction="row"
           spacing={1}
-          sx={{overflowX: "auto"}}
+          sx={{overflowX: "auto", px: 2}}
           divider={<Divider orientation="vertical" flexItem />}
         >
           {Object.values(TaskState)

@@ -6,7 +6,7 @@ import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import React, {FC, useState} from "react"
 import {useDrop} from "react-dnd"
-import {AnnotatedTask} from "utils/useAnnotatedEndpoints"
+import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import {TaskCard} from "./TaskCard"
 
 dayjs.extend(duration)

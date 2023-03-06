@@ -3,7 +3,7 @@ import {Add, Pause, PlayArrow} from "@mui/icons-material"
 import {IconButton} from "@mui/material"
 import React, {FC, useContext} from "react"
 import {TimerContext} from "utils/context"
-import {AnnotatedTask} from "utils/useAnnotatedEndpoints"
+import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 
 export const TaskPlayActionButton: FC<{
   annotatedTask: AnnotatedTask

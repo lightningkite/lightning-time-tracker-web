@@ -19,7 +19,7 @@ import duration from "dayjs/plugin/duration"
 import React, {FC, useContext, useState} from "react"
 import {useNavigate} from "react-router-dom"
 import {AuthContext} from "utils/context"
-import {AnnotatedTask} from "utils/useAnnotatedEndpoints"
+import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import {TaskPlayActionButton} from "./TaskPlayActionButton"
 import {TaskStateActionButton} from "./TaskStateActionButton"
 

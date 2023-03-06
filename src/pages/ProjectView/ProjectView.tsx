@@ -14,7 +14,7 @@ import React, {
 import {DndProvider} from "react-dnd"
 import {HTML5Backend} from "react-dnd-html5-backend"
 import {AuthContext} from "utils/context"
-import {AnnotatedTask, useAnnotatedEndpoints} from "utils/useAnnotatedEndpoints"
+import {AnnotatedTask, useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
 import {DeliveredColumn} from "./DeliveredColumn"
 import {ProjectSwitcher} from "./ProjectSwitcher"
 import {TaskStateColumn} from "./TaskStateColumn"

@@ -11,7 +11,7 @@ import duration from "dayjs/plugin/duration"
 import React, {FC, useContext} from "react"
 import {useDrag} from "react-dnd"
 import {AuthContext} from "utils/context"
-import {AnnotatedTask} from "utils/useAnnotatedEndpoints"
+import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 
 dayjs.extend(duration)
 

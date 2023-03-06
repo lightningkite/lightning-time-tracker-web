@@ -6,7 +6,7 @@ import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import React, {FC} from "react"
 import {dynamicFormatDate} from "utils/helpers"
-import {AnnotatedTask, useAnnotatedEndpoints} from "utils/useAnnotatedEndpoints"
+import {AnnotatedTask, useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
 
 dayjs.extend(duration)
 

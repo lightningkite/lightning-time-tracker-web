@@ -29,7 +29,10 @@ export const ProjectView: FC = () => {
 
   useEffect(() => {
     session.project
-      .query({orderBy: ["name"]})
+      .query({
+        condition: {organization: {Equal: currentUser.organization}},
+        orderBy: ["name"]
+      })
       .then((projects) =>
         dispatch({
           type: "setProjects",

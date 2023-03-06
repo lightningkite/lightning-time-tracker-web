@@ -29,7 +29,12 @@ export const CommentSection: FC<CommentSectionProps> = (props) => {
   useEffect(() => {
     session.comment
       .query({
-        condition: {task: {Equal: task._id}},
+        condition: {
+          And: [
+            {task: {Equal: task._id}},
+            {organization: {Equal: currentUser.organization}}
+          ]
+        },
         orderBy: ["-createdAt"]
       })
       .then(setComments)

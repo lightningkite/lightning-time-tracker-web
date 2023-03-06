@@ -32,7 +32,7 @@ export type SummarizeByProject = Record<
 >
 
 export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
-  const {session} = useContext(AuthContext)
+  const {session, currentUser} = useContext(AuthContext)
 
   const [projects, setProjects] = useState<Project[]>()
   const [tasks, setTasks] = useState<Task[]>()
@@ -54,7 +54,11 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
     const millisecondsPerTaskRequest = session.timeEntry.groupAggregate({
       aggregate: Aggregate.Sum,
       condition: {
-        And: [timeEntryCondition, {task: {NotEqual: null}}]
+        And: [
+          timeEntryCondition,
+          {task: {NotEqual: null}},
+          {organization: {Equal: currentUser.organization}}
+        ]
       },
       groupBy: "task",
       property: "durationMilliseconds"
@@ -64,7 +68,11 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
       session.timeEntry.groupAggregate({
         aggregate: Aggregate.Sum,
         condition: {
-          And: [timeEntryCondition, {task: {Equal: null}}]
+          And: [
+            timeEntryCondition,
+            {task: {Equal: null}},
+            {organization: {Equal: currentUser.organization}}
+          ]
         },
         groupBy: "project",
         property: "durationMilliseconds"

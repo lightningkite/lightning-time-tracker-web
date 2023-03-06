@@ -14,14 +14,19 @@ import {WidgetLayout} from "./WidgetLayout"
 export const Widgets: FC<ReportProps> = (props) => {
   const {reportFilterValues} = props
   const {dateRange} = reportFilterValues
-  const {session} = useContext(AuthContext)
+  const {session, currentUser} = useContext(AuthContext)
 
   const [totalHours, setTotalHours] = useState<number>()
   const [revenueDollarsBeforeToday, setRevenueDollarsBeforeToday] =
     useState<number>()
   const [revenueDollarsToDate, setRevenueDollarsToDate] = useState<number>()
 
-  const timeEntryCondition = filtersToTimeEntryCondition(reportFilterValues)
+  const timeEntryCondition = {
+    And: [
+      filtersToTimeEntryCondition(reportFilterValues),
+      {organization: {Equal: currentUser.organization}}
+    ]
+  }
 
   useEffect(() => {
     setTotalHours(undefined)

@@ -43,7 +43,7 @@ export const UserForm: FC<UserFormProps> = (props) => {
 
   useEffect(() => {
     session.project
-      .query({})
+      .query({condition: {organization: {Equal: currentUser.organization}}})
       .then(setProjectOptions)
       .catch(() => alert("Error loading projects"))
   }, [])

@@ -22,7 +22,7 @@ interface HoursTableRow {
 
 export const HoursByProjectReport: FC<ReportProps> = (props) => {
   const {reportFilterValues} = props
-  const {session} = useContext(AuthContext)
+  const {session, currentUser} = useContext(AuthContext)
 
   const [tableData, setTableData] = useState<HoursTableRow[]>()
   const [users, setUsers] = useState<User[]>()
@@ -45,7 +45,12 @@ export const HoursByProjectReport: FC<ReportProps> = (props) => {
         limit: QUERY_LIMIT
       }),
       session.timeEntry.groupAggregate({
-        condition: filtersToTimeEntryCondition(reportFilterValues),
+        condition: {
+          And: [
+            filtersToTimeEntryCondition(reportFilterValues),
+            {organization: {Equal: currentUser.organization}}
+          ]
+        },
         aggregate: Aggregate.Sum,
         property: "durationMilliseconds",
         groupBy: "project"

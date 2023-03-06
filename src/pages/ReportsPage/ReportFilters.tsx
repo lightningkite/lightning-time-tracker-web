@@ -86,14 +86,20 @@ export interface ReportFiltersProps {
 
 export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
   const {setReportFilterValues} = props
-  const {session} = useContext(AuthContext)
+  const {session, currentUser} = useContext(AuthContext)
 
   const [users, setUsers] = useState<User[]>()
   const [projects, setProjects] = useState<Project[]>()
 
   useEffect(() => {
-    session.user.query({}).then(setUsers).catch(console.error)
-    session.project.query({}).then(setProjects).catch(console.error)
+    session.user
+      .query({condition: {organization: {Equal: currentUser.organization}}})
+      .then(setUsers)
+      .catch(console.error)
+    session.project
+      .query({condition: {organization: {Equal: currentUser.organization}}})
+      .then(setProjects)
+      .catch(console.error)
   }, [])
 
   if (!users || !projects) return <Skeleton height={70} />

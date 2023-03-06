@@ -135,7 +135,9 @@ export const ProjectView: FC = () => {
               <TaskStateColumn
                 key={taskState}
                 state={taskState}
-                tasks={"tasks" in state ? tasksByState[taskState] : undefined}
+                tasks={
+                  state.status === "ready" ? tasksByState[taskState] : undefined
+                }
                 handleDrop={handleDrop}
                 project={state.selected}
                 onAddedTask={(task) => dispatch({type: "addTask", task})}

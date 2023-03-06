@@ -98,11 +98,6 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
     }
   })
 
-  useEffect(() => {
-    formik.setFieldValue("user", initialUser ?? currentUser)
-    formik.setFieldValue("project", initialProject ?? null)
-  }, [initialProject, initialUser])
-
   return (
     <>
       <Button

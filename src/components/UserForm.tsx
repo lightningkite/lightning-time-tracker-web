@@ -6,6 +6,7 @@ import {
 import {LoadingButton} from "@mui/lab"
 import {
   Alert,
+  Autocomplete,
   capitalize,
   Checkbox,
   FormControl,
@@ -105,6 +106,33 @@ export const UserForm: FC<UserFormProps> = (props) => {
 
       {user._id === currentUser._id && (
         <>
+          <Autocomplete
+            multiple
+            options={projectOptions ?? []}
+            getOptionLabel={(project) => project.name}
+            isOptionEqualToValue={(a, b) => a._id === b._id}
+            disableCloseOnSelect
+            disableClearable
+            value={
+              projectOptions?.filter((project) =>
+                formik.values.defaultProjects.includes(project._id)
+              ) ?? []
+            }
+            onChange={(e, value) => {
+              formik.setFieldValue(
+                "defaultProjects",
+                value.map((project) => project._id)
+              )
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Dashboard Projects"
+                helperText="Tasks for these projects will always be shown on your dashboard"
+              />
+            )}
+          />
+
           <FormControl component="fieldset" variant="standard">
             <FormLabel component="legend">Dashboard States</FormLabel>
             <FormHelperText>
@@ -147,47 +175,6 @@ export const UserForm: FC<UserFormProps> = (props) => {
                     label={capitalize(state)}
                   />
                 ))}
-            </FormGroup>
-          </FormControl>
-
-          <FormControl component="fieldset" variant="standard">
-            <FormLabel component="legend">Dashboard Projects</FormLabel>
-            <FormHelperText>
-              Tasks for these projects will always be shown on your dashboard
-            </FormHelperText>
-            <FormGroup>
-              {projectOptions?.map((project) => (
-                <FormControlLabel
-                  key={project._id}
-                  control={
-                    <Checkbox
-                      checked={formik.values.defaultProjects.includes(
-                        project._id
-                      )}
-                      onChange={(e) => {
-                        const nowChecked = e.target.checked
-                        const wasChecked =
-                          formik.values.defaultProjects.includes(project._id)
-
-                        if (nowChecked && !wasChecked) {
-                          formik.setFieldValue(
-                            "defaultProjects",
-                            formik.values.defaultProjects.concat(project._id)
-                          )
-                        } else if (!nowChecked && wasChecked) {
-                          formik.setFieldValue(
-                            "defaultProjects",
-                            formik.values.defaultProjects.filter(
-                              (s) => s !== project._id
-                            )
-                          )
-                        }
-                      }}
-                    />
-                  }
-                  label={project.name}
-                />
-              ))}
             </FormGroup>
           </FormControl>
         </>

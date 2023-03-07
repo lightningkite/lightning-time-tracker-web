@@ -10,6 +10,7 @@ import {
 } from "@mui/material"
 import {Comment, Task} from "api/sdk"
 import Loading from "components/Loading"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {CommentItem} from "./CommentItem"
@@ -21,6 +22,7 @@ export interface CommentSectionProps {
 export const CommentSection: FC<CommentSectionProps> = (props) => {
   const {task} = props
   const {session, currentUser} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [comments, setComments] = useState<Comment[] | null>()
   const [newComment, setNewComment] = useState("")
@@ -82,36 +84,38 @@ export const CommentSection: FC<CommentSectionProps> = (props) => {
 
   return (
     <>
-      <form
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          gap: 8,
-          marginBottom: 16
-        }}
-        onSubmit={(e) => {
-          e.preventDefault()
-          handleAddComment()
-        }}
-      >
-        <TextField
-          variant="outlined"
-          multiline
-          fullWidth
-          label="Add a comment"
-          value={isSubmitting ? "" : newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          disabled={isSubmitting}
-        />
-        <IconButton
-          type="submit"
-          color="primary"
-          disabled={!newComment || isSubmitting}
-          sx={{mt: 1}}
+      {permissions.comments && (
+        <form
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 8,
+            marginBottom: 16
+          }}
+          onSubmit={(e) => {
+            e.preventDefault()
+            handleAddComment()
+          }}
         >
-          <Send />
-        </IconButton>
-      </form>
+          <TextField
+            variant="outlined"
+            multiline
+            fullWidth
+            label="Add a comment"
+            value={isSubmitting ? "" : newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            disabled={isSubmitting}
+          />
+          <IconButton
+            type="submit"
+            color="primary"
+            disabled={!newComment || isSubmitting}
+            sx={{mt: 1}}
+          >
+            <Send />
+          </IconButton>
+        </form>
+      )}
 
       <List disablePadding>
         {isSubmitting && (

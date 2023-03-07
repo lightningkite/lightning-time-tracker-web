@@ -4,9 +4,10 @@ import {AddTaskButton} from "components/AddTaskButton"
 import {TaskModal} from "components/TaskModal"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
+import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useState} from "react"
 import {useDrop} from "react-dnd"
-import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import {TaskCard} from "./TaskCard"
 
 dayjs.extend(duration)
@@ -21,6 +22,7 @@ export interface TaskStateColumnProps {
 
 export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
   const {state, tasks, handleDrop, project, onAddedTask} = props
+  const permissions = usePermissions()
 
   const [selectedTask, setSelectedTask] = useState<AnnotatedTask | null>(null)
 
@@ -72,14 +74,16 @@ export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
 
           return (
             <>
-              <AddTaskButton
-                afterSubmit={onAddedTask}
-                sx={{mb: 1.5}}
-                fullWidth
-                variant="outlined"
-                project={project}
-                state={state}
-              />
+              {permissions.manageTasks && (
+                <AddTaskButton
+                  afterSubmit={onAddedTask}
+                  sx={{mb: 1.5}}
+                  fullWidth
+                  variant="outlined"
+                  project={project}
+                  state={state}
+                />
+              )}
 
               {tasks.length === 0 && (
                 <Typography color="text.disabled" fontStyle="italic">

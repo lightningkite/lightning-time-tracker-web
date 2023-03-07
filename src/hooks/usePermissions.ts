@@ -3,7 +3,7 @@ import {AuthContext} from "../utils/context"
 
 export function usePermissions() {
   const {
-    currentUser: {permissions, isSuperUser}
+    currentUser: {permissions, isSuperUser, limitToProjects}
   } = useContext(AuthContext)
 
   // Permissions is a number where each bit represents a boolean permission
@@ -14,6 +14,8 @@ export function usePermissions() {
     .reverse()
 
   const usePermissionsReturn = {
+    readSomeProjects: isSuperUser || !!limitToProjects?.length,
+    manageUsers: isSuperUser || !!permissionsBits.at(0),
     manageProjects: isSuperUser || !!permissionsBits.at(1),
     tasks: isSuperUser || !!permissionsBits.at(2),
     manageTasks: isSuperUser || !!permissionsBits.at(3),

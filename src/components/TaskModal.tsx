@@ -18,6 +18,7 @@ import {
 } from "@mui/material"
 import {Task} from "api/sdk"
 import dayjs from "dayjs"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useState} from "react"
 import {Link} from "react-router-dom"
 import {dynamicFormatDate} from "utils/helpers"
@@ -34,6 +35,7 @@ export interface TaskModalProps {
 export const TaskModal: FC<TaskModalProps> = (props) => {
   const {task, handleClose, getEditRoute} = props
   const [tab, setTab] = useState("1")
+  const permissions = usePermissions()
 
   return (
     <Dialog open={!!task} onClose={handleClose} maxWidth="md" fullWidth>
@@ -67,17 +69,19 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
             <LabeledInfo label="Created">
               {dynamicFormatDate(dayjs(task.createdAt))}
             </LabeledInfo>
-            <div>
-              <Button
-                variant="text"
-                color="primary"
-                startIcon={<Edit />}
-                component={Link}
-                to={getEditRoute(task)}
-              >
-                Edit
-              </Button>
-            </div>
+            {permissions.manageTasks && (
+              <div>
+                <Button
+                  variant="text"
+                  color="primary"
+                  startIcon={<Edit />}
+                  component={Link}
+                  to={getEditRoute(task)}
+                >
+                  Edit
+                </Button>
+              </div>
+            )}
           </Stack>
 
           <LabeledInfo label="Attachments">

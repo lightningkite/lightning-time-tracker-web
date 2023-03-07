@@ -8,10 +8,11 @@ import {
 } from "@mui/material"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
+import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext} from "react"
 import {useDrag} from "react-dnd"
 import {AuthContext} from "utils/context"
-import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 
 dayjs.extend(duration)
 
@@ -23,6 +24,7 @@ export interface TaskCardProps {
 export const TaskCard: FC<TaskCardProps> = (props) => {
   const {task, onClick} = props
   const {currentUser} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [{opacity}, drag] = useDrag(
     () => ({
@@ -59,11 +61,13 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
                 task.userName
               )}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {hoursEstimated
-                ? `${hoursSpent} / ${hoursEstimated} hr`
-                : `${hoursSpent} hr`}
-            </Typography>
+            {permissions.timeEntries && (
+              <Typography variant="body2" color="text.secondary">
+                {hoursEstimated
+                  ? `${hoursSpent} / ${hoursEstimated} hr`
+                  : `${hoursSpent} hr`}
+              </Typography>
+            )}
           </Stack>
           <Typography>{task.summary}</Typography>
         </CardContent>

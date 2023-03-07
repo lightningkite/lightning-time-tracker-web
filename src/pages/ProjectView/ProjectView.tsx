@@ -3,6 +3,8 @@ import {Project, TaskState} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import dayjs from "dayjs"
+import {AnnotatedTask, useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
+import {usePermissions} from "hooks/usePermissions"
 import React, {
   FC,
   useCallback,
@@ -14,7 +16,6 @@ import React, {
 import {DndProvider} from "react-dnd"
 import {HTML5Backend} from "react-dnd-html5-backend"
 import {AuthContext} from "utils/context"
-import {AnnotatedTask, useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
 import {DeliveredColumn} from "./DeliveredColumn"
 import {ProjectSwitcher} from "./ProjectSwitcher"
 import {TaskStateColumn} from "./TaskStateColumn"
@@ -24,6 +25,7 @@ const hiddenTaskStates: TaskState[] = [TaskState.Cancelled, TaskState.Delivered]
 export const ProjectView: FC = () => {
   const {session, currentUser} = useContext(AuthContext)
   const {annotatedTaskEndpoint} = useAnnotatedEndpoints()
+  const permissions = usePermissions()
 
   const [state, dispatch] = useReducer(reducer, {status: "loadingProjects"})
 
@@ -146,7 +148,7 @@ export const ProjectView: FC = () => {
                 onAddedTask={(task) => dispatch({type: "addTask", task})}
               />
             ))}
-          <DeliveredColumn handleDrop={handleDrop} />
+          {permissions.tasks && <DeliveredColumn handleDrop={handleDrop} />}
         </Stack>
       </DndProvider>
     </Container>

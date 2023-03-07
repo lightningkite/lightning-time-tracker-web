@@ -16,10 +16,10 @@ import {
 import {TaskModal} from "components/TaskModal"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
-import React, {FC, useContext, useState} from "react"
-import {useNavigate} from "react-router-dom"
-import {AuthContext} from "utils/context"
 import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
+import {usePermissions} from "hooks/usePermissions"
+import React, {FC, useContext, useState} from "react"
+import {AuthContext} from "utils/context"
 import {TaskPlayActionButton} from "./TaskPlayActionButton"
 import {TaskStateActionButton} from "./TaskStateActionButton"
 
@@ -34,9 +34,9 @@ export const TaskListItem: FC<TaskListItemProps> = ({
   annotatedTask,
   refreshDashboard
 }) => {
-  const navigate = useNavigate()
   const {currentUser} = useContext(AuthContext)
   const theme = useTheme()
+  const permissions = usePermissions()
 
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
   const isMine = currentUser._id === annotatedTask.user
@@ -64,7 +64,9 @@ export const TaskListItem: FC<TaskListItemProps> = ({
               annotatedTask={annotatedTask}
               refreshDashboard={refreshDashboard}
             />
-            <TaskPlayActionButton annotatedTask={annotatedTask} />
+            {permissions.timeEntries && (
+              <TaskPlayActionButton annotatedTask={annotatedTask} />
+            )}
           </Stack>
         }
         sx={
@@ -99,7 +101,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({
                 {annotatedTask.state.toUpperCase()} &nbsp;&#x2022;&nbsp;{" "}
                 {annotatedTask.userName}
               </Typography>
-              {!isMobile && (
+              {!isMobile && permissions.timeEntries && (
                 <Box sx={{width: "8rem"}}>
                   <Typography
                     sx={{mt: 1, mb: 0.25}}

@@ -46,8 +46,12 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
     ? dayjs.duration(task.estimate, "hours").asHours().toFixed(1)
     : null
 
+  const canDrag =
+    (currentUser._id === task.user && permissions.tasks) ||
+    permissions.manageTasks
+
   return (
-    <Card key={task._id} ref={drag} style={{opacity}}>
+    <Card key={task._id} ref={canDrag ? drag : undefined} style={{opacity}}>
       <CardActionArea onClick={() => onClick(task)} disableRipple>
         <CardContent sx={{p: 1}}>
           <Stack direction="row" justifyContent="space-between">

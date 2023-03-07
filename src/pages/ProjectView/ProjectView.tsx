@@ -15,6 +15,7 @@ import React, {
 } from "react"
 import {DndProvider} from "react-dnd"
 import {HTML5Backend} from "react-dnd-html5-backend"
+import {useLocation, useNavigate} from "react-router-dom"
 import {AuthContext} from "utils/context"
 import {DeliveredColumn} from "./DeliveredColumn"
 import {ProjectSwitcher} from "./ProjectSwitcher"
@@ -26,6 +27,8 @@ export const ProjectView: FC = () => {
   const {session, currentUser} = useContext(AuthContext)
   const {annotatedTaskEndpoint} = useAnnotatedEndpoints()
   const permissions = usePermissions()
+  const location = useLocation()
+  const navigate = useNavigate()
 
   const [state, dispatch] = useReducer(reducer, {status: "loadingProjects"})
 
@@ -35,21 +38,35 @@ export const ProjectView: FC = () => {
         condition: {organization: {Equal: currentUser.organization}},
         orderBy: ["name"]
       })
-      .then((projects) =>
+      .then((projects) => {
+        const projectIdInQuery = new URLSearchParams(location.search).get(
+          "project"
+        )
+        const projectFromQuery = projects.find(
+          (p) => p._id === projectIdInQuery
+        )
+
         dispatch({
           type: "setProjects",
           projects,
           selected:
+            projectFromQuery ??
             projects.find((p) =>
               currentUser.defaultFilters.projects.includes(p._id)
-            ) ?? projects[0]
+            ) ??
+            projects[0]
         })
-      )
+      })
       .catch(() => dispatch({type: "error"}))
   }, [])
 
   useEffect(() => {
     if (!("selected" in state)) return
+
+    // Update selected project in query
+    const searchParams = new URLSearchParams(location.search)
+    searchParams.set("project", state.selected._id)
+    navigate({search: searchParams.toString()})
 
     annotatedTaskEndpoint
       .query({

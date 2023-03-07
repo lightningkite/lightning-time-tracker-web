@@ -15,7 +15,11 @@ export const LabeledInfo: FC<PropsWithChildren<LabeledInfoProps>> = (props) => {
         primary={label}
         secondary={children}
         primaryTypographyProps={{fontWeight: 700, fontSize: 12, color: "#888"}}
-        secondaryTypographyProps={{fontSize: 16, color: "text.primary"}}
+        secondaryTypographyProps={{
+          fontSize: 16,
+          color: "text.primary",
+          whiteSpace: "pre-wrap"
+        }}
       />
     </LabeledInfoWrapper>
   )
@@ -27,7 +31,11 @@ function LabeledInfoWrapper(
   props: PropsWithChildren<{onClick?: () => void}>
 ): ReactElement {
   return props.onClick ? (
-    <ListItemButton onClick={props.onClick} disableGutters>
+    <ListItemButton
+      onClick={props.onClick}
+      disableGutters
+      sx={{whiteSpace: "pre-wrap"}}
+    >
       {props.children}
     </ListItemButton>
   ) : (

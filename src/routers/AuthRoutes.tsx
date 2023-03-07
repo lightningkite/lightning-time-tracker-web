@@ -1,4 +1,5 @@
 import Loading from "components/Loading"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, Suspense} from "react"
 import {Navigate, Route, Routes} from "react-router-dom"
 
@@ -17,6 +18,10 @@ const MyTimeEntries = React.lazy(() => import("pages/MyTimeEntries"))
 const Reports = React.lazy(() => import("pages/ReportsPage"))
 
 const AuthRoutes: FC = () => {
+  const permissions = usePermissions()
+
+  console.log("permissions", permissions)
+
   return (
     // The Suspense component is used to show a loading indicator while the
     // code for the page is being downloaded. (see above)
@@ -40,7 +45,21 @@ const AuthRoutes: FC = () => {
           <Route path="/reports" element={<Reports />} />
 
           {/* If page doesn't exist, redirect to home */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route
+            path="*"
+            element={
+              <Navigate
+                to={
+                  permissions.tasks
+                    ? "/dashboard"
+                    : permissions.readSomeProjects
+                    ? "/project-view"
+                    : "/settings"
+                }
+                replace
+              />
+            }
+          />
         </Route>
       </Routes>
     </Suspense>

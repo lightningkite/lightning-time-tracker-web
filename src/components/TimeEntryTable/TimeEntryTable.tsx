@@ -17,10 +17,11 @@ dayjs.extend(duration)
 export interface TimeEntryTableProps
   extends Partial<RestDataTableProps<TimeEntry>> {
   hiddenColumns?: string[]
+  preventClick?: boolean
 }
 
 export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
-  const {hiddenColumns = [], ...restProps} = props
+  const {hiddenColumns = [], preventClick = false, ...restProps} = props
   const {session} = useContext(AuthContext)
 
   const [refreshTrigger, setRefreshTrigger] = useState(0)
@@ -79,7 +80,7 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
         columns={columns.filter(
           (column) => !hiddenColumns.includes(column.field)
         )}
-        onRowClick={setSelectedTimeEntry}
+        onRowClick={preventClick ? undefined : setSelectedTimeEntry}
         dependencies={[refreshTrigger, ...(props.dependencies ?? [])]}
       />
       <TimeEntryModal

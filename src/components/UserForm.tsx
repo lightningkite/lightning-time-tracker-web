@@ -44,7 +44,10 @@ export const UserForm: FC<UserFormProps> = (props) => {
 
   useEffect(() => {
     session.project
-      .query({condition: {organization: {Equal: currentUser.organization}}})
+      .query({
+        condition: {organization: {Equal: currentUser.organization}},
+        orderBy: ["name"]
+      })
       .then(setProjectOptions)
       .catch(() => alert("Error loading projects"))
   }, [])
@@ -55,6 +58,7 @@ export const UserForm: FC<UserFormProps> = (props) => {
       email: user.email,
       name: user.name,
       isSuperUser: user.isSuperUser,
+      limitToProjects: user.limitToProjects ?? [],
       defaultStates: user.defaultFilters.states,
       defaultProjects: user.defaultFilters.projects,
       active: user.active
@@ -70,6 +74,7 @@ export const UserForm: FC<UserFormProps> = (props) => {
         name: values.name,
         isSuperUser: values.isSuperUser,
         active: values.active,
+        limitToProjects: values.limitToProjects,
         defaultFilters: {
           ...user.defaultFilters,
           states: values.defaultStates,
@@ -105,6 +110,35 @@ export const UserForm: FC<UserFormProps> = (props) => {
       <TextField label="Email" {...makeFormikTextFieldProps(formik, "email")} />
 
       <TextField label="Name" {...makeFormikTextFieldProps(formik, "name")} />
+
+      {user._id !== currentUser._id && (
+        <Autocomplete
+          multiple
+          options={projectOptions ?? []}
+          getOptionLabel={(project) => project.name}
+          isOptionEqualToValue={(a, b) => a._id === b._id}
+          disableCloseOnSelect
+          disableClearable
+          value={
+            projectOptions?.filter((project) =>
+              formik.values.limitToProjects.includes(project._id)
+            ) ?? []
+          }
+          onChange={(e, value) => {
+            formik.setFieldValue(
+              "limitToProjects",
+              value.map((project) => project._id)
+            )
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Limit to Projects"
+              helperText="This user will only be able to access these projects"
+            />
+          )}
+        />
+      )}
 
       {user._id === currentUser._id && (
         <>
@@ -191,9 +225,7 @@ export const UserForm: FC<UserFormProps> = (props) => {
       />
 
       <FormControlLabel
-        control={
-          <Checkbox {...makeFormikCheckboxProps(formik, "active")} />
-        }
+        control={<Checkbox {...makeFormikCheckboxProps(formik, "active")} />}
         label="Active"
         disabled={currentUser._id === user._id}
       />

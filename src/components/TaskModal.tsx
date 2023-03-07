@@ -129,6 +129,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
               <TimeEntryTable
                 additionalQueryConditions={[{task: {Equal: task._id}}]}
                 hiddenColumns={["projectName", "taskSummary"]}
+                preventClick
               />
             </TabPanel>
           </TabContext>

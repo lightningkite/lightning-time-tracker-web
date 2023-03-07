@@ -2,6 +2,7 @@ import {RestDataTable} from "@lightningkite/mui-lightning-components"
 import {Container} from "@mui/material"
 import PageHeader from "components/PageHeader"
 import dayjs from "dayjs"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useState} from "react"
 import {useNavigate} from "react-router-dom"
 import {AuthContext} from "utils/context"
@@ -10,14 +11,15 @@ import {AddProjectButton} from "./AddProjectButton"
 
 export const ProjectIndex: FC = () => {
   const navigate = useNavigate()
-  const {session, currentUser} = useContext(AuthContext)
+  const {session} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   return (
     <Container maxWidth="md">
       <PageHeader title="Projects">
-        {currentUser.isSuperUser && (
+        {permissions.manageProjects && (
           <AddProjectButton
             afterSubmit={() => setRefreshTrigger((prev) => prev + 1)}
           />

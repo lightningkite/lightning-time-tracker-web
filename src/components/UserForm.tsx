@@ -19,6 +19,7 @@ import {
 } from "@mui/material"
 import {Project, TaskState, User} from "api/sdk"
 import {useFormik} from "formik"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import * as yup from "yup"
@@ -36,7 +37,7 @@ export interface UserFormProps {
 
 export const UserForm: FC<UserFormProps> = (props) => {
   const {user, setUser} = props
-
+  const permissions = usePermissions()
   const {session, currentUser, setCurrentUser} = useContext(AuthContext)
 
   const [error, setError] = useState("")
@@ -140,7 +141,7 @@ export const UserForm: FC<UserFormProps> = (props) => {
         />
       )}
 
-      {user._id === currentUser._id && (
+      {user._id === currentUser._id && permissions.tasks && (
         <>
           <Autocomplete
             multiple

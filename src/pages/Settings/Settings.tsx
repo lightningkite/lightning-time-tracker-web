@@ -15,6 +15,7 @@ import {
 import FormSection from "components/FormSection"
 import PageHeader from "components/PageHeader"
 import {UserForm} from "components/UserForm"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext} from "react"
 import {AuthContext} from "utils/context"
 import {parsePreferences} from "utils/helpers"
@@ -29,6 +30,7 @@ export interface WebPreferences {
 
 const Settings: FC = () => {
   const {logout, currentUser, setCurrentUser, session} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const preferences = parsePreferences(currentUser?.webPreferences)
 
@@ -74,42 +76,46 @@ const Settings: FC = () => {
         </CardContent>
       </Card>
 
-      <Typography variant="h2" sx={{mb: 2, mt: 4}}>
-        Application Settings
-      </Typography>
+      {permissions.timeEntries && (
+        <>
+          <Typography variant="h2" sx={{mb: 2, mt: 4}}>
+            Application Settings
+          </Typography>
 
-      <Card>
-        <CardContent>
-          <FormSection disableTopPadding>
-            <FormControl>
-              <FormLabel>Summarize Time</FormLabel>
-              <FormHelperText sx={{ml: 0}}>
-                Choose the time period to show the total time for in the menu
-                bar
-              </FormHelperText>
-              <RadioGroup
-                value={preferences.summaryTime}
-                onChange={(e) =>
-                  updatePreferences({
-                    summaryTime: e.target.value as "day" | "week"
-                  })
-                }
-              >
-                <FormControlLabel
-                  value="day"
-                  control={<Radio />}
-                  label="Today"
-                />
-                <FormControlLabel
-                  value="week"
-                  control={<Radio />}
-                  label="This Week"
-                />
-              </RadioGroup>
-            </FormControl>
-          </FormSection>
-        </CardContent>
-      </Card>
+          <Card>
+            <CardContent>
+              <FormSection disableTopPadding>
+                <FormControl>
+                  <FormLabel>Summarize Time</FormLabel>
+                  <FormHelperText sx={{ml: 0}}>
+                    Choose the time period to show the total time for in the
+                    menu bar
+                  </FormHelperText>
+                  <RadioGroup
+                    value={preferences.summaryTime}
+                    onChange={(e) =>
+                      updatePreferences({
+                        summaryTime: e.target.value as "day" | "week"
+                      })
+                    }
+                  >
+                    <FormControlLabel
+                      value="day"
+                      control={<Radio />}
+                      label="Today"
+                    />
+                    <FormControlLabel
+                      value="week"
+                      control={<Radio />}
+                      label="This Week"
+                    />
+                  </RadioGroup>
+                </FormControl>
+              </FormSection>
+            </CardContent>
+          </Card>
+        </>
+      )}
 
       <Typography variant="h2" sx={{mb: 2, mt: 4}}>
         Theme

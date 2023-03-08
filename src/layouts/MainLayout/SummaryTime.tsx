@@ -1,6 +1,6 @@
 import {Aggregate, Condition} from "@lightningkite/lightning-server-simplified"
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
-import {Typography, useMediaQuery, useTheme} from "@mui/material"
+import {Skeleton, Typography, useMediaQuery, useTheme} from "@mui/material"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import React, {FC, useContext, useEffect, useState} from "react"
@@ -15,7 +15,7 @@ import {
 dayjs.extend(duration)
 
 export const SummaryTime: FC = () => {
-  const {session, currentUser} = useContext(AuthContext)
+  const {session, currentUser, setCurrentUser} = useContext(AuthContext)
   const {timers} = useContext(TimerContext)
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
@@ -34,12 +34,39 @@ export const SummaryTime: FC = () => {
     setUnsubmittedSeconds(seconds)
   }
 
+  const changeTime = () => {
+    const previousPreferences = {...preferences}
+    const summaryTime = preferences.summaryTime === "day" ? "week" : "day"
+    const newPreferencesJSON = JSON.stringify({
+      ...preferences,
+      summaryTime
+    })
+
+    // Optimistically update the UI
+    setCurrentUser({
+      ...currentUser,
+      webPreferences: newPreferencesJSON
+    })
+
+    session.user
+      .modify(currentUser._id, {webPreferences: {Assign: newPreferencesJSON}})
+      .catch(() =>
+        // If the update fails, revert the UI
+        setCurrentUser({
+          ...currentUser,
+          webPreferences: JSON.stringify(previousPreferences)
+        })
+      )
+  }
+
   useEffect(() => {
     const interval = setInterval(calculateUnsubmittedSeconds, 1000)
     return () => clearInterval(interval)
   }, [timers])
 
   useEffect(() => {
+    setSubmittedSeconds(undefined)
+
     const dateCondition: Condition<string> =
       preferences.summaryTime === "day"
         ? {Equal: dateToISO(new Date())}
@@ -63,12 +90,18 @@ export const SummaryTime: FC = () => {
     <HoverHelp
       description={preferences.summaryTime === "day" ? "Today" : "This Week"}
     >
-      <Typography fontSize={isMobile ? undefined : "1.2rem"}>
-        {submittedSeconds !== undefined
-          ? formatLongDuration(
-              dayjs.duration(submittedSeconds + unsubmittedSeconds, "seconds")
-            )
-          : "00 : 00 : 00"}
+      <Typography
+        onClick={changeTime}
+        fontSize={isMobile ? undefined : "1.2rem"}
+        sx={{cursor: "pointer"}}
+      >
+        {submittedSeconds !== undefined ? (
+          formatLongDuration(
+            dayjs.duration(submittedSeconds + unsubmittedSeconds, "seconds")
+          )
+        ) : (
+          <Skeleton variant="text" width={100} />
+        )}
       </Typography>
     </HoverHelp>
   )

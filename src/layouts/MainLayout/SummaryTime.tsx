@@ -5,7 +5,12 @@ import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
-import {dateToISO, getTimerSeconds, parsePreferences} from "utils/helpers"
+import {
+  dateToISO,
+  formatLongDuration,
+  getTimerSeconds,
+  parsePreferences
+} from "utils/helpers"
 
 dayjs.extend(duration)
 
@@ -18,7 +23,7 @@ export const SummaryTime: FC = () => {
   const [submittedSeconds, setSubmittedSeconds] = useState<number>()
   const [unsubmittedSeconds, setUnsubmittedSeconds] = useState(0)
 
-  const preferences = parsePreferences(currentUser?.webPreferences)
+  const preferences = parsePreferences(currentUser.webPreferences)
 
   const calculateUnsubmittedSeconds = () => {
     const seconds = Object.values(timers).reduce(
@@ -79,9 +84,9 @@ export const SummaryTime: FC = () => {
         fontSize={isMobile ? undefined : "1.2rem"}
       >
         {submittedSeconds !== undefined
-          ? dayjs
-              .duration(submittedSeconds + unsubmittedSeconds, "seconds")
-              .format("H : mm : ss")
+          ? formatLongDuration(
+              dayjs.duration(submittedSeconds + unsubmittedSeconds, "seconds")
+            )
           : "00 : 00 : 00"}
       </Typography>
     </HoverHelp>

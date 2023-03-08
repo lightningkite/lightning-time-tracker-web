@@ -55,7 +55,10 @@ export const AddUserButton: FC<AddUserProps> = (props) => {
           states: [TaskState.Active],
           users: []
         },
-        webPreferences: ""
+        webPreferences: "",
+        permissions: 0,
+        limitToProjects: [],
+        active: true
       })
 
       props.afterSubmit()

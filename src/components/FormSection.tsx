@@ -27,7 +27,7 @@ export const FormSection: FC<PropsWithChildren<FormSectionProps>> = (props) => {
         spacing={3}
         mt={
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-          title || subtitle ? 3 : 2
+          title || subtitle ? 3 : 0
         }
       >
         {children}

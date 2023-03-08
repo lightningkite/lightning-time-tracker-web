@@ -1,23 +1,29 @@
-import {Aggregate, Condition} from "@lightningkite/lightning-server-simplified"
+import {Aggregate} from "@lightningkite/lightning-server-simplified"
+import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {ExpandMore} from "@mui/icons-material"
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Alert,
   Box,
   List,
   ListItem,
   ListItemText,
+  Stack,
   Typography
 } from "@mui/material"
-import {Project, Task, TimeEntry} from "api/sdk"
+import {Project, Task} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import React, {FC, useContext, useEffect, useState} from "react"
+import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
-import {dateToISO, formatDollars, MILLISECONDS_PER_HOUR} from "utils/helpers"
-import {DateRange} from "./DateRangeSelector"
+import {formatDollars, MILLISECONDS_PER_HOUR} from "utils/helpers"
+import {
+  filtersToProjectCondition,
+  filtersToTimeEntryCondition
+} from "./ReportFilters"
+import {ReportProps} from "./ReportsPage"
 import {Widgets} from "./Widgets"
 
 export type SummarizeByProject = Record<
@@ -25,8 +31,8 @@ export type SummarizeByProject = Record<
   {projectTasks: Task[]; projectHours: number}
 >
 
-export const RevenueReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
-  const {session} = useContext(AuthContext)
+export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
+  const {session, currentUser} = useContext(AuthContext)
 
   const [projects, setProjects] = useState<Project[]>()
   const [tasks, setTasks] = useState<Task[]>()
@@ -39,26 +45,20 @@ export const RevenueReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
   const [expanded, setExpanded] = useState<string | null>(null)
 
   useEffect(() => {
-    session.project
-      .query({})
-      .then(setProjects)
-      .catch(() => setError("Error fetching projects"))
-  }, [])
-
-  useEffect(() => {
     setTasks(undefined)
     setMsPerTask(undefined)
     setOrphanMsPerTask(undefined)
 
-    const timeEntryDateRangeConditions: Condition<TimeEntry>[] = [
-      {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
-      {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
-    ]
+    const timeEntryCondition = filtersToTimeEntryCondition(reportFilterValues)
 
     const millisecondsPerTaskRequest = session.timeEntry.groupAggregate({
       aggregate: Aggregate.Sum,
       condition: {
-        And: [...timeEntryDateRangeConditions, {task: {NotEqual: null}}]
+        And: [
+          timeEntryCondition,
+          {task: {NotEqual: null}},
+          {organization: {Equal: currentUser.organization}}
+        ]
       },
       groupBy: "task",
       property: "durationMilliseconds"
@@ -68,22 +68,40 @@ export const RevenueReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
       session.timeEntry.groupAggregate({
         aggregate: Aggregate.Sum,
         condition: {
-          And: [...timeEntryDateRangeConditions, {task: {Equal: null}}]
+          And: [
+            timeEntryCondition,
+            {task: {Equal: null}},
+            {organization: {Equal: currentUser.organization}}
+          ]
         },
         groupBy: "project",
         property: "durationMilliseconds"
       })
 
+    const projectsRequest = session.project.query({
+      condition: filtersToProjectCondition(reportFilterValues),
+      limit: QUERY_LIMIT
+    })
+
     Promise.all([
       millisecondsPerTaskRequest,
-      orphanMillisecondsPerProjectRequest
+      orphanMillisecondsPerProjectRequest,
+      projectsRequest
     ])
-      .then(([millisecondsPerTask, orphanMillisecondsPerProject]) => {
-        setMsPerTask(millisecondsPerTask)
-        setOrphanMsPerTask(orphanMillisecondsPerProject)
-      })
-      .catch(() => setError("Error fetching time entries"))
-  }, [dateRange])
+      .then(
+        ([
+          millisecondsPerTask,
+          orphanMillisecondsPerProject,
+          projectsResponse
+        ]) => {
+          setMsPerTask(millisecondsPerTask)
+          setOrphanMsPerTask(orphanMillisecondsPerProject)
+          setProjects(projectsResponse)
+          projectsResponse.length === 1 && setExpanded(projectsResponse[0]._id)
+        }
+      )
+      .catch(() => setError("Error fetching data"))
+  }, [reportFilterValues])
 
   useEffect(() => {
     if (!msPerTask) return
@@ -92,7 +110,8 @@ export const RevenueReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
 
     session.task
       .query({
-        condition: {_id: {Inside: Array.from(uniqueTaskIds)}}
+        condition: {_id: {Inside: Array.from(uniqueTaskIds)}},
+        limit: QUERY_LIMIT
       })
       .then(setTasks)
       .catch(() => setError("Error fetching tasks"))
@@ -108,7 +127,7 @@ export const RevenueReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
 
   return (
     <Box>
-      <Widgets dateRange={dateRange} />
+      <Widgets reportFilterValues={reportFilterValues} />
 
       {projects
         .map((project) => {
@@ -145,9 +164,16 @@ export const RevenueReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
                 <Typography variant="h2">
                   {project.name ?? "Not found"}
                 </Typography>
-                <Typography fontSize="1.2rem" sx={{ml: "auto", mr: 1}}>
-                  {formatDollars((project.rate ?? 0) * totalHours, false)}
-                </Typography>
+                <Stack sx={{ml: "auto", mr: 1}} alignItems="flex-end">
+                  <Typography fontSize="1.2rem">
+                    {formatDollars((project.rate ?? 0) * totalHours, false)}
+                  </Typography>
+                  <HoverHelp description={totalHours.toFixed(2)}>
+                    <Typography variant="body2" color="text.secondary">
+                      {Math.round(totalHours)} hr.
+                    </Typography>
+                  </HoverHelp>
+                </Stack>
               </AccordionSummary>
               <AccordionDetails sx={{p: 0}}>
                 <List>
@@ -171,21 +197,14 @@ export const RevenueReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
                         </ListItem>
                       )
                     })}
-
                   {orphanHours > 0 && (
                     <ListItem>
                       <ListItemText
-                        primary="Other time"
+                        primary="Project Management"
                         secondary={`${orphanHours.toFixed(1)} hours`}
                       />
                     </ListItem>
                   )}
-
-                  <Alert severity="info" sx={{mx: 2, mt: 1}}>
-                    <Typography fontWeight="bold">
-                      Total hours: {totalHours.toFixed(2)}
-                    </Typography>
-                  </Alert>
                 </List>
               </AccordionDetails>
             </Accordion>

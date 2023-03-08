@@ -10,26 +10,45 @@ import {
   Query
 } from "@lightningkite/lightning-server-simplified"
 
+export interface Attachment {
+  name: string
+  file: ServerFile
+}
+export interface Comment {
+  _id: UUID
+  user: UUID
+  userName: string | null | undefined
+  task: UUID
+  taskSummary: string | null | undefined
+  project: UUID
+  projectName: string | null | undefined
+  organization: UUID
+  organizationName: string | null | undefined
+  createdAt: Instant
+  content: string
+}
 export interface EmailPinLogin {
   email: string
   pin: string
 }
 export interface Filters {
-  projects: Array<string>
+  projects: Array<UUID>
   states: Array<TaskState>
-  users: Array<string>
+  users: Array<UUID>
 }
 export interface HealthStatus {
   level: Level
-  checkedAt: string
+  checkedAt: Instant
   additionalMessage: string | null | undefined
 }
+type Instant = string // java.time.Instant
 export enum Level {
   OK = "OK",
   WARNING = "WARNING",
   URGENT = "URGENT",
   ERROR = "ERROR"
 }
+type LocalDate = string // java.time.LocalDate
 export interface Memory {
   max: number
   total: number
@@ -38,18 +57,20 @@ export interface Memory {
   usage: number
 }
 export interface Organization {
-  _id: string
+  _id: UUID
   name: string
-  owner: string
-  createdAt: string
+  owner: UUID
+  createdAt: Instant
 }
 export interface Project {
-  _id: string
-  organization: string
+  _id: UUID
+  organization: UUID
   name: string
   rate: number | null | undefined
-  createdAt: string
+  notes: string
+  createdAt: Instant
 }
+type ServerFile = string // ServerFile
 export interface ServerHealth {
   serverId: string
   version: string
@@ -58,67 +79,117 @@ export interface ServerHealth {
   loadAverageCpu: number
 }
 export interface Task {
-  _id: string
-  project: string
-  organization: string
-  user: string
+  _id: UUID
+  project: UUID
+  projectName: string | null | undefined
+  organization: UUID
+  organizationName: string | null | undefined
+  user: UUID
+  userName: string | null | undefined
   state: TaskState
   summary: string
   description: string
-  attachments: Array<string>
+  attachments: Array<Attachment>
   estimate: number | null | undefined
   emergency: boolean
-  createdAt: string
+  createdAt: Instant
 }
 export enum TaskState {
+  Cancelled = "Cancelled",
   Hold = "Hold",
   Active = "Active",
-  Completed = "Completed",
-  Tested = "Tested",
-  Done = "Done"
+  Testing = "Testing",
+  Approved = "Approved",
+  Delivered = "Delivered"
 }
 export interface TimeEntry {
-  _id: string
-  task: string | null | undefined
-  project: string
-  organization: string
-  user: string
+  _id: UUID
+  task: UUID | null | undefined
+  taskSummary: string | null | undefined
+  project: UUID
+  projectName: string | null | undefined
+  organization: UUID
+  organizationName: string | null | undefined
+  user: UUID
+  userName: string | null | undefined
   summary: string
   durationMilliseconds: number
-  date: string
+  date: LocalDate
 }
 export interface Timer {
-  _id: string
-  user: string
-  organization: string
-  lastStarted: string | null | undefined
+  _id: UUID
+  user: UUID
+  organization: UUID
+  lastStarted: Instant | null | undefined
   accumulatedSeconds: number
-  task: string | null | undefined
-  project: string | null | undefined
+  task: UUID | null | undefined
+  project: UUID | null | undefined
   summary: string
 }
+type UUID = string // java.util.UUID
 export interface UploadInformation {
   uploadUrl: string
   futureCallToken: string
 }
 export interface User {
-  _id: string
+  _id: UUID
   email: string
-  organization: string
+  organization: UUID
   name: string
   webPreferences: string
   isSuperUser: boolean
   defaultFilters: Filters
-  currentTask: string | null | undefined
+  currentTask: UUID | null | undefined
+  permissions: number
+  limitToProjects: Array<UUID> | null | undefined
+  active: boolean
 }
 
 export interface Api {
-  readonly auth: {
-    refreshToken(userToken: string): Promise<string>
-    getSelf(userToken: string): Promise<User>
-    anonymousToken(userToken?: string): Promise<string>
-    emailLoginLink(input: string): Promise<void>
-    emailPINLogin(input: EmailPinLogin): Promise<string>
+  readonly comment: {
+    default(userToken: string): Promise<Comment>
+    query(input: Query<Comment>, userToken: string): Promise<Array<Comment>>
+    detail(id: UUID, userToken: string): Promise<Comment>
+    insertBulk(
+      input: Array<Comment>,
+      userToken: string
+    ): Promise<Array<Comment>>
+    insert(input: Comment, userToken: string): Promise<Comment>
+    upsert(id: UUID, input: Comment, userToken: string): Promise<Comment>
+    bulkReplace(
+      input: Array<Comment>,
+      userToken: string
+    ): Promise<Array<Comment>>
+    replace(id: UUID, input: Comment, userToken: string): Promise<Comment>
+    bulkModify(
+      input: MassModification<Comment>,
+      userToken: string
+    ): Promise<number>
+    modifyWithDiff(
+      id: UUID,
+      input: Modification<Comment>,
+      userToken: string
+    ): Promise<EntryChange<Comment>>
+    modify(
+      id: UUID,
+      input: Modification<Comment>,
+      userToken: string
+    ): Promise<Comment>
+    bulkDelete(input: Condition<Comment>, userToken: string): Promise<number>
+    delete(id: UUID, userToken: string): Promise<void>
+    count(input: Condition<Comment>, userToken: string): Promise<number>
+    groupCount(
+      input: GroupCountQuery<Comment>,
+      userToken: string
+    ): Promise<Record<string, number>>
+    aggregate(
+      input: AggregateQuery<Comment>,
+      userToken: string
+    ): Promise<number | null | undefined>
+    groupAggregate(
+      input: GroupAggregateQuery<Comment>,
+      userToken: string
+    ): Promise<Record<string, number | null | undefined>>
   }
   readonly organization: {
     default(userToken: string): Promise<Organization>
@@ -126,14 +197,14 @@ export interface Api {
       input: Query<Organization>,
       userToken: string
     ): Promise<Array<Organization>>
-    detail(id: string, userToken: string): Promise<Organization>
+    detail(id: UUID, userToken: string): Promise<Organization>
     insertBulk(
       input: Array<Organization>,
       userToken: string
     ): Promise<Array<Organization>>
     insert(input: Organization, userToken: string): Promise<Organization>
     upsert(
-      id: string,
+      id: UUID,
       input: Organization,
       userToken: string
     ): Promise<Organization>
@@ -142,7 +213,7 @@ export interface Api {
       userToken: string
     ): Promise<Array<Organization>>
     replace(
-      id: string,
+      id: UUID,
       input: Organization,
       userToken: string
     ): Promise<Organization>
@@ -151,12 +222,12 @@ export interface Api {
       userToken: string
     ): Promise<number>
     modifyWithDiff(
-      id: string,
+      id: UUID,
       input: Modification<Organization>,
       userToken: string
     ): Promise<EntryChange<Organization>>
     modify(
-      id: string,
+      id: UUID,
       input: Modification<Organization>,
       userToken: string
     ): Promise<Organization>
@@ -164,7 +235,7 @@ export interface Api {
       input: Condition<Organization>,
       userToken: string
     ): Promise<number>
-    delete(id: string, userToken: string): Promise<void>
+    delete(id: UUID, userToken: string): Promise<void>
     count(input: Condition<Organization>, userToken: string): Promise<number>
     groupCount(
       input: GroupCountQuery<Organization>,
@@ -182,34 +253,34 @@ export interface Api {
   readonly project: {
     default(userToken: string): Promise<Project>
     query(input: Query<Project>, userToken: string): Promise<Array<Project>>
-    detail(id: string, userToken: string): Promise<Project>
+    detail(id: UUID, userToken: string): Promise<Project>
     insertBulk(
       input: Array<Project>,
       userToken: string
     ): Promise<Array<Project>>
     insert(input: Project, userToken: string): Promise<Project>
-    upsert(id: string, input: Project, userToken: string): Promise<Project>
+    upsert(id: UUID, input: Project, userToken: string): Promise<Project>
     bulkReplace(
       input: Array<Project>,
       userToken: string
     ): Promise<Array<Project>>
-    replace(id: string, input: Project, userToken: string): Promise<Project>
+    replace(id: UUID, input: Project, userToken: string): Promise<Project>
     bulkModify(
       input: MassModification<Project>,
       userToken: string
     ): Promise<number>
     modifyWithDiff(
-      id: string,
+      id: UUID,
       input: Modification<Project>,
       userToken: string
     ): Promise<EntryChange<Project>>
     modify(
-      id: string,
+      id: UUID,
       input: Modification<Project>,
       userToken: string
     ): Promise<Project>
     bulkDelete(input: Condition<Project>, userToken: string): Promise<number>
-    delete(id: string, userToken: string): Promise<void>
+    delete(id: UUID, userToken: string): Promise<void>
     count(input: Condition<Project>, userToken: string): Promise<number>
     groupCount(
       input: GroupCountQuery<Project>,
@@ -227,28 +298,28 @@ export interface Api {
   readonly task: {
     default(userToken: string): Promise<Task>
     query(input: Query<Task>, userToken: string): Promise<Array<Task>>
-    detail(id: string, userToken: string): Promise<Task>
+    detail(id: UUID, userToken: string): Promise<Task>
     insertBulk(input: Array<Task>, userToken: string): Promise<Array<Task>>
     insert(input: Task, userToken: string): Promise<Task>
-    upsert(id: string, input: Task, userToken: string): Promise<Task>
+    upsert(id: UUID, input: Task, userToken: string): Promise<Task>
     bulkReplace(input: Array<Task>, userToken: string): Promise<Array<Task>>
-    replace(id: string, input: Task, userToken: string): Promise<Task>
+    replace(id: UUID, input: Task, userToken: string): Promise<Task>
     bulkModify(
       input: MassModification<Task>,
       userToken: string
     ): Promise<number>
     modifyWithDiff(
-      id: string,
+      id: UUID,
       input: Modification<Task>,
       userToken: string
     ): Promise<EntryChange<Task>>
     modify(
-      id: string,
+      id: UUID,
       input: Modification<Task>,
       userToken: string
     ): Promise<Task>
     bulkDelete(input: Condition<Task>, userToken: string): Promise<number>
-    delete(id: string, userToken: string): Promise<void>
+    delete(id: UUID, userToken: string): Promise<void>
     count(input: Condition<Task>, userToken: string): Promise<number>
     groupCount(
       input: GroupCountQuery<Task>,
@@ -266,34 +337,34 @@ export interface Api {
   readonly timeEntry: {
     default(userToken: string): Promise<TimeEntry>
     query(input: Query<TimeEntry>, userToken: string): Promise<Array<TimeEntry>>
-    detail(id: string, userToken: string): Promise<TimeEntry>
+    detail(id: UUID, userToken: string): Promise<TimeEntry>
     insertBulk(
       input: Array<TimeEntry>,
       userToken: string
     ): Promise<Array<TimeEntry>>
     insert(input: TimeEntry, userToken: string): Promise<TimeEntry>
-    upsert(id: string, input: TimeEntry, userToken: string): Promise<TimeEntry>
+    upsert(id: UUID, input: TimeEntry, userToken: string): Promise<TimeEntry>
     bulkReplace(
       input: Array<TimeEntry>,
       userToken: string
     ): Promise<Array<TimeEntry>>
-    replace(id: string, input: TimeEntry, userToken: string): Promise<TimeEntry>
+    replace(id: UUID, input: TimeEntry, userToken: string): Promise<TimeEntry>
     bulkModify(
       input: MassModification<TimeEntry>,
       userToken: string
     ): Promise<number>
     modifyWithDiff(
-      id: string,
+      id: UUID,
       input: Modification<TimeEntry>,
       userToken: string
     ): Promise<EntryChange<TimeEntry>>
     modify(
-      id: string,
+      id: UUID,
       input: Modification<TimeEntry>,
       userToken: string
     ): Promise<TimeEntry>
     bulkDelete(input: Condition<TimeEntry>, userToken: string): Promise<number>
-    delete(id: string, userToken: string): Promise<void>
+    delete(id: UUID, userToken: string): Promise<void>
     count(input: Condition<TimeEntry>, userToken: string): Promise<number>
     groupCount(
       input: GroupCountQuery<TimeEntry>,
@@ -311,28 +382,28 @@ export interface Api {
   readonly timer: {
     default(userToken: string): Promise<Timer>
     query(input: Query<Timer>, userToken: string): Promise<Array<Timer>>
-    detail(id: string, userToken: string): Promise<Timer>
+    detail(id: UUID, userToken: string): Promise<Timer>
     insertBulk(input: Array<Timer>, userToken: string): Promise<Array<Timer>>
     insert(input: Timer, userToken: string): Promise<Timer>
-    upsert(id: string, input: Timer, userToken: string): Promise<Timer>
+    upsert(id: UUID, input: Timer, userToken: string): Promise<Timer>
     bulkReplace(input: Array<Timer>, userToken: string): Promise<Array<Timer>>
-    replace(id: string, input: Timer, userToken: string): Promise<Timer>
+    replace(id: UUID, input: Timer, userToken: string): Promise<Timer>
     bulkModify(
       input: MassModification<Timer>,
       userToken: string
     ): Promise<number>
     modifyWithDiff(
-      id: string,
+      id: UUID,
       input: Modification<Timer>,
       userToken: string
     ): Promise<EntryChange<Timer>>
     modify(
-      id: string,
+      id: UUID,
       input: Modification<Timer>,
       userToken: string
     ): Promise<Timer>
     bulkDelete(input: Condition<Timer>, userToken: string): Promise<number>
-    delete(id: string, userToken: string): Promise<void>
+    delete(id: UUID, userToken: string): Promise<void>
     count(input: Condition<Timer>, userToken: string): Promise<number>
     groupCount(
       input: GroupCountQuery<Timer>,
@@ -350,28 +421,28 @@ export interface Api {
   readonly user: {
     default(userToken: string): Promise<User>
     query(input: Query<User>, userToken: string): Promise<Array<User>>
-    detail(id: string, userToken: string): Promise<User>
+    detail(id: UUID, userToken: string): Promise<User>
     insertBulk(input: Array<User>, userToken: string): Promise<Array<User>>
     insert(input: User, userToken: string): Promise<User>
-    upsert(id: string, input: User, userToken: string): Promise<User>
+    upsert(id: UUID, input: User, userToken: string): Promise<User>
     bulkReplace(input: Array<User>, userToken: string): Promise<Array<User>>
-    replace(id: string, input: User, userToken: string): Promise<User>
+    replace(id: UUID, input: User, userToken: string): Promise<User>
     bulkModify(
       input: MassModification<User>,
       userToken: string
     ): Promise<number>
     modifyWithDiff(
-      id: string,
+      id: UUID,
       input: Modification<User>,
       userToken: string
     ): Promise<EntryChange<User>>
     modify(
-      id: string,
+      id: UUID,
       input: Modification<User>,
       userToken: string
     ): Promise<User>
     bulkDelete(input: Condition<User>, userToken: string): Promise<number>
-    delete(id: string, userToken: string): Promise<void>
+    delete(id: UUID, userToken: string): Promise<void>
     count(input: Condition<User>, userToken: string): Promise<number>
     groupCount(
       input: GroupCountQuery<User>,
@@ -385,6 +456,21 @@ export interface Api {
       input: GroupAggregateQuery<User>,
       userToken: string
     ): Promise<Record<string, number | null | undefined>>
+    addProjects(id: UUID, input: Array<UUID>, userToken: string): Promise<User>
+    removeProjects(
+      id: UUID,
+      input: Array<UUID>,
+      userToken: string
+    ): Promise<User>
+    addPermissions(id: UUID, input: number, userToken: string): Promise<User>
+    removePermissions(id: UUID, input: number, userToken: string): Promise<User>
+  }
+  readonly auth: {
+    refreshToken(userToken: string): Promise<string>
+    getSelf(userToken: string): Promise<User>
+    anonymousToken(userToken?: string): Promise<string>
+    emailLoginLink(input: string): Promise<void>
+    emailPINLogin(input: EmailPinLogin): Promise<string>
   }
   uploadFileForRequest(): Promise<UploadInformation>
   getServerHealth(userToken: string): Promise<ServerHealth>
@@ -400,21 +486,66 @@ export class UserSession {
     return this.api.uploadFileForRequest()
   }
 
-  readonly auth = {
-    refreshToken: (): Promise<string> => {
-      return this.api.auth.refreshToken(this.userToken)
+  readonly comment = {
+    default: (): Promise<Comment> => {
+      return this.api.comment.default(this.userToken)
     },
-    getSelf: (): Promise<User> => {
-      return this.api.auth.getSelf(this.userToken)
+    query: (input: Query<Comment>): Promise<Array<Comment>> => {
+      return this.api.comment.query(input, this.userToken)
     },
-    anonymousToken: (): Promise<string> => {
-      return this.api.auth.anonymousToken(this.userToken)
+    detail: (id: UUID): Promise<Comment> => {
+      return this.api.comment.detail(id, this.userToken)
     },
-    emailLoginLink: (input: string): Promise<void> => {
-      return this.api.auth.emailLoginLink(input)
+    insertBulk: (input: Array<Comment>): Promise<Array<Comment>> => {
+      return this.api.comment.insertBulk(input, this.userToken)
     },
-    emailPINLogin: (input: EmailPinLogin): Promise<string> => {
-      return this.api.auth.emailPINLogin(input)
+    insert: (input: Comment): Promise<Comment> => {
+      return this.api.comment.insert(input, this.userToken)
+    },
+    upsert: (id: UUID, input: Comment): Promise<Comment> => {
+      return this.api.comment.upsert(id, input, this.userToken)
+    },
+    bulkReplace: (input: Array<Comment>): Promise<Array<Comment>> => {
+      return this.api.comment.bulkReplace(input, this.userToken)
+    },
+    replace: (id: UUID, input: Comment): Promise<Comment> => {
+      return this.api.comment.replace(id, input, this.userToken)
+    },
+    bulkModify: (input: MassModification<Comment>): Promise<number> => {
+      return this.api.comment.bulkModify(input, this.userToken)
+    },
+    modifyWithDiff: (
+      id: UUID,
+      input: Modification<Comment>
+    ): Promise<EntryChange<Comment>> => {
+      return this.api.comment.modifyWithDiff(id, input, this.userToken)
+    },
+    modify: (id: UUID, input: Modification<Comment>): Promise<Comment> => {
+      return this.api.comment.modify(id, input, this.userToken)
+    },
+    bulkDelete: (input: Condition<Comment>): Promise<number> => {
+      return this.api.comment.bulkDelete(input, this.userToken)
+    },
+    delete: (id: UUID): Promise<void> => {
+      return this.api.comment.delete(id, this.userToken)
+    },
+    count: (input: Condition<Comment>): Promise<number> => {
+      return this.api.comment.count(input, this.userToken)
+    },
+    groupCount: (
+      input: GroupCountQuery<Comment>
+    ): Promise<Record<string, number>> => {
+      return this.api.comment.groupCount(input, this.userToken)
+    },
+    aggregate: (
+      input: AggregateQuery<Comment>
+    ): Promise<number | null | undefined> => {
+      return this.api.comment.aggregate(input, this.userToken)
+    },
+    groupAggregate: (
+      input: GroupAggregateQuery<Comment>
+    ): Promise<Record<string, number | null | undefined>> => {
+      return this.api.comment.groupAggregate(input, this.userToken)
     }
   }
 
@@ -425,7 +556,7 @@ export class UserSession {
     query: (input: Query<Organization>): Promise<Array<Organization>> => {
       return this.api.organization.query(input, this.userToken)
     },
-    detail: (id: string): Promise<Organization> => {
+    detail: (id: UUID): Promise<Organization> => {
       return this.api.organization.detail(id, this.userToken)
     },
     insertBulk: (input: Array<Organization>): Promise<Array<Organization>> => {
@@ -434,26 +565,26 @@ export class UserSession {
     insert: (input: Organization): Promise<Organization> => {
       return this.api.organization.insert(input, this.userToken)
     },
-    upsert: (id: string, input: Organization): Promise<Organization> => {
+    upsert: (id: UUID, input: Organization): Promise<Organization> => {
       return this.api.organization.upsert(id, input, this.userToken)
     },
     bulkReplace: (input: Array<Organization>): Promise<Array<Organization>> => {
       return this.api.organization.bulkReplace(input, this.userToken)
     },
-    replace: (id: string, input: Organization): Promise<Organization> => {
+    replace: (id: UUID, input: Organization): Promise<Organization> => {
       return this.api.organization.replace(id, input, this.userToken)
     },
     bulkModify: (input: MassModification<Organization>): Promise<number> => {
       return this.api.organization.bulkModify(input, this.userToken)
     },
     modifyWithDiff: (
-      id: string,
+      id: UUID,
       input: Modification<Organization>
     ): Promise<EntryChange<Organization>> => {
       return this.api.organization.modifyWithDiff(id, input, this.userToken)
     },
     modify: (
-      id: string,
+      id: UUID,
       input: Modification<Organization>
     ): Promise<Organization> => {
       return this.api.organization.modify(id, input, this.userToken)
@@ -461,7 +592,7 @@ export class UserSession {
     bulkDelete: (input: Condition<Organization>): Promise<number> => {
       return this.api.organization.bulkDelete(input, this.userToken)
     },
-    delete: (id: string): Promise<void> => {
+    delete: (id: UUID): Promise<void> => {
       return this.api.organization.delete(id, this.userToken)
     },
     count: (input: Condition<Organization>): Promise<number> => {
@@ -491,7 +622,7 @@ export class UserSession {
     query: (input: Query<Project>): Promise<Array<Project>> => {
       return this.api.project.query(input, this.userToken)
     },
-    detail: (id: string): Promise<Project> => {
+    detail: (id: UUID): Promise<Project> => {
       return this.api.project.detail(id, this.userToken)
     },
     insertBulk: (input: Array<Project>): Promise<Array<Project>> => {
@@ -500,31 +631,31 @@ export class UserSession {
     insert: (input: Project): Promise<Project> => {
       return this.api.project.insert(input, this.userToken)
     },
-    upsert: (id: string, input: Project): Promise<Project> => {
+    upsert: (id: UUID, input: Project): Promise<Project> => {
       return this.api.project.upsert(id, input, this.userToken)
     },
     bulkReplace: (input: Array<Project>): Promise<Array<Project>> => {
       return this.api.project.bulkReplace(input, this.userToken)
     },
-    replace: (id: string, input: Project): Promise<Project> => {
+    replace: (id: UUID, input: Project): Promise<Project> => {
       return this.api.project.replace(id, input, this.userToken)
     },
     bulkModify: (input: MassModification<Project>): Promise<number> => {
       return this.api.project.bulkModify(input, this.userToken)
     },
     modifyWithDiff: (
-      id: string,
+      id: UUID,
       input: Modification<Project>
     ): Promise<EntryChange<Project>> => {
       return this.api.project.modifyWithDiff(id, input, this.userToken)
     },
-    modify: (id: string, input: Modification<Project>): Promise<Project> => {
+    modify: (id: UUID, input: Modification<Project>): Promise<Project> => {
       return this.api.project.modify(id, input, this.userToken)
     },
     bulkDelete: (input: Condition<Project>): Promise<number> => {
       return this.api.project.bulkDelete(input, this.userToken)
     },
-    delete: (id: string): Promise<void> => {
+    delete: (id: UUID): Promise<void> => {
       return this.api.project.delete(id, this.userToken)
     },
     count: (input: Condition<Project>): Promise<number> => {
@@ -554,7 +685,7 @@ export class UserSession {
     query: (input: Query<Task>): Promise<Array<Task>> => {
       return this.api.task.query(input, this.userToken)
     },
-    detail: (id: string): Promise<Task> => {
+    detail: (id: UUID): Promise<Task> => {
       return this.api.task.detail(id, this.userToken)
     },
     insertBulk: (input: Array<Task>): Promise<Array<Task>> => {
@@ -563,31 +694,31 @@ export class UserSession {
     insert: (input: Task): Promise<Task> => {
       return this.api.task.insert(input, this.userToken)
     },
-    upsert: (id: string, input: Task): Promise<Task> => {
+    upsert: (id: UUID, input: Task): Promise<Task> => {
       return this.api.task.upsert(id, input, this.userToken)
     },
     bulkReplace: (input: Array<Task>): Promise<Array<Task>> => {
       return this.api.task.bulkReplace(input, this.userToken)
     },
-    replace: (id: string, input: Task): Promise<Task> => {
+    replace: (id: UUID, input: Task): Promise<Task> => {
       return this.api.task.replace(id, input, this.userToken)
     },
     bulkModify: (input: MassModification<Task>): Promise<number> => {
       return this.api.task.bulkModify(input, this.userToken)
     },
     modifyWithDiff: (
-      id: string,
+      id: UUID,
       input: Modification<Task>
     ): Promise<EntryChange<Task>> => {
       return this.api.task.modifyWithDiff(id, input, this.userToken)
     },
-    modify: (id: string, input: Modification<Task>): Promise<Task> => {
+    modify: (id: UUID, input: Modification<Task>): Promise<Task> => {
       return this.api.task.modify(id, input, this.userToken)
     },
     bulkDelete: (input: Condition<Task>): Promise<number> => {
       return this.api.task.bulkDelete(input, this.userToken)
     },
-    delete: (id: string): Promise<void> => {
+    delete: (id: UUID): Promise<void> => {
       return this.api.task.delete(id, this.userToken)
     },
     count: (input: Condition<Task>): Promise<number> => {
@@ -617,7 +748,7 @@ export class UserSession {
     query: (input: Query<TimeEntry>): Promise<Array<TimeEntry>> => {
       return this.api.timeEntry.query(input, this.userToken)
     },
-    detail: (id: string): Promise<TimeEntry> => {
+    detail: (id: UUID): Promise<TimeEntry> => {
       return this.api.timeEntry.detail(id, this.userToken)
     },
     insertBulk: (input: Array<TimeEntry>): Promise<Array<TimeEntry>> => {
@@ -626,34 +757,31 @@ export class UserSession {
     insert: (input: TimeEntry): Promise<TimeEntry> => {
       return this.api.timeEntry.insert(input, this.userToken)
     },
-    upsert: (id: string, input: TimeEntry): Promise<TimeEntry> => {
+    upsert: (id: UUID, input: TimeEntry): Promise<TimeEntry> => {
       return this.api.timeEntry.upsert(id, input, this.userToken)
     },
     bulkReplace: (input: Array<TimeEntry>): Promise<Array<TimeEntry>> => {
       return this.api.timeEntry.bulkReplace(input, this.userToken)
     },
-    replace: (id: string, input: TimeEntry): Promise<TimeEntry> => {
+    replace: (id: UUID, input: TimeEntry): Promise<TimeEntry> => {
       return this.api.timeEntry.replace(id, input, this.userToken)
     },
     bulkModify: (input: MassModification<TimeEntry>): Promise<number> => {
       return this.api.timeEntry.bulkModify(input, this.userToken)
     },
     modifyWithDiff: (
-      id: string,
+      id: UUID,
       input: Modification<TimeEntry>
     ): Promise<EntryChange<TimeEntry>> => {
       return this.api.timeEntry.modifyWithDiff(id, input, this.userToken)
     },
-    modify: (
-      id: string,
-      input: Modification<TimeEntry>
-    ): Promise<TimeEntry> => {
+    modify: (id: UUID, input: Modification<TimeEntry>): Promise<TimeEntry> => {
       return this.api.timeEntry.modify(id, input, this.userToken)
     },
     bulkDelete: (input: Condition<TimeEntry>): Promise<number> => {
       return this.api.timeEntry.bulkDelete(input, this.userToken)
     },
-    delete: (id: string): Promise<void> => {
+    delete: (id: UUID): Promise<void> => {
       return this.api.timeEntry.delete(id, this.userToken)
     },
     count: (input: Condition<TimeEntry>): Promise<number> => {
@@ -683,7 +811,7 @@ export class UserSession {
     query: (input: Query<Timer>): Promise<Array<Timer>> => {
       return this.api.timer.query(input, this.userToken)
     },
-    detail: (id: string): Promise<Timer> => {
+    detail: (id: UUID): Promise<Timer> => {
       return this.api.timer.detail(id, this.userToken)
     },
     insertBulk: (input: Array<Timer>): Promise<Array<Timer>> => {
@@ -692,31 +820,31 @@ export class UserSession {
     insert: (input: Timer): Promise<Timer> => {
       return this.api.timer.insert(input, this.userToken)
     },
-    upsert: (id: string, input: Timer): Promise<Timer> => {
+    upsert: (id: UUID, input: Timer): Promise<Timer> => {
       return this.api.timer.upsert(id, input, this.userToken)
     },
     bulkReplace: (input: Array<Timer>): Promise<Array<Timer>> => {
       return this.api.timer.bulkReplace(input, this.userToken)
     },
-    replace: (id: string, input: Timer): Promise<Timer> => {
+    replace: (id: UUID, input: Timer): Promise<Timer> => {
       return this.api.timer.replace(id, input, this.userToken)
     },
     bulkModify: (input: MassModification<Timer>): Promise<number> => {
       return this.api.timer.bulkModify(input, this.userToken)
     },
     modifyWithDiff: (
-      id: string,
+      id: UUID,
       input: Modification<Timer>
     ): Promise<EntryChange<Timer>> => {
       return this.api.timer.modifyWithDiff(id, input, this.userToken)
     },
-    modify: (id: string, input: Modification<Timer>): Promise<Timer> => {
+    modify: (id: UUID, input: Modification<Timer>): Promise<Timer> => {
       return this.api.timer.modify(id, input, this.userToken)
     },
     bulkDelete: (input: Condition<Timer>): Promise<number> => {
       return this.api.timer.bulkDelete(input, this.userToken)
     },
-    delete: (id: string): Promise<void> => {
+    delete: (id: UUID): Promise<void> => {
       return this.api.timer.delete(id, this.userToken)
     },
     count: (input: Condition<Timer>): Promise<number> => {
@@ -746,7 +874,7 @@ export class UserSession {
     query: (input: Query<User>): Promise<Array<User>> => {
       return this.api.user.query(input, this.userToken)
     },
-    detail: (id: string): Promise<User> => {
+    detail: (id: UUID): Promise<User> => {
       return this.api.user.detail(id, this.userToken)
     },
     insertBulk: (input: Array<User>): Promise<Array<User>> => {
@@ -755,31 +883,31 @@ export class UserSession {
     insert: (input: User): Promise<User> => {
       return this.api.user.insert(input, this.userToken)
     },
-    upsert: (id: string, input: User): Promise<User> => {
+    upsert: (id: UUID, input: User): Promise<User> => {
       return this.api.user.upsert(id, input, this.userToken)
     },
     bulkReplace: (input: Array<User>): Promise<Array<User>> => {
       return this.api.user.bulkReplace(input, this.userToken)
     },
-    replace: (id: string, input: User): Promise<User> => {
+    replace: (id: UUID, input: User): Promise<User> => {
       return this.api.user.replace(id, input, this.userToken)
     },
     bulkModify: (input: MassModification<User>): Promise<number> => {
       return this.api.user.bulkModify(input, this.userToken)
     },
     modifyWithDiff: (
-      id: string,
+      id: UUID,
       input: Modification<User>
     ): Promise<EntryChange<User>> => {
       return this.api.user.modifyWithDiff(id, input, this.userToken)
     },
-    modify: (id: string, input: Modification<User>): Promise<User> => {
+    modify: (id: UUID, input: Modification<User>): Promise<User> => {
       return this.api.user.modify(id, input, this.userToken)
     },
     bulkDelete: (input: Condition<User>): Promise<number> => {
       return this.api.user.bulkDelete(input, this.userToken)
     },
-    delete: (id: string): Promise<void> => {
+    delete: (id: UUID): Promise<void> => {
       return this.api.user.delete(id, this.userToken)
     },
     count: (input: Condition<User>): Promise<number> => {
@@ -799,6 +927,36 @@ export class UserSession {
       input: GroupAggregateQuery<User>
     ): Promise<Record<string, number | null | undefined>> => {
       return this.api.user.groupAggregate(input, this.userToken)
+    },
+    addProjects: (id: UUID, input: Array<UUID>): Promise<User> => {
+      return this.api.user.addProjects(id, input, this.userToken)
+    },
+    removeProjects: (id: UUID, input: Array<UUID>): Promise<User> => {
+      return this.api.user.removeProjects(id, input, this.userToken)
+    },
+    addPermissions: (id: UUID, input: number): Promise<User> => {
+      return this.api.user.addPermissions(id, input, this.userToken)
+    },
+    removePermissions: (id: UUID, input: number): Promise<User> => {
+      return this.api.user.removePermissions(id, input, this.userToken)
+    }
+  }
+
+  readonly auth = {
+    refreshToken: (): Promise<string> => {
+      return this.api.auth.refreshToken(this.userToken)
+    },
+    getSelf: (): Promise<User> => {
+      return this.api.auth.getSelf(this.userToken)
+    },
+    anonymousToken: (): Promise<string> => {
+      return this.api.auth.anonymousToken(this.userToken)
+    },
+    emailLoginLink: (input: string): Promise<void> => {
+      return this.api.auth.emailLoginLink(input)
+    },
+    emailPINLogin: (input: EmailPinLogin): Promise<string> => {
+      return this.api.auth.emailPINLogin(input)
     }
   }
 }
@@ -825,39 +983,177 @@ export class LiveApi implements Api {
     }).then((x) => x.json())
   }
 
-  readonly auth = {
-    refreshToken: (userToken: string): Promise<string> => {
-      return apiCall(`${this.httpUrl}/auth/refresh-token`, undefined, {
+  readonly comment = {
+    default: (userToken: string): Promise<Comment> => {
+      return apiCall(`${this.httpUrl}/comments/rest/_default_`, undefined, {
         method: "GET",
         headers: userToken
           ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    getSelf: (userToken: string): Promise<User> => {
-      return apiCall(`${this.httpUrl}/auth/self`, undefined, {
+    query: (
+      input: Query<Comment>,
+      userToken: string
+    ): Promise<Array<Comment>> => {
+      return apiCall(`${this.httpUrl}/comments/rest/query`, input, {
+        method: "POST",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    detail: (id: UUID, userToken: string): Promise<Comment> => {
+      return apiCall(`${this.httpUrl}/comments/rest/${id}`, undefined, {
         method: "GET",
         headers: userToken
           ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    anonymousToken: (userToken?: string): Promise<string> => {
-      return apiCall(`${this.httpUrl}/auth/anonymous`, undefined, {
-        method: "GET",
+    insertBulk: (
+      input: Array<Comment>,
+      userToken: string
+    ): Promise<Array<Comment>> => {
+      return apiCall(`${this.httpUrl}/comments/rest/bulk`, input, {
+        method: "POST",
         headers: userToken
           ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    emailLoginLink: (input: string): Promise<void> => {
-      return apiCall(`${this.httpUrl}/auth/login-email`, input, {
-        method: "POST"
+    insert: (input: Comment, userToken: string): Promise<Comment> => {
+      return apiCall(`${this.httpUrl}/comments/rest`, input, {
+        method: "POST",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    upsert: (id: UUID, input: Comment, userToken: string): Promise<Comment> => {
+      return apiCall(`${this.httpUrl}/comments/rest/${id}`, input, {
+        method: "POST",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    bulkReplace: (
+      input: Array<Comment>,
+      userToken: string
+    ): Promise<Array<Comment>> => {
+      return apiCall(`${this.httpUrl}/comments/rest`, input, {
+        method: "PUT",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    replace: (
+      id: UUID,
+      input: Comment,
+      userToken: string
+    ): Promise<Comment> => {
+      return apiCall(`${this.httpUrl}/comments/rest/${id}`, input, {
+        method: "PUT",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    bulkModify: (
+      input: MassModification<Comment>,
+      userToken: string
+    ): Promise<number> => {
+      return apiCall(`${this.httpUrl}/comments/rest/bulk`, input, {
+        method: "PATCH",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    modifyWithDiff: (
+      id: UUID,
+      input: Modification<Comment>,
+      userToken: string
+    ): Promise<EntryChange<Comment>> => {
+      return apiCall(`${this.httpUrl}/comments/rest/${id}/delta`, input, {
+        method: "PATCH",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    modify: (
+      id: UUID,
+      input: Modification<Comment>,
+      userToken: string
+    ): Promise<Comment> => {
+      return apiCall(`${this.httpUrl}/comments/rest/${id}`, input, {
+        method: "PATCH",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    bulkDelete: (
+      input: Condition<Comment>,
+      userToken: string
+    ): Promise<number> => {
+      return apiCall(`${this.httpUrl}/comments/rest/bulk-delete`, input, {
+        method: "POST",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    delete: (id: UUID, userToken: string): Promise<void> => {
+      return apiCall(`${this.httpUrl}/comments/rest/${id}`, undefined, {
+        method: "DELETE",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
       }).then((x) => undefined)
     },
-    emailPINLogin: (input: EmailPinLogin): Promise<string> => {
-      return apiCall(`${this.httpUrl}/auth/login-email-pin`, input, {
-        method: "POST"
+    count: (input: Condition<Comment>, userToken: string): Promise<number> => {
+      return apiCall(`${this.httpUrl}/comments/rest/count`, input, {
+        method: "POST",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    groupCount: (
+      input: GroupCountQuery<Comment>,
+      userToken: string
+    ): Promise<Record<string, number>> => {
+      return apiCall(`${this.httpUrl}/comments/rest/group-count`, input, {
+        method: "POST",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    aggregate: (
+      input: AggregateQuery<Comment>,
+      userToken: string
+    ): Promise<number | null | undefined> => {
+      return apiCall(`${this.httpUrl}/comments/rest/aggregate`, input, {
+        method: "POST",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    groupAggregate: (
+      input: GroupAggregateQuery<Comment>,
+      userToken: string
+    ): Promise<Record<string, number | null | undefined>> => {
+      return apiCall(`${this.httpUrl}/comments/rest/group-aggregate`, input, {
+        method: "POST",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
       }).then((x) => x.json())
     }
   }
@@ -886,7 +1182,7 @@ export class LiveApi implements Api {
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    detail: (id: string, userToken: string): Promise<Organization> => {
+    detail: (id: UUID, userToken: string): Promise<Organization> => {
       return apiCall(`${this.httpUrl}/organizations/rest/${id}`, undefined, {
         method: "GET",
         headers: userToken
@@ -914,7 +1210,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     },
     upsert: (
-      id: string,
+      id: UUID,
       input: Organization,
       userToken: string
     ): Promise<Organization> => {
@@ -937,7 +1233,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     },
     replace: (
-      id: string,
+      id: UUID,
       input: Organization,
       userToken: string
     ): Promise<Organization> => {
@@ -960,7 +1256,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     },
     modifyWithDiff: (
-      id: string,
+      id: UUID,
       input: Modification<Organization>,
       userToken: string
     ): Promise<EntryChange<Organization>> => {
@@ -972,7 +1268,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     },
     modify: (
-      id: string,
+      id: UUID,
       input: Modification<Organization>,
       userToken: string
     ): Promise<Organization> => {
@@ -994,7 +1290,7 @@ export class LiveApi implements Api {
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    delete: (id: string, userToken: string): Promise<void> => {
+    delete: (id: UUID, userToken: string): Promise<void> => {
       return apiCall(`${this.httpUrl}/organizations/rest/${id}`, undefined, {
         method: "DELETE",
         headers: userToken
@@ -1072,7 +1368,7 @@ export class LiveApi implements Api {
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    detail: (id: string, userToken: string): Promise<Project> => {
+    detail: (id: UUID, userToken: string): Promise<Project> => {
       return apiCall(`${this.httpUrl}/projects/rest/${id}`, undefined, {
         method: "GET",
         headers: userToken
@@ -1099,11 +1395,7 @@ export class LiveApi implements Api {
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    upsert: (
-      id: string,
-      input: Project,
-      userToken: string
-    ): Promise<Project> => {
+    upsert: (id: UUID, input: Project, userToken: string): Promise<Project> => {
       return apiCall(`${this.httpUrl}/projects/rest/${id}`, input, {
         method: "POST",
         headers: userToken
@@ -1123,7 +1415,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     },
     replace: (
-      id: string,
+      id: UUID,
       input: Project,
       userToken: string
     ): Promise<Project> => {
@@ -1146,7 +1438,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     },
     modifyWithDiff: (
-      id: string,
+      id: UUID,
       input: Modification<Project>,
       userToken: string
     ): Promise<EntryChange<Project>> => {
@@ -1158,7 +1450,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     },
     modify: (
-      id: string,
+      id: UUID,
       input: Modification<Project>,
       userToken: string
     ): Promise<Project> => {
@@ -1180,7 +1472,7 @@ export class LiveApi implements Api {
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    delete: (id: string, userToken: string): Promise<void> => {
+    delete: (id: UUID, userToken: string): Promise<void> => {
       return apiCall(`${this.httpUrl}/projects/rest/${id}`, undefined, {
         method: "DELETE",
         headers: userToken
@@ -1248,7 +1540,7 @@ export class LiveApi implements Api {
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    detail: (id: string, userToken: string): Promise<Task> => {
+    detail: (id: UUID, userToken: string): Promise<Task> => {
       return apiCall(`${this.httpUrl}/tasks/rest/${id}`, undefined, {
         method: "GET",
         headers: userToken
@@ -1275,7 +1567,7 @@ export class LiveApi implements Api {
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    upsert: (id: string, input: Task, userToken: string): Promise<Task> => {
+    upsert: (id: UUID, input: Task, userToken: string): Promise<Task> => {
       return apiCall(`${this.httpUrl}/tasks/rest/${id}`, input, {
         method: "POST",
         headers: userToken
@@ -1294,7 +1586,7 @@ export class LiveApi implements Api {
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    replace: (id: string, input: Task, userToken: string): Promise<Task> => {
+    replace: (id: UUID, input: Task, userToken: string): Promise<Task> => {
       return apiCall(`${this.httpUrl}/tasks/rest/${id}`, input, {
         method: "PUT",
         headers: userToken
@@ -1314,7 +1606,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     },
     modifyWithDiff: (
-      id: string,
+      id: UUID,
       input: Modification<Task>,
       userToken: string
     ): Promise<EntryChange<Task>> => {
@@ -1326,7 +1618,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     },
     modify: (
-      id: string,
+      id: UUID,
       input: Modification<Task>,
       userToken: string
     ): Promise<Task> => {
@@ -1348,7 +1640,7 @@ export class LiveApi implements Api {
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    delete: (id: string, userToken: string): Promise<void> => {
+    delete: (id: UUID, userToken: string): Promise<void> => {
       return apiCall(`${this.httpUrl}/tasks/rest/${id}`, undefined, {
         method: "DELETE",
         headers: userToken
@@ -1419,7 +1711,7 @@ export class LiveApi implements Api {
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    detail: (id: string, userToken: string): Promise<TimeEntry> => {
+    detail: (id: UUID, userToken: string): Promise<TimeEntry> => {
       return apiCall(`${this.httpUrl}/time-entries/rest/${id}`, undefined, {
         method: "GET",
         headers: userToken
@@ -1447,7 +1739,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     },
     upsert: (
-      id: string,
+      id: UUID,
       input: TimeEntry,
       userToken: string
     ): Promise<TimeEntry> => {
@@ -1470,7 +1762,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     },
     replace: (
-      id: string,
+      id: UUID,
       input: TimeEntry,
       userToken: string
     ): Promise<TimeEntry> => {
@@ -1493,7 +1785,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     },
     modifyWithDiff: (
-      id: string,
+      id: UUID,
       input: Modification<TimeEntry>,
       userToken: string
     ): Promise<EntryChange<TimeEntry>> => {
@@ -1505,7 +1797,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     },
     modify: (
-      id: string,
+      id: UUID,
       input: Modification<TimeEntry>,
       userToken: string
     ): Promise<TimeEntry> => {
@@ -1527,7 +1819,7 @@ export class LiveApi implements Api {
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    delete: (id: string, userToken: string): Promise<void> => {
+    delete: (id: UUID, userToken: string): Promise<void> => {
       return apiCall(`${this.httpUrl}/time-entries/rest/${id}`, undefined, {
         method: "DELETE",
         headers: userToken
@@ -1602,7 +1894,7 @@ export class LiveApi implements Api {
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    detail: (id: string, userToken: string): Promise<Timer> => {
+    detail: (id: UUID, userToken: string): Promise<Timer> => {
       return apiCall(`${this.httpUrl}/timers/rest/${id}`, undefined, {
         method: "GET",
         headers: userToken
@@ -1629,7 +1921,7 @@ export class LiveApi implements Api {
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    upsert: (id: string, input: Timer, userToken: string): Promise<Timer> => {
+    upsert: (id: UUID, input: Timer, userToken: string): Promise<Timer> => {
       return apiCall(`${this.httpUrl}/timers/rest/${id}`, input, {
         method: "POST",
         headers: userToken
@@ -1648,7 +1940,7 @@ export class LiveApi implements Api {
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    replace: (id: string, input: Timer, userToken: string): Promise<Timer> => {
+    replace: (id: UUID, input: Timer, userToken: string): Promise<Timer> => {
       return apiCall(`${this.httpUrl}/timers/rest/${id}`, input, {
         method: "PUT",
         headers: userToken
@@ -1668,7 +1960,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     },
     modifyWithDiff: (
-      id: string,
+      id: UUID,
       input: Modification<Timer>,
       userToken: string
     ): Promise<EntryChange<Timer>> => {
@@ -1680,7 +1972,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     },
     modify: (
-      id: string,
+      id: UUID,
       input: Modification<Timer>,
       userToken: string
     ): Promise<Timer> => {
@@ -1702,7 +1994,7 @@ export class LiveApi implements Api {
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    delete: (id: string, userToken: string): Promise<void> => {
+    delete: (id: UUID, userToken: string): Promise<void> => {
       return apiCall(`${this.httpUrl}/timers/rest/${id}`, undefined, {
         method: "DELETE",
         headers: userToken
@@ -1770,7 +2062,7 @@ export class LiveApi implements Api {
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    detail: (id: string, userToken: string): Promise<User> => {
+    detail: (id: UUID, userToken: string): Promise<User> => {
       return apiCall(`${this.httpUrl}/users/rest/${id}`, undefined, {
         method: "GET",
         headers: userToken
@@ -1797,7 +2089,7 @@ export class LiveApi implements Api {
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    upsert: (id: string, input: User, userToken: string): Promise<User> => {
+    upsert: (id: UUID, input: User, userToken: string): Promise<User> => {
       return apiCall(`${this.httpUrl}/users/rest/${id}`, input, {
         method: "POST",
         headers: userToken
@@ -1816,7 +2108,7 @@ export class LiveApi implements Api {
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    replace: (id: string, input: User, userToken: string): Promise<User> => {
+    replace: (id: UUID, input: User, userToken: string): Promise<User> => {
       return apiCall(`${this.httpUrl}/users/rest/${id}`, input, {
         method: "PUT",
         headers: userToken
@@ -1836,7 +2128,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     },
     modifyWithDiff: (
-      id: string,
+      id: UUID,
       input: Modification<User>,
       userToken: string
     ): Promise<EntryChange<User>> => {
@@ -1848,7 +2140,7 @@ export class LiveApi implements Api {
       }).then((x) => x.json())
     },
     modify: (
-      id: string,
+      id: UUID,
       input: Modification<User>,
       userToken: string
     ): Promise<User> => {
@@ -1870,7 +2162,7 @@ export class LiveApi implements Api {
           : this.extraHeaders
       }).then((x) => x.json())
     },
-    delete: (id: string, userToken: string): Promise<void> => {
+    delete: (id: UUID, userToken: string): Promise<void> => {
       return apiCall(`${this.httpUrl}/users/rest/${id}`, undefined, {
         method: "DELETE",
         headers: userToken
@@ -1917,6 +2209,103 @@ export class LiveApi implements Api {
         headers: userToken
           ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
           : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    addProjects: (
+      id: UUID,
+      input: Array<UUID>,
+      userToken: string
+    ): Promise<User> => {
+      return apiCall(`${this.httpUrl}/users/rest/${id}/add-projects`, input, {
+        method: "PATCH",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    removeProjects: (
+      id: UUID,
+      input: Array<UUID>,
+      userToken: string
+    ): Promise<User> => {
+      return apiCall(
+        `${this.httpUrl}/users/rest/${id}/remove-projects`,
+        input,
+        {
+          method: "PATCH",
+          headers: userToken
+            ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+            : this.extraHeaders
+        }
+      ).then((x) => x.json())
+    },
+    addPermissions: (
+      id: UUID,
+      input: number,
+      userToken: string
+    ): Promise<User> => {
+      return apiCall(
+        `${this.httpUrl}/users/rest/${id}/add-permissions`,
+        input,
+        {
+          method: "PATCH",
+          headers: userToken
+            ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+            : this.extraHeaders
+        }
+      ).then((x) => x.json())
+    },
+    removePermissions: (
+      id: UUID,
+      input: number,
+      userToken: string
+    ): Promise<User> => {
+      return apiCall(
+        `${this.httpUrl}/users/rest/${id}/remove-permissions`,
+        input,
+        {
+          method: "PATCH",
+          headers: userToken
+            ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+            : this.extraHeaders
+        }
+      ).then((x) => x.json())
+    }
+  }
+
+  readonly auth = {
+    refreshToken: (userToken: string): Promise<string> => {
+      return apiCall(`${this.httpUrl}/auth/refresh-token`, undefined, {
+        method: "GET",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    getSelf: (userToken: string): Promise<User> => {
+      return apiCall(`${this.httpUrl}/auth/self`, undefined, {
+        method: "GET",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    anonymousToken: (userToken?: string): Promise<string> => {
+      return apiCall(`${this.httpUrl}/auth/anonymous`, undefined, {
+        method: "GET",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    emailLoginLink: (input: string): Promise<void> => {
+      return apiCall(`${this.httpUrl}/auth/login-email`, input, {
+        method: "POST"
+      }).then((x) => undefined)
+    },
+    emailPINLogin: (input: EmailPinLogin): Promise<string> => {
+      return apiCall(`${this.httpUrl}/auth/login-email-pin`, input, {
+        method: "POST"
       }).then((x) => x.json())
     }
   }

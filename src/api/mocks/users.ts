@@ -16,12 +16,15 @@ export function generateUsers(
         organization,
         currentTask: null,
         isSuperUser: true,
+        active: true,
         defaultFilters: {
           projects: [],
           states: [],
           users: []
         },
-        webPreferences: ""
+        webPreferences: "",
+        permissions: 0,
+        limitToProjects: null
       }
     }
   )

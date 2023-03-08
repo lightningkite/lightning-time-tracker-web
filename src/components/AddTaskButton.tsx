@@ -8,35 +8,45 @@ import {
 import {Add} from "@mui/icons-material"
 import {
   Button,
+  ButtonProps,
   Checkbox,
   FormControlLabel,
   Stack,
   SxProps,
   TextField
 } from "@mui/material"
-import {TaskState} from "api/sdk"
+import {Project, TaskState, User} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import {useFormik} from "formik"
+import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
+import {useFocus} from "hooks/useFocus"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
-import {AnnotatedTask} from "utils/useAnnotatedEndpoints"
-import {useFocus} from "utils/useFocus"
 import * as yup from "yup"
 
 const validationSchema = yup.object().shape({
   user: yup.object().required("Required").nullable(),
+  project: yup.object().required("Required").nullable(),
   summary: yup.string().required("Required"),
   estimate: yup.number().integer().min(0).nullable()
 })
 
-export interface AddTaskButtonProps {
+export interface AddTaskButtonProps extends ButtonProps {
   afterSubmit: (task: AnnotatedTask) => void
-  projectId: string
+  state?: TaskState
+  project?: Project
+  user?: User
   sx?: SxProps
 }
 
 export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
-  const {afterSubmit, projectId, sx} = props
+  const {
+    afterSubmit,
+    project: initialProject,
+    user: initialUser,
+    state: initialState,
+    ...rest
+  } = props
   const {session, currentUser} = useContext(AuthContext)
 
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -53,7 +63,8 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
 
   const formik = useFormik({
     initialValues: {
-      user: currentUser,
+      user: initialUser ?? currentUser,
+      project: initialProject ?? null,
       summary: "",
       description: "",
       estimate: "",
@@ -65,9 +76,12 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
         ...values,
         _id: crypto.randomUUID(),
         user: values.user._id,
-        project: projectId,
+        userName: undefined,
+        project: (values.project as Project)._id,
+        projectName: undefined,
         organization: currentUser.organization,
-        state: TaskState.Active,
+        organizationName: undefined,
+        state: initialState ?? TaskState.Active,
         attachments: [],
         estimate: values.estimate ? +values.estimate : null,
         emergency: false,
@@ -77,7 +91,6 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
       afterSubmit({
         ...task,
         annotations: {
-          user: values.user,
           totalTaskHours: 0
         }
       })
@@ -93,7 +106,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
           setShowCreateForm(true)
         }}
         startIcon={<Add />}
-        sx={sx}
+        {...rest}
       >
         Add Task
       </Button>
@@ -110,16 +123,31 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
         }}
       >
         <Stack gap={3}>
-          <RestAutocompleteInput
-            label="User"
-            restEndpoint={session.user}
-            getOptionLabel={(user) => user.name || user.email}
-            searchProperties={["name", "email"]}
-            additionalQueryConditions={[
-              {organization: {Equal: currentUser.organization}}
-            ]}
-            {...makeFormikAutocompleteProps(formik, "user")}
-          />
+          {!initialUser && (
+            <RestAutocompleteInput
+              label="User"
+              restEndpoint={session.user}
+              getOptionLabel={(user) => user.name || user.email}
+              searchProperties={["name", "email"]}
+              additionalQueryConditions={[
+                {organization: {Equal: currentUser.organization}}
+              ]}
+              {...makeFormikAutocompleteProps(formik, "user")}
+            />
+          )}
+
+          {!initialProject && (
+            <RestAutocompleteInput
+              label="Project"
+              restEndpoint={session.project}
+              getOptionLabel={(project) => project.name}
+              searchProperties={["name"]}
+              additionalQueryConditions={[
+                {organization: {Equal: currentUser.organization}}
+              ]}
+              {...makeFormikAutocompleteProps(formik, "project")}
+            />
+          )}
 
           <TextField
             label="Summary"

@@ -135,7 +135,9 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
             onChange={setTask}
             getOptionLabel={(task) => task.summary}
             searchProperties={["summary"]}
-            additionalQueryConditions={[{project: {Equal: project?._id ?? ""}}]}
+            additionalQueryConditions={[
+              project ? {project: {Equal: project._id}} : {Never: true}
+            ]}
             dependencies={[project?._id]}
             disabled={!project}
           />
@@ -153,7 +155,15 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
         sx={{my: 2}}
         fullWidth
       />
-      <Stack direction="row" spacing={1}>
+      <Stack direction="row" justifyContent="space-between" spacing={1}>
+        <Button
+          variant={timer.lastStarted ? "contained" : "outlined"}
+          onClick={() => toggleTimer(timerKey)}
+          fullWidth
+          sx={{maxWidth: 100}}
+        >
+          {timer.lastStarted ? <Pause /> : <PlayArrow />}
+        </Button>
         <AutoLoadingButton
           onClick={() =>
             submitTimer(timerKey).catch((e) => alert("Error submitting timer"))
@@ -161,15 +171,10 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
           variant="contained"
           disabled={!project || !summary}
           fullWidth
+          sx={{maxWidth: 100}}
         >
           Submit
         </AutoLoadingButton>
-        <Button
-          variant={timer.lastStarted ? "contained" : "outlined"}
-          onClick={() => toggleTimer(timerKey)}
-        >
-          {timer.lastStarted ? <Pause /> : <PlayArrow />}
-        </Button>
       </Stack>
     </Paper>
   )

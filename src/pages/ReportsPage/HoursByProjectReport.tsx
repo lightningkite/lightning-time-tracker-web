@@ -3,74 +3,73 @@ import {Card} from "@mui/material"
 import {DataGrid, GridEnrichedColDef} from "@mui/x-data-grid"
 import {Project, User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
+import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
-import {dateToISO, MILLISECONDS_PER_HOUR} from "utils/helpers"
-import {DateRange} from "./DateRangeSelector"
+import {MILLISECONDS_PER_HOUR} from "utils/helpers"
+import {CustomToolbar} from "./CustomToolbar"
+import {
+  filtersToProjectCondition,
+  filtersToTimeEntryCondition,
+  filtersToUserCondition
+} from "./ReportFilters"
+import {ReportProps} from "./ReportsPage"
 
 interface HoursTableRow {
   user: User
   projectMilliseconds: Record<string, number | null | undefined>
 }
 
-export const ProjectsReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
-  const {session} = useContext(AuthContext)
+export const HoursByProjectReport: FC<ReportProps> = (props) => {
+  const {reportFilterValues} = props
+  const {session, currentUser} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [tableData, setTableData] = useState<HoursTableRow[]>()
   const [users, setUsers] = useState<User[]>()
   const [projects, setProjects] = useState<Project[]>()
   const [msByProject, setMsByProject] =
     useState<Record<string, number | null | undefined>>()
-
   const [error, setError] = useState("")
 
-  useEffect(() => {
-    session.user
-      .query({})
-      .then(setUsers)
-      .catch(() => setError("Error fetching users"))
+  const isClient = !permissions.timeEntries
 
-    session.project
-      .query({})
-      .then(setProjects)
-      .catch(() => setError("Error fetching projects"))
-  }, [])
+  async function fetchReportData() {
+    setTableData(undefined)
 
-  useEffect(() => {
-    setMsByProject(undefined)
-
-    session.timeEntry
-      .groupAggregate({
+    const [users, projects, timeByProject] = await Promise.all([
+      session.user.query({
+        condition: filtersToUserCondition(reportFilterValues),
+        limit: QUERY_LIMIT
+      }),
+      session.project.query({
+        condition: filtersToProjectCondition(reportFilterValues),
+        limit: QUERY_LIMIT
+      }),
+      session.timeEntry.groupAggregate({
         condition: {
           And: [
-            {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
-            {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
+            filtersToTimeEntryCondition(reportFilterValues),
+            {organization: {Equal: currentUser.organization}}
           ]
         },
         aggregate: Aggregate.Sum,
         property: "durationMilliseconds",
         groupBy: "project"
       })
-      .then(setMsByProject)
-      .catch(() => setError("Error fetching hours per project"))
-  }, [dateRange])
+    ])
 
-  useEffect(() => {
-    setTableData(undefined)
+    setUsers(users)
+    setProjects(projects)
+    setMsByProject(timeByProject)
 
-    if (!users) {
-      return
-    }
-
-    const userProjectMillisecondsRequests: Promise<
-      HoursTableRow["projectMilliseconds"]
-    >[] = users.map((user) =>
+    const userTimeRequests = users.map((user) =>
       session.timeEntry.groupAggregate({
         condition: {
           And: [
             {user: {Equal: user._id}},
-            {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
-            {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
+            filtersToTimeEntryCondition(reportFilterValues)
           ]
         },
         aggregate: Aggregate.Sum,
@@ -79,17 +78,23 @@ export const ProjectsReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
       })
     )
 
-    Promise.all(userProjectMillisecondsRequests)
-      .then((r) =>
-        setTableData(
-          r.map((projectMilliseconds, i) => ({
-            user: users[i],
-            projectMilliseconds
-          }))
+    const userTimeResponses = await Promise.all(userTimeRequests)
+
+    setTableData(
+      userTimeResponses
+        .filter((projectMilliseconds) =>
+          Object.values(projectMilliseconds).some(Boolean)
         )
-      )
-      .catch(() => setError("Error fetching table data"))
-  }, [dateRange, users])
+        .map((projectMilliseconds, i) => ({
+          user: users[i],
+          projectMilliseconds
+        }))
+    )
+  }
+
+  useEffect(() => {
+    fetchReportData().catch(() => setError("Error fetching report data"))
+  }, [reportFilterValues])
 
   if (error) {
     return <ErrorAlert>{error}</ErrorAlert>
@@ -136,7 +141,9 @@ export const ProjectsReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
               type: "number",
               valueGetter: ({row}) => row.projectMilliseconds[project._id] ?? 0,
               valueFormatter: ({value}) =>
-                value ? (value / MILLISECONDS_PER_HOUR).toFixed(1) : "–"
+                (value / MILLISECONDS_PER_HOUR).toFixed(1),
+              renderCell: ({formattedValue, value}) =>
+                value === 0 ? "–" : formattedValue
             }
 
             return column
@@ -150,6 +157,13 @@ export const ProjectsReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
         rows={tableData ?? []}
         getRowId={(r) => r.user._id}
         hideFooter
+        components={{Toolbar: CustomToolbar}}
+        componentsProps={{
+          toolbar: {
+            filters: reportFilterValues,
+            filePrefix: "Hours by Project"
+          }
+        }}
         sx={{
           "& .MuiDataGrid-cell, .MuiDataGrid-columnHeader": {
             outline: "none !important"

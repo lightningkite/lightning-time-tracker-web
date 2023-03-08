@@ -7,7 +7,7 @@ import {
 import {Add} from "@mui/icons-material"
 import {Button, Stack, SxProps, TextField} from "@mui/material"
 import {DatePicker} from "@mui/x-date-pickers"
-import {Project, Task} from "api/sdk"
+import {Project, Task, User} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import dayjs from "dayjs"
 import duration, {Duration} from "dayjs/plugin/duration"
@@ -21,7 +21,15 @@ dayjs.extend(duration)
 
 const validationSchema = yup.object().shape({
   summary: yup.string().required("Required"),
-  project: yup.object().required("Required").nullable(),
+  projectRequired: yup.boolean(),
+  project: yup
+    .object()
+    .nullable()
+    .when("projectRequired", {
+      is: true,
+      then: yup.object().required("Required").nullable()
+    }),
+  user: yup.object().required("Required").nullable(),
   date: yup.date().required("Required"),
   duration: yup
     .string()
@@ -36,11 +44,19 @@ const validationSchema = yup.object().shape({
 export interface AddTimeEntryButtonProps {
   afterSubmit: () => void
   project?: Project
+  user?: User
+  task?: Task
   sx?: SxProps
 }
 
 export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
-  const {afterSubmit, project, sx} = props
+  const {
+    afterSubmit,
+    project: initialProject,
+    user: initialUser,
+    task: initialTask,
+    sx
+  } = props
   const {session, currentUser} = useContext(AuthContext)
 
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -53,7 +69,9 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
   const formik = useFormik({
     initialValues: {
       task: null as Task | null,
-      project: project ?? null,
+      user: initialUser ?? currentUser,
+      projectRequired: !initialTask,
+      project: initialProject ?? null,
       summary: "",
       duration: "",
       date: new Date()
@@ -61,16 +79,20 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
     validationSchema,
     onSubmit: async (values) => {
       await session.timeEntry.insert({
-        ...values,
         _id: crypto.randomUUID(),
-        task: values.task?._id,
-        project: (values.project as Project)?._id,
+        task: initialTask?._id ?? values.task?._id,
+        project: initialTask?.project ?? (values.project as Project)._id,
         organization: currentUser.organization,
         durationMilliseconds: (
           stringToDuration(values.duration) as Duration
         ).asMilliseconds(),
         date: dateToISO(values.date),
-        user: currentUser._id
+        user: values.user._id,
+        taskSummary: undefined,
+        projectName: undefined,
+        organizationName: undefined,
+        userName: undefined,
+        summary: values.summary
       })
 
       afterSubmit()
@@ -81,6 +103,8 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
   useEffect(() => {
     formik.setFieldValue("task", null)
   }, [formik.values.project])
+
+  console.log(formik.values, props)
 
   return (
     <>
@@ -104,28 +128,48 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
         }}
       >
         <Stack gap={3}>
-          {!project && (
+          {!initialUser && (
+            <RestAutocompleteInput
+              label="User"
+              restEndpoint={session.user}
+              getOptionLabel={(user) => user.name || user.email}
+              searchProperties={["name", "email"]}
+              additionalQueryConditions={[
+                {organization: {Equal: currentUser.organization}}
+              ]}
+              {...makeFormikAutocompleteProps(formik, "user")}
+            />
+          )}
+
+          {!initialProject && !initialTask && (
             <RestAutocompleteInput
               label="Project"
               restEndpoint={session.project}
               getOptionLabel={(project) => project.name}
               searchProperties={["name"]}
+              additionalQueryConditions={[
+                {organization: {Equal: currentUser.organization}}
+              ]}
               {...makeFormikAutocompleteProps(formik, "project")}
             />
           )}
 
-          <RestAutocompleteInput
-            label="Task"
-            restEndpoint={session.task}
-            getOptionLabel={(task) => task.summary}
-            searchProperties={["summary"]}
-            disabled={!formik.values.project}
-            dependencies={[formik.values.project]}
-            additionalQueryConditions={[
-              {project: {Equal: formik.values.project?._id ?? ""}}
-            ]}
-            {...makeFormikAutocompleteProps(formik, "task")}
-          />
+          {!initialTask && (
+            <RestAutocompleteInput
+              label="Task"
+              restEndpoint={session.task}
+              getOptionLabel={(task) => task.summary}
+              searchProperties={["summary"]}
+              disabled={!formik.values.project}
+              dependencies={[formik.values.project]}
+              additionalQueryConditions={[
+                formik.values.project
+                  ? {project: {Equal: formik.values.project._id}}
+                  : {Never: true}
+              ]}
+              {...makeFormikAutocompleteProps(formik, "task")}
+            />
+          )}
 
           <DatePicker
             label="Date"

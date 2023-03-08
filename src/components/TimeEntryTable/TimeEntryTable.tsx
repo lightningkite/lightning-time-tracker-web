@@ -6,41 +6,36 @@ import {TimeEntry} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import relativeTime from "dayjs/plugin/relativeTime"
-import React, {FC, useState} from "react"
-import {
-  AnnotatedTimeEntry,
-  useAnnotatedEndpoints
-} from "utils/useAnnotatedEndpoints"
+import React, {FC, useContext, useState} from "react"
+import {AuthContext} from "utils/context"
+import {dynamicFormatDate} from "utils/helpers"
 import {TimeEntryModal} from "./TimeEntryModal"
 
 dayjs.extend(relativeTime)
 dayjs.extend(duration)
 
 export interface TimeEntryTableProps
-  extends Partial<RestDataTableProps<AnnotatedTimeEntry>> {
+  extends Partial<RestDataTableProps<TimeEntry>> {
   hiddenColumns?: string[]
+  preventClick?: boolean
 }
 
 export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
-  const {hiddenColumns = [], ...restProps} = props
-  const {annotatedTimeEntryEndpoint} = useAnnotatedEndpoints()
+  const {hiddenColumns = [], preventClick = false, ...restProps} = props
+  const {session} = useContext(AuthContext)
 
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [selectedTimeEntry, setSelectedTimeEntry] = useState<TimeEntry | null>(
     null
   )
 
-  const columns: RestDataTableProps<AnnotatedTimeEntry>["columns"] = [
+  const columns: RestDataTableProps<TimeEntry>["columns"] = [
     {
       field: "date",
       headerName: "Date",
       type: "date",
       width: 130,
-      valueFormatter: ({value}) => {
-        if (dayjs().isSame(value, "day")) return "Today"
-        if (dayjs().subtract(1, "day").isSame(value, "day")) return "Yesterday"
-        return dayjs(value).fromNow()
-      }
+      valueFormatter: ({value}) => dynamicFormatDate(dayjs(value))
     },
     {
       field: "duration",
@@ -51,28 +46,22 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
           .format("H : mm : ss")
     },
     {
-      field: "project",
+      field: "projectName",
       headerName: "Project",
       flex: 1,
-      minWidth: 200,
-      valueGetter: (params) => params.row.annotations.project?.name
+      minWidth: 200
     },
     {
-      field: "task",
+      field: "taskSummary",
       headerName: "Task",
       flex: 2,
-      minWidth: 200,
-      valueGetter: (params) => params.row.annotations.task?.summary
+      minWidth: 200
     },
     {
-      field: "user",
+      field: "userName",
       headerName: "User",
       flex: 1,
-      minWidth: 200,
-      valueGetter: ({row}) =>
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        row.annotations.user?.name || row.annotations.user?.email,
-      sortable: false
+      minWidth: 200
     },
     {
       field: "summary",
@@ -86,12 +75,12 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
     <>
       <RestDataTable
         {...restProps}
-        restEndpoint={annotatedTimeEntryEndpoint}
+        restEndpoint={session.timeEntry}
         defaultSorting={[{field: "date", sort: "desc"}]}
         columns={columns.filter(
           (column) => !hiddenColumns.includes(column.field)
         )}
-        onRowClick={setSelectedTimeEntry}
+        onRowClick={preventClick ? undefined : setSelectedTimeEntry}
         dependencies={[refreshTrigger, ...(props.dependencies ?? [])]}
       />
       <TimeEntryModal

@@ -1,70 +1,90 @@
 import {Aggregate} from "@lightningkite/lightning-server-simplified"
-import {Card} from "@mui/material"
+import {Alert, Card} from "@mui/material"
 import {DataGrid, GridEnrichedColDef} from "@mui/x-data-grid"
 import {User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
+import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
-import {dateToISO, MILLISECONDS_PER_HOUR} from "utils/helpers"
-import {DateRange} from "./DateRangeSelector"
+import {MILLISECONDS_PER_HOUR} from "utils/helpers"
+import {CustomToolbar} from "./CustomToolbar"
+import {
+  filtersToTimeEntryCondition,
+  filtersToUserCondition
+} from "./ReportFilters"
+import {ReportProps} from "./ReportsPage"
 
 interface HoursTableRow {
   user: User
   dayMilliseconds: Record<string, number | null | undefined>
 }
 
-export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
+export const HoursByDateReport: FC<ReportProps> = (props) => {
+  const {reportFilterValues} = props
+  const {dateRange} = reportFilterValues
   const {session} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [tableData, setTableData] = useState<HoursTableRow[]>()
   const [users, setUsers] = useState<User[]>()
-
   const [error, setError] = useState("")
 
-  useEffect(() => {
-    session.user
-      .query({})
-      .then(setUsers)
-      .catch(() => setError("Error fetching users"))
-  }, [])
+  const isClient = !permissions.timeEntries
 
-  useEffect(() => {
+  async function fetchReportData() {
     setTableData(undefined)
 
-    if (!users) {
-      return
-    }
+    const users = await session.user.query({
+      condition: filtersToUserCondition(reportFilterValues),
+      limit: QUERY_LIMIT
+    })
 
-    const requests: Promise<HoursTableRow["dayMilliseconds"]>[] = users.map(
-      (user) =>
+    setUsers(users)
+
+    const userTimeRequests: Promise<HoursTableRow["dayMilliseconds"]>[] =
+      users.map((user) =>
         session.timeEntry.groupAggregate({
           condition: {
             And: [
               {user: {Equal: user._id}},
-              {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
-              {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
+              filtersToTimeEntryCondition(reportFilterValues)
             ]
           },
           aggregate: Aggregate.Sum,
           property: "durationMilliseconds",
           groupBy: "date"
         })
-    )
-
-    Promise.all(requests)
-      .then((r) =>
-        setTableData(
-          r.map((dayMilliseconds, i) => ({
-            user: users[i],
-            dayMilliseconds
-          }))
-        )
       )
-      .catch(() => setError("Error fetching table data"))
-  }, [dateRange, users])
+
+    const userTimeResponses = await Promise.all(userTimeRequests)
+
+    setTableData(
+      userTimeResponses
+        .filter((dayMilliseconds) =>
+          Object.values(dayMilliseconds).some(Boolean)
+        )
+        .map((dayMilliseconds, i) => ({
+          user: users[i],
+          dayMilliseconds
+        }))
+    )
+  }
+
+  useEffect(() => {
+    fetchReportData().catch(() => setError("Error fetching report data"))
+  }, [reportFilterValues])
 
   if (error) {
     return <ErrorAlert>{error}</ErrorAlert>
+  }
+
+  if (!dateRange) {
+    return (
+      <Alert severity="info">
+        Select a date range to view the hours report.
+      </Alert>
+    )
   }
 
   return (
@@ -108,7 +128,9 @@ export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
                 valueGetter: ({row}) =>
                   row.dayMilliseconds[date.format("YYYY-MM-DD")] ?? 0,
                 valueFormatter: ({value}) =>
-                  value ? (value / MILLISECONDS_PER_HOUR).toFixed(1) : "–"
+                  (value / MILLISECONDS_PER_HOUR).toFixed(1),
+                renderCell: ({formattedValue, value}) =>
+                  value === 0 ? "–" : formattedValue
               }
 
               return column
@@ -123,6 +145,13 @@ export const HoursReport: FC<{dateRange: DateRange}> = ({dateRange}) => {
         rows={tableData ?? []}
         getRowId={(r) => r.user._id}
         hideFooter
+        components={{Toolbar: CustomToolbar}}
+        componentsProps={{
+          toolbar: {
+            filters: reportFilterValues,
+            filePrefix: "Hours by Date"
+          }
+        }}
         sx={{
           "& .MuiDataGrid-cell, .MuiDataGrid-columnHeader": {
             outline: "none !important"

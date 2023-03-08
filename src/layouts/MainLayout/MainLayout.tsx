@@ -10,6 +10,7 @@ import {
   Typography,
   useMediaQuery
 } from "@mui/material"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, ReactNode, useContext, useState} from "react"
 import {theme} from "theme"
 import {AuthContext, TimerContext} from "utils/context"
@@ -28,6 +29,7 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
   const {currentOrganization} = useContext(AuthContext)
   const {timers} = useContext(TimerContext)
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
+  const permissions = usePermissions()
 
   const [openNavigation, setOpenNavigation] = useState(!isMobile)
   const [openTimers, setOpenTimers] = useState(false)
@@ -75,24 +77,30 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
             {currentOrganization.name}
           </Typography>
 
-          <Stack direction="row" alignItems="center" spacing={1} ml="auto">
-            <SummaryTime />
+          {permissions.timeEntries && (
+            <Stack direction="row" alignItems="center" spacing={1} ml="auto">
+              <SummaryTime />
 
-            <HoverHelp description={openTimers ? "Hide timers" : "Show timers"}>
-              <IconButton
-                color="inherit"
-                onClick={toggleOpenTimers}
-                edge="start"
+              <HoverHelp
+                description={openTimers ? "Hide timers" : "Show timers"}
               >
-                <Badge
-                  badgeContent={openTimers ? null : Object.keys(timers).length}
-                  color="primary"
+                <IconButton
+                  color="inherit"
+                  onClick={toggleOpenTimers}
+                  edge="start"
                 >
-                  {!openTimers ? <TimerOutlined /> : <Close />}
-                </Badge>
-              </IconButton>
-            </HoverHelp>
-          </Stack>
+                  <Badge
+                    badgeContent={
+                      openTimers ? null : Object.keys(timers).length
+                    }
+                    color="primary"
+                  >
+                    {!openTimers ? <TimerOutlined /> : <Close />}
+                  </Badge>
+                </IconButton>
+              </HoverHelp>
+            </Stack>
+          )}
         </Toolbar>
       </AppBar>
 

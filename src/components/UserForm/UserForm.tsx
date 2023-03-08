@@ -6,6 +6,7 @@ import {
 import {LoadingButton} from "@mui/lab"
 import {
   Alert,
+  Autocomplete,
   capitalize,
   Checkbox,
   FormControl,
@@ -17,10 +18,13 @@ import {
   TextField
 } from "@mui/material"
 import {Project, TaskState, User} from "api/sdk"
+import FormSection from "components/FormSection"
 import {useFormik} from "formik"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import * as yup from "yup"
+import {PermissionsInput} from "./PermissionsInput"
 
 // Form validation schema. See: https://www.npmjs.com/package/yup#object
 const validationSchema = yup.object().shape({
@@ -35,7 +39,7 @@ export interface UserFormProps {
 
 export const UserForm: FC<UserFormProps> = (props) => {
   const {user, setUser} = props
-
+  const permissions = usePermissions()
   const {session, currentUser, setCurrentUser} = useContext(AuthContext)
 
   const [error, setError] = useState("")
@@ -43,7 +47,10 @@ export const UserForm: FC<UserFormProps> = (props) => {
 
   useEffect(() => {
     session.project
-      .query({})
+      .query({
+        condition: {organization: {Equal: currentUser.organization}},
+        orderBy: ["name"]
+      })
       .then(setProjectOptions)
       .catch(() => alert("Error loading projects"))
   }, [])
@@ -54,8 +61,11 @@ export const UserForm: FC<UserFormProps> = (props) => {
       email: user.email,
       name: user.name,
       isSuperUser: user.isSuperUser,
+      limitToProjects: user.limitToProjects ?? [],
       defaultStates: user.defaultFilters.states,
-      defaultProjects: user.defaultFilters.projects
+      defaultProjects: user.defaultFilters.projects,
+      active: user.active,
+      permissions: user.permissions
     },
     validationSchema,
     // When the form is submitted, this function is called if the form values are valid
@@ -67,6 +77,9 @@ export const UserForm: FC<UserFormProps> = (props) => {
         email: values.email,
         name: values.name,
         isSuperUser: values.isSuperUser,
+        active: values.active,
+        limitToProjects: values.limitToProjects,
+        permissions: values.permissions,
         defaultFilters: {
           ...user.defaultFilters,
           states: values.defaultStates,
@@ -103,8 +116,35 @@ export const UserForm: FC<UserFormProps> = (props) => {
 
       <TextField label="Name" {...makeFormikTextFieldProps(formik, "name")} />
 
-      {user._id === currentUser._id && (
+      {user._id === currentUser._id && permissions.tasks && (
         <>
+          <Autocomplete
+            multiple
+            options={projectOptions ?? []}
+            getOptionLabel={(project) => project.name}
+            isOptionEqualToValue={(a, b) => a._id === b._id}
+            disableCloseOnSelect
+            disableClearable
+            value={
+              projectOptions?.filter((project) =>
+                formik.values.defaultProjects.includes(project._id)
+              ) ?? []
+            }
+            onChange={(_e, value) => {
+              formik.setFieldValue(
+                "defaultProjects",
+                value.map((project) => project._id)
+              )
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Dashboard Projects"
+                helperText="Tasks for these projects will always be shown on your dashboard"
+              />
+            )}
+          />
+
           <FormControl component="fieldset" variant="standard">
             <FormLabel component="legend">Dashboard States</FormLabel>
             <FormHelperText>
@@ -112,7 +152,11 @@ export const UserForm: FC<UserFormProps> = (props) => {
             </FormHelperText>
             <FormGroup>
               {Object.values(TaskState)
-                .filter((state) => state !== TaskState.Done)
+                .filter(
+                  (state) =>
+                    state !== TaskState.Cancelled &&
+                    state !== TaskState.Delivered
+                )
                 .map((state) => (
                   <FormControlLabel
                     key={state}
@@ -145,57 +189,66 @@ export const UserForm: FC<UserFormProps> = (props) => {
                 ))}
             </FormGroup>
           </FormControl>
-
-          <FormControl component="fieldset" variant="standard">
-            <FormLabel component="legend">Dashboard Projects</FormLabel>
-            <FormHelperText>
-              Tasks for these projects will always be shown on your dashboard
-            </FormHelperText>
-            <FormGroup>
-              {projectOptions?.map((project) => (
-                <FormControlLabel
-                  key={project._id}
-                  control={
-                    <Checkbox
-                      checked={formik.values.defaultProjects.includes(
-                        project._id
-                      )}
-                      onChange={(e) => {
-                        const nowChecked = e.target.checked
-                        const wasChecked =
-                          formik.values.defaultProjects.includes(project._id)
-
-                        if (nowChecked && !wasChecked) {
-                          formik.setFieldValue(
-                            "defaultProjects",
-                            formik.values.defaultProjects.concat(project._id)
-                          )
-                        } else if (!nowChecked && wasChecked) {
-                          formik.setFieldValue(
-                            "defaultProjects",
-                            formik.values.defaultProjects.filter(
-                              (s) => s !== project._id
-                            )
-                          )
-                        }
-                      }}
-                    />
-                  }
-                  label={project.name}
-                />
-              ))}
-            </FormGroup>
-          </FormControl>
         </>
       )}
 
-      <FormControlLabel
-        control={
-          <Checkbox {...makeFormikCheckboxProps(formik, "isSuperUser")} />
-        }
-        label="Is Super User"
-        disabled={currentUser._id === user._id}
-      />
+      {user._id !== currentUser._id && (
+        <FormSection title="Permissions">
+          <Stack direction="row" spacing={2}>
+            <FormControlLabel
+              control={
+                <Checkbox {...makeFormikCheckboxProps(formik, "active")} />
+              }
+              label="Active"
+            />
+
+            <FormControlLabel
+              control={
+                <Checkbox {...makeFormikCheckboxProps(formik, "isSuperUser")} />
+              }
+              label="Is Super User"
+            />
+          </Stack>
+
+          {!formik.values.isSuperUser && (
+            <>
+              <Autocomplete
+                multiple
+                options={projectOptions ?? []}
+                getOptionLabel={(project) => project.name}
+                isOptionEqualToValue={(a, b) => a._id === b._id}
+                disableCloseOnSelect
+                disableClearable
+                value={
+                  projectOptions?.filter((project) =>
+                    formik.values.limitToProjects.includes(project._id)
+                  ) ?? []
+                }
+                onChange={(e, value) => {
+                  formik.setFieldValue(
+                    "limitToProjects",
+                    value.map((project) => project._id)
+                  )
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Limit to Projects"
+                    helperText="This user will only be able to access these projects"
+                  />
+                )}
+              />
+
+              <PermissionsInput
+                permissions={formik.values.permissions}
+                onChange={(permissions) => {
+                  formik.setFieldValue("permissions", permissions)
+                }}
+              />
+            </>
+          )}
+        </FormSection>
+      )}
 
       {error && <Alert severity="error">{error}</Alert>}
 

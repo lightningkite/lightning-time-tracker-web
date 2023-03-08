@@ -4,8 +4,9 @@ import {
 } from "@lightningkite/mui-lightning-components"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
+import {AnnotatedTask, useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
 import React, {FC} from "react"
-import {AnnotatedTask, useAnnotatedEndpoints} from "utils/useAnnotatedEndpoints"
+import {dynamicFormatDate} from "utils/helpers"
 
 dayjs.extend(duration)
 
@@ -35,16 +36,12 @@ export const TaskTable: FC<TaskTableProps> = (props) => {
           headerName: "Created",
           type: "date",
           width: 130,
-          valueFormatter: ({value}) => dayjs(value).fromNow()
+          valueFormatter: ({value}) => dynamicFormatDate(dayjs(value))
         },
         {
-          field: "user",
+          field: "userName",
           headerName: "User",
-          minWidth: 200,
-          valueGetter: ({row}) =>
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            row.annotations.user?.name || row.annotations.user?.email,
-          sortable: false
+          minWidth: 200
         },
         {
           field: "summary",

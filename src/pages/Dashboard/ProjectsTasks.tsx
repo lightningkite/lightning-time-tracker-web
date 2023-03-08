@@ -16,7 +16,7 @@ import Loading from "components/Loading"
 import React, {FC, useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
 import {booleanCompare, compareTasksByState} from "utils/helpers"
-import {AnnotatedTask, useAnnotatedEndpoints} from "utils/useAnnotatedEndpoints"
+import {AnnotatedTask, useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
 import {TaskListItem} from "./TaskListItem"
 
 export const ProjectsTasks: FC<{onlyMine: boolean}> = ({onlyMine}) => {
@@ -28,7 +28,7 @@ export const ProjectsTasks: FC<{onlyMine: boolean}> = ({onlyMine}) => {
   const [annotatedTasks, setAnnotatedTasks] = useState<AnnotatedTask[] | null>()
   const [initialSorting, setInitialSorting] = useState<string[]>()
 
-  useEffect(() => {
+  const refreshDashboardData = async () => {
     session.project
       .query({condition: {organization: {Equal: currentOrganization._id}}})
       .then(setProjects)
@@ -46,18 +46,33 @@ export const ProjectsTasks: FC<{onlyMine: boolean}> = ({onlyMine}) => {
 
     filterConditions.length === 0 && filterConditions.push({Always: true})
 
-    annotatedTaskEndpoint
+    await annotatedTaskEndpoint
       .query({
         condition: {
           And: [
             {organization: {Equal: currentOrganization._id}},
-            {state: {NotEqual: TaskState.Done}},
-            {Or: [{And: filterConditions}, {user: {Equal: currentUser._id}}]}
+            {state: {NotEqual: TaskState.Cancelled}},
+            {state: {NotEqual: TaskState.Delivered}},
+            {
+              Or: [
+                {And: filterConditions},
+                {
+                  And: [
+                    {user: {Equal: currentUser._id}},
+                    {state: {Equal: TaskState.Active}}
+                  ]
+                }
+              ]
+            }
           ]
         }
       })
       .then(setAnnotatedTasks)
       .catch(() => setAnnotatedTasks(null))
+  }
+
+  useEffect(() => {
+    refreshDashboardData()
   }, [Object.values(timers).length])
 
   const tasksByProject = useMemo(() => {
@@ -114,47 +129,53 @@ export const ProjectsTasks: FC<{onlyMine: boolean}> = ({onlyMine}) => {
         .sort(
           (a, b) => initialSorting.indexOf(b[0]) - initialSorting.indexOf(a[0])
         )
-        .map(([projectId, {projectTasks, myTasksCount}]) => (
-          <Accordion key={projectId} defaultExpanded={myTasksCount > 0}>
-            <AccordionSummary expandIcon={<ExpandMore />}>
-              <Chip
-                label={myTasksCount}
-                size="small"
-                color="primary"
-                sx={{mr: 2, visibility: myTasksCount ? "visible" : "hidden"}}
-              />
-              <Typography variant="h2">
-                {projects.find((p) => p._id === projectId)?.name ?? "Not found"}
-              </Typography>
-              <AddTaskButton
-                projectId={projectId}
-                afterSubmit={(newAnnotatedTask) =>
-                  setAnnotatedTasks([
-                    ...(annotatedTasks ?? []),
-                    newAnnotatedTask
-                  ])
-                }
-                sx={{ml: "auto", mr: 2}}
-              />
-            </AccordionSummary>
-            <AccordionDetails sx={{p: 0}}>
-              <List>
-                {projectTasks
-                  // Sort by emergency, state, then by is current user
-                  .sort((a, b) => {
-                    return (
-                      booleanCompare(a, b, (t) => t.emergency) ||
-                      compareTasksByState(a, b) ||
-                      booleanCompare(a, b, (t) => t.user === currentUser._id)
-                    )
-                  })
-                  .map((task) => (
-                    <TaskListItem annotatedTask={task} key={task._id} />
-                  ))}
-              </List>
-            </AccordionDetails>
-          </Accordion>
-        ))}
+        .map(([projectId, {projectTasks, myTasksCount}]) => {
+          const project = projects.find((p) => p._id === projectId)
+
+          return (
+            <Accordion key={projectId} defaultExpanded={myTasksCount > 0}>
+              <AccordionSummary expandIcon={<ExpandMore />}>
+                <Chip
+                  label={myTasksCount}
+                  size="small"
+                  color="primary"
+                  sx={{mr: 2, visibility: myTasksCount ? "visible" : "hidden"}}
+                />
+                <Typography variant="h2">{project?.name}</Typography>
+                <AddTaskButton
+                  project={project}
+                  afterSubmit={(newAnnotatedTask) =>
+                    setAnnotatedTasks([
+                      ...(annotatedTasks ?? []),
+                      newAnnotatedTask
+                    ])
+                  }
+                  sx={{ml: "auto", mr: 2}}
+                />
+              </AccordionSummary>
+              <AccordionDetails sx={{p: 0}}>
+                <List>
+                  {projectTasks
+                    // Sort by emergency, state, then by is current user
+                    .sort((a, b) => {
+                      return (
+                        booleanCompare(a, b, (t) => t.emergency) ||
+                        compareTasksByState(a, b) ||
+                        booleanCompare(a, b, (t) => t.user === currentUser._id)
+                      )
+                    })
+                    .map((task) => (
+                      <TaskListItem
+                        annotatedTask={task}
+                        refreshDashboard={refreshDashboardData}
+                        key={task._id}
+                      />
+                    ))}
+                </List>
+              </AccordionDetails>
+            </Accordion>
+          )
+        })}
     </Box>
   )
 }

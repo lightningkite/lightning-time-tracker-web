@@ -1,7 +1,7 @@
 import {Api, Organization, User, UserSession} from "api/sdk"
 import {Dayjs} from "dayjs"
+import {useGlobalTimerManager} from "hooks/useGlobalTimerManager"
 import React, {createContext, FC, ReactElement} from "react"
-import {useGlobalTimerManager} from "./useGlobalTimerManager"
 
 export interface AuthContextType {
   session: UserSession

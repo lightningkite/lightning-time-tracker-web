@@ -1,5 +1,5 @@
 import {Task, TaskState, TimeEntry} from "api/sdk"
-import dayjs from "dayjs"
+import dayjs, {Dayjs} from "dayjs"
 import duration, {Duration} from "dayjs/plugin/duration"
 import {WebPreferences} from "pages/Settings/Settings"
 import {Timer} from "./context"
@@ -59,9 +59,10 @@ export function getTimerSeconds(timer: Timer): number {
 const taskStateOrder: Record<TaskState, number> = {
   [TaskState.Hold]: 0,
   [TaskState.Active]: 1,
-  [TaskState.Completed]: 2,
-  [TaskState.Tested]: 3,
-  [TaskState.Done]: 4
+  [TaskState.Testing]: 2,
+  [TaskState.Approved]: 3,
+  [TaskState.Delivered]: 4,
+  [TaskState.Cancelled]: 5
 }
 
 export function compareTasksByState(a: Task, b: Task): number {
@@ -96,12 +97,34 @@ export function totalHoursForTimeEntries(timeEntries: TimeEntry[]): number {
 export function parsePreferences(
   preferencesJSON: string | null | undefined
 ): WebPreferences {
-  try {
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    return JSON.parse(preferencesJSON || "{}")
-  } catch {
-    return {}
+  const defaultPreferences: WebPreferences = {
+    mode: "dark",
+    color: "lightBlue",
+    colorBrightness: 500,
+    summaryTime: "week"
   }
+  try {
+    const parsed = JSON.parse(
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+      preferencesJSON || "{}"
+    ) as Partial<WebPreferences> // Probably
+
+    const isValidBrightness =
+      !!parsed.colorBrightness &&
+      [100, 200, 300, 400, 500, 600, 700, 800, 900].includes(
+        parsed.colorBrightness
+      )
+
+    if (!isValidBrightness) {
+      delete parsed.colorBrightness
+    }
+
+    return {...defaultPreferences, ...parsed}
+  } catch (e) {
+    console.error("Error parsing preferences", e)
+  }
+
+  return defaultPreferences
 }
 
 export function booleanCompare<T>(
@@ -115,4 +138,41 @@ export function booleanCompare<T>(
   if (aKey === bKey) return 0
   if (aKey) return -1
   return 1
+}
+
+// Should use this instead of `dayjs.duration().format()` because what if the hours are more than 24?
+export function formatLongDuration(duration: Duration): string {
+  const justHours = Math.floor(duration.asHours())
+
+  return `${justHours} : ${duration.format("mm : ss")}`
+}
+
+export function dynamicFormatDate(date: Dayjs): string {
+  const now = dayjs()
+  const yesterday = now.subtract(1, "day")
+  const isToday = now.isSame(date, "day")
+  const isYesterday = yesterday.isSame(date, "day")
+
+  if (isToday) return "Today"
+  if (isYesterday) return "Yesterday"
+
+  if (now.year() === date.year() || now.diff(date, "month") < 9)
+    return date.format("MMM D")
+
+  return date.format("YYYY-MM-DD")
+}
+
+export async function uploadToS3(uploadUrl: string, file: File) {
+  await fetch(uploadUrl, {
+    method: "PUT",
+    body: file,
+    headers: {
+      "Content-type": file.type
+    }
+  }).then((res) => {
+    if (!res.ok) {
+      console.log("Error uploading file", res)
+      throw new Error("Error uploading file")
+    }
+  })
 }

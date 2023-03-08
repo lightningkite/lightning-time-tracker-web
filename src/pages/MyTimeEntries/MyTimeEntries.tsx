@@ -24,7 +24,7 @@ export const MyTimeEntries: FC = () => {
 
       <TimeEntryTable
         additionalQueryConditions={[{user: {Equal: currentUser._id}}]}
-        hiddenColumns={["user"]}
+        hiddenColumns={["userName"]}
         dependencies={[refreshTrigger]}
       />
     </Container>

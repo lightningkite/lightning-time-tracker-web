@@ -1,48 +1,51 @@
-import {Aggregate, Condition} from "@lightningkite/lightning-server-simplified"
+import {Aggregate} from "@lightningkite/lightning-server-simplified"
 import {Stack, Typography} from "@mui/material"
-import {Project, TimeEntry} from "api/sdk"
+import {Project} from "api/sdk"
 import dayjs from "dayjs"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
+import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
 import {dateToISO, formatDollars, MILLISECONDS_PER_HOUR} from "utils/helpers"
-import {DateRange} from "./DateRangeSelector"
+import {filtersToTimeEntryCondition} from "./ReportFilters"
+import {ReportProps} from "./ReportsPage"
 import {projectedRevenue} from "./widgetHelpers"
 import {WidgetLayout} from "./WidgetLayout"
 
-export interface WidgetsProps {
-  dateRange: DateRange
-}
-
-export const Widgets: FC<WidgetsProps> = (props) => {
-  const {dateRange} = props
-  const {session} = useContext(AuthContext)
+export const Widgets: FC<ReportProps> = (props) => {
+  const {reportFilterValues} = props
+  const {dateRange} = reportFilterValues
+  const {session, currentUser} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [totalHours, setTotalHours] = useState<number>()
   const [revenueDollarsBeforeToday, setRevenueDollarsBeforeToday] =
     useState<number>()
   const [revenueDollarsToDate, setRevenueDollarsToDate] = useState<number>()
 
-  const timeEntryDateRangeConditions: Condition<TimeEntry>[] = [
-    {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
-    {date: {LessThanOrEqual: dateToISO(dateRange.end.toDate())}}
-  ]
+  const timeEntryCondition = {
+    And: [
+      filtersToTimeEntryCondition(reportFilterValues),
+      {organization: {Equal: currentUser.organization}}
+    ]
+  }
 
   useEffect(() => {
     setTotalHours(undefined)
 
     const totalMillisecondsRequest = session.timeEntry.aggregate({
       aggregate: Aggregate.Sum,
-      condition: {
-        And: timeEntryDateRangeConditions
-      },
+      condition: timeEntryCondition,
       property: "durationMilliseconds"
     })
 
-    const projectsRequest = session.project.query({})
+    const projectsRequest = session.project.query({
+      limit: QUERY_LIMIT
+    })
 
     const millisecondsByProjectRequest = session.timeEntry.groupAggregate({
       aggregate: Aggregate.Sum,
-      condition: {And: timeEntryDateRangeConditions},
+      condition: timeEntryCondition,
       groupBy: "project",
       property: "durationMilliseconds"
     })
@@ -51,8 +54,16 @@ export const Widgets: FC<WidgetsProps> = (props) => {
       aggregate: Aggregate.Sum,
       condition: {
         And: [
-          {date: {GreaterThanOrEqual: dateToISO(dateRange.start.toDate())}},
-          {date: {LessThan: dateToISO(dateRange.end.toDate())}}
+          timeEntryCondition,
+          ...(dateRange
+            ? [
+                {
+                  date: {
+                    LessThan: dateToISO(dateRange.end.toDate())
+                  }
+                }
+              ]
+            : [])
         ]
       },
       groupBy: "project",
@@ -85,9 +96,12 @@ export const Widgets: FC<WidgetsProps> = (props) => {
         )
       }
     )
-  }, [dateRange])
+  }, [reportFilterValues])
+
+  const isClient = !permissions.timeEntries
 
   const isTodayWithinRange =
+    dateRange &&
     !dayjs().isAfter(dateRange.end, "day") &&
     !dayjs().isBefore(dateRange.start, "day")
 
@@ -99,7 +113,15 @@ export const Widgets: FC<WidgetsProps> = (props) => {
         </Typography>
       </WidgetLayout>
 
-      <WidgetLayout title={isTodayWithinRange ? "Revenue to Date" : "Revenue"}>
+      <WidgetLayout
+        title={(() => {
+          if (isTodayWithinRange) {
+            return isClient ? "Est. Bill to Date" : "Revenue to Date"
+          } else {
+            return isClient ? "Est. Bill" : "Revenue"
+          }
+        })()}
+      >
         <Typography fontSize="2.5rem">
           {revenueDollarsToDate
             ? formatDollars(revenueDollarsToDate, false)
@@ -107,7 +129,7 @@ export const Widgets: FC<WidgetsProps> = (props) => {
         </Typography>
       </WidgetLayout>
 
-      {isTodayWithinRange && (
+      {isTodayWithinRange && !isClient && (
         <WidgetLayout title="Projected">
           <Typography fontSize="2.5rem">
             {revenueDollarsBeforeToday

@@ -70,9 +70,11 @@ const App: FC = () => {
       theme={createTheme({
         ...theme,
         palette: {
-          mode: preferences.mode ?? "dark",
+          mode: preferences.mode,
           primary: {
-            main: (colors as any)[preferences.color ?? "lightBlue"][500]
+            main: (colors as any)[preferences.color][
+              preferences.colorBrightness
+            ]
           }
         }
       })}

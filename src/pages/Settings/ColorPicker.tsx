@@ -19,7 +19,9 @@ export const ColorPicker: FC<ColorPickerProps> = (props) => {
   const throttledValues = useThrottle(values, 1000)
 
   useEffect(() => {
-    updatePreferences(throttledValues)
+    ;(preferences.color !== throttledValues.color ||
+      preferences.colorBrightness !== throttledValues.colorBrightness) &&
+      updatePreferences(throttledValues)
   }, [throttledValues])
 
   return (

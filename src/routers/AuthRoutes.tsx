@@ -20,8 +20,6 @@ const Reports = React.lazy(() => import("pages/ReportsPage"))
 const AuthRoutes: FC = () => {
   const permissions = usePermissions()
 
-  console.log("permissions", permissions)
-
   return (
     // The Suspense component is used to show a loading indicator while the
     // code for the page is being downloaded. (see above)

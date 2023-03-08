@@ -52,7 +52,6 @@ const Settings: FC = () => {
 
     session.user
       .modify(currentUser._id, {webPreferences: {Assign: newPreferencesJSON}})
-      .then(setCurrentUser)
       .catch(() =>
         // If the update fails, revert the UI
         setCurrentUser({

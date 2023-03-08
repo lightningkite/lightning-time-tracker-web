@@ -82,9 +82,8 @@ export const HoursByProjectReport: FC<ReportProps> = (props) => {
 
     setTableData(
       userTimeResponses
-        .filter(
-          (projectMilliseconds) =>
-            !isClient || Object.values(projectMilliseconds).some(Boolean)
+        .filter((projectMilliseconds) =>
+          Object.values(projectMilliseconds).some(Boolean)
         )
         .map((projectMilliseconds, i) => ({
           user: users[i],

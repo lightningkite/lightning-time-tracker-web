@@ -3,7 +3,6 @@ import {FilterBar} from "@lightningkite/mui-lightning-components"
 import {Skeleton} from "@mui/material"
 import {Project, Task, TimeEntry, User} from "api/sdk"
 import dayjs, {Dayjs} from "dayjs"
-import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO} from "utils/helpers"
@@ -94,12 +93,9 @@ export interface ReportFiltersProps {
 export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
   const {setReportFilterValues} = props
   const {session, currentUser} = useContext(AuthContext)
-  const permissions = usePermissions()
 
   const [users, setUsers] = useState<User[]>()
   const [projects, setProjects] = useState<Project[]>()
-
-  const isClient = !permissions.timeEntries
 
   useEffect(() => {
     session.user
@@ -122,7 +118,7 @@ export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
           name: FilterNames.DATE_RANGE,
           placeholder: "Date Range",
           options: dateRangeOptions.filter(
-            (o) => !isClient || !o.hideFromClient
+            (o) => !currentUser.isClient || !o.hideFromClient
           ),
           optionToID: (o) => o.label,
           optionToLabel: (o) => o.label,

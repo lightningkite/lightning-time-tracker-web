@@ -74,7 +74,7 @@ export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
 
           return (
             <>
-              {permissions.manageTasks && (
+              {(permissions.manageTasks || permissions.canCreateTasks) && (
                 <AddTaskButton
                   afterSubmit={onAddedTask}
                   sx={{mb: 1.5}}

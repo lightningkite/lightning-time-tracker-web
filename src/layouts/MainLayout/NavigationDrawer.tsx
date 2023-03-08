@@ -70,7 +70,7 @@ export const NavigationDrawer: FC<{
       icon: Insights,
       show:
         permissions.readSomeProjects ||
-        (permissions.tasks && permissions.timeEntries)
+        (permissions.manageTasks && permissions.manageTimeEntries)
     },
     {
       label: "Users",

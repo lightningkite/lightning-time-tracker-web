@@ -17,7 +17,8 @@ export function usePermissions() {
     timeEntries: isSuperUser || parsedPermissions.timeEntries,
     manageTimeEntries: isSuperUser || parsedPermissions.manageTimeEntries,
     comments: isSuperUser || parsedPermissions.comments,
-    manageComments: isSuperUser || parsedPermissions.manageComments
+    manageComments: isSuperUser || parsedPermissions.manageComments,
+    canCreateTasks: isSuperUser || parsedPermissions.canCreateTasks
   } satisfies Record<string, boolean>
 
   return usePermissionsReturn

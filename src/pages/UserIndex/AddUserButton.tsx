@@ -41,7 +41,8 @@ export const AddUserButton: FC<AddUserProps> = (props) => {
     initialValues: {
       email: "",
       name: "",
-      isSuperUser: false
+      isSuperUser: false,
+      isClient: false
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -98,6 +99,13 @@ export const AddUserButton: FC<AddUserProps> = (props) => {
               <Checkbox {...makeFormikCheckboxProps(formik, "isSuperUser")} />
             }
             label="Is Super User"
+          />
+
+          <FormControlLabel
+            control={
+              <Checkbox {...makeFormikCheckboxProps(formik, "isClient")} />
+            }
+            label="Is Client"
           />
         </Stack>
       </DialogForm>

@@ -24,7 +24,8 @@ export function generateUsers(
         },
         webPreferences: "",
         permissions: 0,
-        limitToProjects: null
+        limitToProjects: null,
+        isClient: false
       }
     }
   )

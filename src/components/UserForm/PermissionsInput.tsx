@@ -5,11 +5,7 @@ import {
   FormGroup,
   FormLabel
 } from "@mui/material"
-import {
-  encodePermissions,
-  parsePermissions,
-  PermissionsSet
-} from "hooks/usePermissions"
+import {encodePermissions, parsePermissions} from "hooks/usePermissions"
 import React, {ChangeEvent, FC} from "react"
 import {camelCaseToTitleCase} from "utils/helpers"
 

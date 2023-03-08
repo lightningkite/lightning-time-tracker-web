@@ -32,6 +32,7 @@ export interface PermissionsSet {
   manageTimeEntries: boolean
   comments: boolean
   manageComments: boolean
+  canCreateTasks: boolean
 }
 
 export function parsePermissions(permissions: number) {
@@ -43,7 +44,8 @@ export function parsePermissions(permissions: number) {
     timeEntries: !!(permissions & 16),
     manageTimeEntries: !!(permissions & 32),
     comments: !!(permissions & 128),
-    manageComments: !!(permissions & 256)
+    manageComments: !!(permissions & 256),
+    canCreateTasks: !!(permissions & 512)
   }
 }
 
@@ -56,6 +58,7 @@ export function encodePermissions(permissions: PermissionsSet) {
     (permissions.timeEntries ? 16 : 0) +
     (permissions.manageTimeEntries ? 32 : 0) +
     (permissions.comments ? 128 : 0) +
-    (permissions.manageComments ? 256 : 0)
+    (permissions.manageComments ? 256 : 0) +
+    (permissions.canCreateTasks ? 512 : 0)
   )
 }

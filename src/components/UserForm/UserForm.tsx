@@ -61,6 +61,7 @@ export const UserForm: FC<UserFormProps> = (props) => {
       email: user.email,
       name: user.name,
       isSuperUser: user.isSuperUser,
+      isClient: user.isClient,
       limitToProjects: user.limitToProjects ?? [],
       defaultStates: user.defaultFilters.states,
       defaultProjects: user.defaultFilters.projects,
@@ -77,6 +78,7 @@ export const UserForm: FC<UserFormProps> = (props) => {
         email: values.email,
         name: values.name,
         isSuperUser: values.isSuperUser,
+        isClient: values.isClient,
         active: values.active,
         limitToProjects: values.limitToProjects,
         permissions: values.permissions,
@@ -200,6 +202,13 @@ export const UserForm: FC<UserFormProps> = (props) => {
                 <Checkbox {...makeFormikCheckboxProps(formik, "active")} />
               }
               label="Active"
+            />
+
+            <FormControlLabel
+              control={
+                <Checkbox {...makeFormikCheckboxProps(formik, "isClient")} />
+              }
+              label="Is Client"
             />
 
             <FormControlLabel

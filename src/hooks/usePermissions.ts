@@ -6,24 +6,56 @@ export function usePermissions() {
     currentUser: {permissions, isSuperUser, limitToProjects}
   } = useContext(AuthContext)
 
-  // Permissions is a number where each bit represents a boolean permission
-  const permissionsBits = permissions
-    .toString(2)
-    .split("")
-    .map((bit) => bit === "1")
-    .reverse()
+  const parsedPermissions = parsePermissions(permissions)
 
   const usePermissionsReturn = {
     readSomeProjects: isSuperUser || !!limitToProjects?.length,
-    manageUsers: isSuperUser || !!permissionsBits.at(0),
-    manageProjects: isSuperUser || !!permissionsBits.at(1),
-    tasks: isSuperUser || !!permissionsBits.at(2),
-    manageTasks: isSuperUser || !!permissionsBits.at(3),
-    timeEntries: isSuperUser || !!permissionsBits.at(4),
-    manageTimeEntries: isSuperUser || !!permissionsBits.at(5),
-    comments: isSuperUser || !!permissionsBits.at(7),
-    manageComments: isSuperUser || !!permissionsBits.at(8)
+    manageUsers: isSuperUser || parsedPermissions.manageUsers,
+    manageProjects: isSuperUser || parsedPermissions.manageProjects,
+    tasks: isSuperUser || parsedPermissions.tasks,
+    manageTasks: isSuperUser || parsedPermissions.manageTasks,
+    timeEntries: isSuperUser || parsedPermissions.timeEntries,
+    manageTimeEntries: isSuperUser || parsedPermissions.manageTimeEntries,
+    comments: isSuperUser || parsedPermissions.comments,
+    manageComments: isSuperUser || parsedPermissions.manageComments
   } satisfies Record<string, boolean>
 
   return usePermissionsReturn
+}
+
+export interface PermissionsSet {
+  manageUsers: boolean
+  manageProjects: boolean
+  tasks: boolean
+  manageTasks: boolean
+  timeEntries: boolean
+  manageTimeEntries: boolean
+  comments: boolean
+  manageComments: boolean
+}
+
+export function parsePermissions(permissions: number) {
+  return {
+    manageUsers: !!(permissions & 1),
+    manageProjects: !!(permissions & 2),
+    tasks: !!(permissions & 4),
+    manageTasks: !!(permissions & 8),
+    timeEntries: !!(permissions & 16),
+    manageTimeEntries: !!(permissions & 32),
+    comments: !!(permissions & 128),
+    manageComments: !!(permissions & 256)
+  }
+}
+
+export function encodePermissions(permissions: PermissionsSet) {
+  return (
+    (permissions.manageUsers ? 1 : 0) +
+    (permissions.manageProjects ? 2 : 0) +
+    (permissions.tasks ? 4 : 0) +
+    (permissions.manageTasks ? 8 : 0) +
+    (permissions.timeEntries ? 16 : 0) +
+    (permissions.manageTimeEntries ? 32 : 0) +
+    (permissions.comments ? 128 : 0) +
+    (permissions.manageComments ? 256 : 0)
+  )
 }

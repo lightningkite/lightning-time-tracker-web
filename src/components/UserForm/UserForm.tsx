@@ -18,11 +18,13 @@ import {
   TextField
 } from "@mui/material"
 import {Project, TaskState, User} from "api/sdk"
+import FormSection from "components/FormSection"
 import {useFormik} from "formik"
 import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import * as yup from "yup"
+import {PermissionsInput} from "./PermissionsInput"
 
 // Form validation schema. See: https://www.npmjs.com/package/yup#object
 const validationSchema = yup.object().shape({
@@ -62,7 +64,8 @@ export const UserForm: FC<UserFormProps> = (props) => {
       limitToProjects: user.limitToProjects ?? [],
       defaultStates: user.defaultFilters.states,
       defaultProjects: user.defaultFilters.projects,
-      active: user.active
+      active: user.active,
+      permissions: user.permissions
     },
     validationSchema,
     // When the form is submitted, this function is called if the form values are valid
@@ -76,6 +79,7 @@ export const UserForm: FC<UserFormProps> = (props) => {
         isSuperUser: values.isSuperUser,
         active: values.active,
         limitToProjects: values.limitToProjects,
+        permissions: values.permissions,
         defaultFilters: {
           ...user.defaultFilters,
           states: values.defaultStates,
@@ -112,35 +116,6 @@ export const UserForm: FC<UserFormProps> = (props) => {
 
       <TextField label="Name" {...makeFormikTextFieldProps(formik, "name")} />
 
-      {user._id !== currentUser._id && (
-        <Autocomplete
-          multiple
-          options={projectOptions ?? []}
-          getOptionLabel={(project) => project.name}
-          isOptionEqualToValue={(a, b) => a._id === b._id}
-          disableCloseOnSelect
-          disableClearable
-          value={
-            projectOptions?.filter((project) =>
-              formik.values.limitToProjects.includes(project._id)
-            ) ?? []
-          }
-          onChange={(e, value) => {
-            formik.setFieldValue(
-              "limitToProjects",
-              value.map((project) => project._id)
-            )
-          }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="Limit to Projects"
-              helperText="This user will only be able to access these projects"
-            />
-          )}
-        />
-      )}
-
       {user._id === currentUser._id && permissions.tasks && (
         <>
           <Autocomplete
@@ -155,7 +130,7 @@ export const UserForm: FC<UserFormProps> = (props) => {
                 formik.values.defaultProjects.includes(project._id)
               ) ?? []
             }
-            onChange={(e, value) => {
+            onChange={(_e, value) => {
               formik.setFieldValue(
                 "defaultProjects",
                 value.map((project) => project._id)
@@ -217,19 +192,63 @@ export const UserForm: FC<UserFormProps> = (props) => {
         </>
       )}
 
-      <FormControlLabel
-        control={
-          <Checkbox {...makeFormikCheckboxProps(formik, "isSuperUser")} />
-        }
-        label="Is Super User"
-        disabled={currentUser._id === user._id}
-      />
+      {user._id !== currentUser._id && (
+        <FormSection title="Permissions">
+          <Stack direction="row" spacing={2}>
+            <FormControlLabel
+              control={
+                <Checkbox {...makeFormikCheckboxProps(formik, "active")} />
+              }
+              label="Active"
+            />
 
-      <FormControlLabel
-        control={<Checkbox {...makeFormikCheckboxProps(formik, "active")} />}
-        label="Active"
-        disabled={currentUser._id === user._id}
-      />
+            <FormControlLabel
+              control={
+                <Checkbox {...makeFormikCheckboxProps(formik, "isSuperUser")} />
+              }
+              label="Is Super User"
+            />
+          </Stack>
+
+          {!formik.values.isSuperUser && (
+            <>
+              <Autocomplete
+                multiple
+                options={projectOptions ?? []}
+                getOptionLabel={(project) => project.name}
+                isOptionEqualToValue={(a, b) => a._id === b._id}
+                disableCloseOnSelect
+                disableClearable
+                value={
+                  projectOptions?.filter((project) =>
+                    formik.values.limitToProjects.includes(project._id)
+                  ) ?? []
+                }
+                onChange={(e, value) => {
+                  formik.setFieldValue(
+                    "limitToProjects",
+                    value.map((project) => project._id)
+                  )
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Limit to Projects"
+                    helperText="This user will only be able to access these projects"
+                  />
+                )}
+              />
+
+              <PermissionsInput
+                permissions={formik.values.permissions}
+                onChange={(permissions) => {
+                  formik.setFieldValue("permissions", permissions)
+                }}
+              />
+            </>
+          )}
+        </FormSection>
+      )}
 
       {error && <Alert severity="error">{error}</Alert>}
 

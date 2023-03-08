@@ -84,7 +84,7 @@ export const HoursByProjectReport: FC<ReportProps> = (props) => {
       userTimeResponses
         .filter(
           (projectMilliseconds) =>
-            isClient && Object.values(projectMilliseconds).some(Boolean)
+            !isClient || Object.values(projectMilliseconds).some(Boolean)
         )
         .map((projectMilliseconds, i) => ({
           user: users[i],

@@ -97,6 +97,7 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
           setMsPerTask(millisecondsPerTask)
           setOrphanMsPerTask(orphanMillisecondsPerProject)
           setProjects(projectsResponse)
+          projectsResponse.length === 1 && setExpanded(projectsResponse[0]._id)
         }
       )
       .catch(() => setError("Error fetching data"))
@@ -199,7 +200,7 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
                   {orphanHours > 0 && (
                     <ListItem>
                       <ListItemText
-                        primary="Other time"
+                        primary="Project Management"
                         secondary={`${orphanHours.toFixed(1)} hours`}
                       />
                     </ListItem>

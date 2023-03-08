@@ -3,6 +3,7 @@ import {FilterBar} from "@lightningkite/mui-lightning-components"
 import {Skeleton} from "@mui/material"
 import {Project, Task, TimeEntry, User} from "api/sdk"
 import dayjs, {Dayjs} from "dayjs"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO} from "utils/helpers"
@@ -15,7 +16,11 @@ export interface DateRange {
 
 const PAY_PERIOD_END = 15
 
-const dateRangeOptions: {label: string; value: DateRange}[] = [
+const dateRangeOptions: {
+  label: string
+  value: DateRange
+  hideFromClient?: boolean
+}[] = [
   {
     label: "Month",
     value: {
@@ -46,6 +51,7 @@ const dateRangeOptions: {label: string; value: DateRange}[] = [
   },
   {
     label: "Pay Period",
+    hideFromClient: true,
     value:
       dayjs().date() <= PAY_PERIOD_END
         ? {
@@ -59,6 +65,7 @@ const dateRangeOptions: {label: string; value: DateRange}[] = [
   },
   {
     label: "Pay Period - previous",
+    hideFromClient: true,
     value:
       dayjs().date() <= PAY_PERIOD_END
         ? {
@@ -87,9 +94,12 @@ export interface ReportFiltersProps {
 export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
   const {setReportFilterValues} = props
   const {session, currentUser} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [users, setUsers] = useState<User[]>()
   const [projects, setProjects] = useState<Project[]>()
+
+  const isClient = !permissions.timeEntries
 
   useEffect(() => {
     session.user
@@ -111,7 +121,9 @@ export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
           type: "select",
           name: FilterNames.DATE_RANGE,
           placeholder: "Date Range",
-          options: dateRangeOptions,
+          options: dateRangeOptions.filter(
+            (o) => !isClient || !o.hideFromClient
+          ),
           optionToID: (o) => o.label,
           optionToLabel: (o) => o.label,
           defaultValue: dateRangeOptions[0],

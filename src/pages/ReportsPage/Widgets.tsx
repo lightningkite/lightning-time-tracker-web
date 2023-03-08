@@ -2,6 +2,7 @@ import {Aggregate} from "@lightningkite/lightning-server-simplified"
 import {Stack, Typography} from "@mui/material"
 import {Project} from "api/sdk"
 import dayjs from "dayjs"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
@@ -15,6 +16,7 @@ export const Widgets: FC<ReportProps> = (props) => {
   const {reportFilterValues} = props
   const {dateRange} = reportFilterValues
   const {session, currentUser} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [totalHours, setTotalHours] = useState<number>()
   const [revenueDollarsBeforeToday, setRevenueDollarsBeforeToday] =
@@ -96,6 +98,8 @@ export const Widgets: FC<ReportProps> = (props) => {
     )
   }, [reportFilterValues])
 
+  const isClient = !permissions.timeEntries
+
   const isTodayWithinRange =
     dateRange &&
     !dayjs().isAfter(dateRange.end, "day") &&
@@ -109,7 +113,15 @@ export const Widgets: FC<ReportProps> = (props) => {
         </Typography>
       </WidgetLayout>
 
-      <WidgetLayout title={isTodayWithinRange ? "Revenue to Date" : "Revenue"}>
+      <WidgetLayout
+        title={(() => {
+          if (isTodayWithinRange) {
+            return isClient ? "Est. Bill to Date" : "Revenue to Date"
+          } else {
+            return isClient ? "Est. Bill" : "Revenue"
+          }
+        })()}
+      >
         <Typography fontSize="2.5rem">
           {revenueDollarsToDate
             ? formatDollars(revenueDollarsToDate, false)
@@ -117,7 +129,7 @@ export const Widgets: FC<ReportProps> = (props) => {
         </Typography>
       </WidgetLayout>
 
-      {isTodayWithinRange && (
+      {isTodayWithinRange && !isClient && (
         <WidgetLayout title="Projected">
           <Typography fontSize="2.5rem">
             {revenueDollarsBeforeToday

@@ -1,9 +1,9 @@
 import {useThrottle} from "@lightningkite/mui-lightning-components"
 import dayjs from "dayjs"
 import {useContext, useEffect, useState} from "react"
-import {LocalStorageKey} from "./constants"
-import {AuthContext, Timer, TimerContextType} from "./context"
-import {dateToISO, getTimerSeconds} from "./helpers"
+import {LocalStorageKey} from "../utils/constants"
+import {AuthContext, Timer, TimerContextType} from "../utils/context"
+import {dateToISO, getTimerSeconds} from "../utils/helpers"
 
 import duration from "dayjs/plugin/duration"
 dayjs.extend(duration)

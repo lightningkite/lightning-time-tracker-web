@@ -16,7 +16,7 @@ import Loading from "components/Loading"
 import React, {FC, useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
 import {booleanCompare, compareTasksByState} from "utils/helpers"
-import {AnnotatedTask, useAnnotatedEndpoints} from "utils/useAnnotatedEndpoints"
+import {AnnotatedTask, useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
 import {TaskListItem} from "./TaskListItem"
 
 export const ProjectsTasks: FC<{onlyMine: boolean}> = ({onlyMine}) => {

@@ -16,7 +16,7 @@ dayjs.extend(duration)
 
 export const TimeEntriesReport: FC<ReportProps> = (props) => {
   const {reportFilterValues} = props
-  const {session} = useContext(AuthContext)
+  const {session, currentUser} = useContext(AuthContext)
 
   const [tableData, setTableData] = useState<TimeEntry[]>()
 
@@ -26,7 +26,12 @@ export const TimeEntriesReport: FC<ReportProps> = (props) => {
     setTableData(undefined)
 
     const timeEntries = await session.timeEntry.query({
-      condition: filtersToTimeEntryCondition(reportFilterValues),
+      condition: {
+        And: [
+          filtersToTimeEntryCondition(reportFilterValues),
+          {organization: {Equal: currentUser.organization}}
+        ]
+      },
       limit: QUERY_LIMIT
     })
 

@@ -3,6 +3,7 @@ import {Alert, Card} from "@mui/material"
 import {DataGrid, GridEnrichedColDef} from "@mui/x-data-grid"
 import {User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
@@ -23,11 +24,13 @@ export const HoursByDateReport: FC<ReportProps> = (props) => {
   const {reportFilterValues} = props
   const {dateRange} = reportFilterValues
   const {session} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [tableData, setTableData] = useState<HoursTableRow[]>()
   const [users, setUsers] = useState<User[]>()
-
   const [error, setError] = useState("")
+
+  const isClient = !permissions.timeEntries
 
   async function fetchReportData() {
     setTableData(undefined)
@@ -57,10 +60,14 @@ export const HoursByDateReport: FC<ReportProps> = (props) => {
     const userTimeResponses = await Promise.all(userTimeRequests)
 
     setTableData(
-      userTimeResponses.map((dayMilliseconds, i) => ({
-        user: users[i],
-        dayMilliseconds
-      }))
+      userTimeResponses
+        .filter((dayMilliseconds) =>
+          Object.values(dayMilliseconds).some(Boolean)
+        )
+        .map((dayMilliseconds, i) => ({
+          user: users[i],
+          dayMilliseconds
+        }))
     )
   }
 

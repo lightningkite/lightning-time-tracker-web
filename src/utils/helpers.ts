@@ -97,12 +97,34 @@ export function totalHoursForTimeEntries(timeEntries: TimeEntry[]): number {
 export function parsePreferences(
   preferencesJSON: string | null | undefined
 ): WebPreferences {
-  try {
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    return JSON.parse(preferencesJSON || "{}")
-  } catch {
-    return {}
+  const defaultPreferences: WebPreferences = {
+    mode: "dark",
+    color: "lightBlue",
+    colorBrightness: 500,
+    summaryTime: "week"
   }
+  try {
+    const parsed = JSON.parse(
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+      preferencesJSON || "{}"
+    ) as Partial<WebPreferences> // Probably
+
+    const isValidBrightness =
+      !!parsed.colorBrightness &&
+      [100, 200, 300, 400, 500, 600, 700, 800, 900].includes(
+        parsed.colorBrightness
+      )
+
+    if (!isValidBrightness) {
+      delete parsed.colorBrightness
+    }
+
+    return {...defaultPreferences, ...parsed}
+  } catch (e) {
+    console.error("Error parsing preferences", e)
+  }
+
+  return defaultPreferences
 }
 
 export function booleanCompare<T>(
@@ -138,4 +160,19 @@ export function dynamicFormatDate(date: Dayjs): string {
     return date.format("MMM D")
 
   return date.format("YYYY-MM-DD")
+}
+
+export async function uploadToS3(uploadUrl: string, file: File) {
+  await fetch(uploadUrl, {
+    method: "PUT",
+    body: file,
+    headers: {
+      "Content-type": file.type
+    }
+  }).then((res) => {
+    if (!res.ok) {
+      console.log("Error uploading file", res)
+      throw new Error("Error uploading file")
+    }
+  })
 }

@@ -10,6 +10,10 @@ import {
   Query
 } from "@lightningkite/lightning-server-simplified"
 
+export interface Attachment {
+  name: string
+  file: ServerFile
+}
 export interface Comment {
   _id: UUID
   user: UUID
@@ -85,7 +89,7 @@ export interface Task {
   state: TaskState
   summary: string
   description: string
-  attachments: Array<ServerFile>
+  attachments: Array<Attachment>
   estimate: number | null | undefined
   emergency: boolean
   createdAt: Instant
@@ -138,6 +142,7 @@ export interface User {
   currentTask: UUID | null | undefined
   permissions: number
   limitToProjects: Array<UUID> | null | undefined
+  active: boolean
 }
 
 export interface Api {

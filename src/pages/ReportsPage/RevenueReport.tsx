@@ -16,6 +16,7 @@ import {Project, Task} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import React, {FC, useContext, useEffect, useState} from "react"
+import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
 import {formatDollars, MILLISECONDS_PER_HOUR} from "utils/helpers"
 import {
@@ -31,7 +32,7 @@ export type SummarizeByProject = Record<
 >
 
 export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
-  const {session} = useContext(AuthContext)
+  const {session, currentUser} = useContext(AuthContext)
 
   const [projects, setProjects] = useState<Project[]>()
   const [tasks, setTasks] = useState<Task[]>()
@@ -53,7 +54,11 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
     const millisecondsPerTaskRequest = session.timeEntry.groupAggregate({
       aggregate: Aggregate.Sum,
       condition: {
-        And: [timeEntryCondition, {task: {NotEqual: null}}]
+        And: [
+          timeEntryCondition,
+          {task: {NotEqual: null}},
+          {organization: {Equal: currentUser.organization}}
+        ]
       },
       groupBy: "task",
       property: "durationMilliseconds"
@@ -63,14 +68,19 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
       session.timeEntry.groupAggregate({
         aggregate: Aggregate.Sum,
         condition: {
-          And: [timeEntryCondition, {task: {Equal: null}}]
+          And: [
+            timeEntryCondition,
+            {task: {Equal: null}},
+            {organization: {Equal: currentUser.organization}}
+          ]
         },
         groupBy: "project",
         property: "durationMilliseconds"
       })
 
     const projectsRequest = session.project.query({
-      condition: filtersToProjectCondition(reportFilterValues)
+      condition: filtersToProjectCondition(reportFilterValues),
+      limit: QUERY_LIMIT
     })
 
     Promise.all([
@@ -87,6 +97,7 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
           setMsPerTask(millisecondsPerTask)
           setOrphanMsPerTask(orphanMillisecondsPerProject)
           setProjects(projectsResponse)
+          projectsResponse.length === 1 && setExpanded(projectsResponse[0]._id)
         }
       )
       .catch(() => setError("Error fetching data"))
@@ -99,7 +110,8 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
 
     session.task
       .query({
-        condition: {_id: {Inside: Array.from(uniqueTaskIds)}}
+        condition: {_id: {Inside: Array.from(uniqueTaskIds)}},
+        limit: QUERY_LIMIT
       })
       .then(setTasks)
       .catch(() => setError("Error fetching tasks"))
@@ -188,7 +200,7 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
                   {orphanHours > 0 && (
                     <ListItem>
                       <ListItemText
-                        primary="Other time"
+                        primary="Project Management"
                         secondary={`${orphanHours.toFixed(1)} hours`}
                       />
                     </ListItem>

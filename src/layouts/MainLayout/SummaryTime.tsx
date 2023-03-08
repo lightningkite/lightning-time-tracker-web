@@ -23,7 +23,7 @@ export const SummaryTime: FC = () => {
   const [submittedSeconds, setSubmittedSeconds] = useState<number>()
   const [unsubmittedSeconds, setUnsubmittedSeconds] = useState(0)
 
-  const preferences = parsePreferences(currentUser?.webPreferences)
+  const preferences = parsePreferences(currentUser.webPreferences)
 
   const calculateUnsubmittedSeconds = () => {
     const seconds = Object.values(timers).reduce(

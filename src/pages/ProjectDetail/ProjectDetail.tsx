@@ -7,7 +7,6 @@ import PageHeader from "components/PageHeader"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {useParams} from "react-router-dom"
 import {AuthContext} from "utils/context"
-import {DeleteProjectButton} from "./DeleteProjectButton"
 import {ProjectForm} from "./ProjectForm"
 import {TaskTab} from "./TaskTab"
 import {TimeEntryTab} from "./TimeEntryTab"
@@ -43,7 +42,9 @@ const ProjectDetail: FC = () => {
           [project.name, ""]
         ]}
       >
-        <DeleteProjectButton project={project} />
+        {/* {permissions.manageProjects && (
+          <DeleteProjectButton project={project} />
+        )} */}
       </PageHeader>
 
       <Card>

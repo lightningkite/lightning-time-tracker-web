@@ -4,6 +4,7 @@ import {LocalStorageKey} from "utils/constants"
 import {generateMockDatastore, MockDatastore} from "./mockDatastore"
 import {
   Api,
+  Comment,
   EmailPinLogin,
   Organization,
   Project,
@@ -31,10 +32,21 @@ export class MockApi implements Api {
     throw new Error("Method not implemented.")
   }
 
-  readonly user = mockRestEndpointFunctions<User>(
-    this.mockDatastore.users,
-    "user"
-  )
+  readonly user = {
+    ...mockRestEndpointFunctions<User>(this.mockDatastore.users, "user"),
+    addProjects(): Promise<User> {
+      return Promise.reject()
+    },
+    removeProjects(): Promise<User> {
+      return Promise.reject()
+    },
+    addPermissions(): Promise<User> {
+      return Promise.reject()
+    },
+    removePermissions(): Promise<User> {
+      return Promise.reject()
+    }
+  }
 
   readonly organization = mockRestEndpointFunctions<Organization>(
     this.mockDatastore.organizations,
@@ -55,6 +67,8 @@ export class MockApi implements Api {
     this.mockDatastore.timeEntries,
     "timeEntry"
   )
+
+  readonly comment = mockRestEndpointFunctions<Comment>([], "comment")
 
   readonly timer = mockRestEndpointFunctions<Timer>([], "timer")
 

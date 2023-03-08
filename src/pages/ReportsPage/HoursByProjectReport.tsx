@@ -3,7 +3,9 @@ import {Card} from "@mui/material"
 import {DataGrid, GridEnrichedColDef} from "@mui/x-data-grid"
 import {Project, User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
+import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
 import {MILLISECONDS_PER_HOUR} from "utils/helpers"
 import {CustomToolbar} from "./CustomToolbar"
@@ -21,28 +23,37 @@ interface HoursTableRow {
 
 export const HoursByProjectReport: FC<ReportProps> = (props) => {
   const {reportFilterValues} = props
-  const {session} = useContext(AuthContext)
+  const {session, currentUser} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [tableData, setTableData] = useState<HoursTableRow[]>()
   const [users, setUsers] = useState<User[]>()
   const [projects, setProjects] = useState<Project[]>()
   const [msByProject, setMsByProject] =
     useState<Record<string, number | null | undefined>>()
-
   const [error, setError] = useState("")
+
+  const isClient = !permissions.timeEntries
 
   async function fetchReportData() {
     setTableData(undefined)
 
     const [users, projects, timeByProject] = await Promise.all([
       session.user.query({
-        condition: filtersToUserCondition(reportFilterValues)
+        condition: filtersToUserCondition(reportFilterValues),
+        limit: QUERY_LIMIT
       }),
       session.project.query({
-        condition: filtersToProjectCondition(reportFilterValues)
+        condition: filtersToProjectCondition(reportFilterValues),
+        limit: QUERY_LIMIT
       }),
       session.timeEntry.groupAggregate({
-        condition: filtersToTimeEntryCondition(reportFilterValues),
+        condition: {
+          And: [
+            filtersToTimeEntryCondition(reportFilterValues),
+            {organization: {Equal: currentUser.organization}}
+          ]
+        },
         aggregate: Aggregate.Sum,
         property: "durationMilliseconds",
         groupBy: "project"
@@ -70,10 +81,14 @@ export const HoursByProjectReport: FC<ReportProps> = (props) => {
     const userTimeResponses = await Promise.all(userTimeRequests)
 
     setTableData(
-      userTimeResponses.map((projectMilliseconds, i) => ({
-        user: users[i],
-        projectMilliseconds
-      }))
+      userTimeResponses
+        .filter((projectMilliseconds) =>
+          Object.values(projectMilliseconds).some(Boolean)
+        )
+        .map((projectMilliseconds, i) => ({
+          user: users[i],
+          projectMilliseconds
+        }))
     )
   }
 

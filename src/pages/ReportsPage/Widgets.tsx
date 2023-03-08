@@ -2,7 +2,9 @@ import {Aggregate} from "@lightningkite/lightning-server-simplified"
 import {Stack, Typography} from "@mui/material"
 import {Project} from "api/sdk"
 import dayjs from "dayjs"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
+import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
 import {dateToISO, formatDollars, MILLISECONDS_PER_HOUR} from "utils/helpers"
 import {filtersToTimeEntryCondition} from "./ReportFilters"
@@ -13,14 +15,20 @@ import {WidgetLayout} from "./WidgetLayout"
 export const Widgets: FC<ReportProps> = (props) => {
   const {reportFilterValues} = props
   const {dateRange} = reportFilterValues
-  const {session} = useContext(AuthContext)
+  const {session, currentUser} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [totalHours, setTotalHours] = useState<number>()
   const [revenueDollarsBeforeToday, setRevenueDollarsBeforeToday] =
     useState<number>()
   const [revenueDollarsToDate, setRevenueDollarsToDate] = useState<number>()
 
-  const timeEntryCondition = filtersToTimeEntryCondition(reportFilterValues)
+  const timeEntryCondition = {
+    And: [
+      filtersToTimeEntryCondition(reportFilterValues),
+      {organization: {Equal: currentUser.organization}}
+    ]
+  }
 
   useEffect(() => {
     setTotalHours(undefined)
@@ -31,7 +39,9 @@ export const Widgets: FC<ReportProps> = (props) => {
       property: "durationMilliseconds"
     })
 
-    const projectsRequest = session.project.query({})
+    const projectsRequest = session.project.query({
+      limit: QUERY_LIMIT
+    })
 
     const millisecondsByProjectRequest = session.timeEntry.groupAggregate({
       aggregate: Aggregate.Sum,
@@ -88,6 +98,8 @@ export const Widgets: FC<ReportProps> = (props) => {
     )
   }, [reportFilterValues])
 
+  const isClient = !permissions.timeEntries
+
   const isTodayWithinRange =
     dateRange &&
     !dayjs().isAfter(dateRange.end, "day") &&
@@ -101,7 +113,15 @@ export const Widgets: FC<ReportProps> = (props) => {
         </Typography>
       </WidgetLayout>
 
-      <WidgetLayout title={isTodayWithinRange ? "Revenue to Date" : "Revenue"}>
+      <WidgetLayout
+        title={(() => {
+          if (isTodayWithinRange) {
+            return isClient ? "Est. Bill to Date" : "Revenue to Date"
+          } else {
+            return isClient ? "Est. Bill" : "Revenue"
+          }
+        })()}
+      >
         <Typography fontSize="2.5rem">
           {revenueDollarsToDate
             ? formatDollars(revenueDollarsToDate, false)
@@ -109,7 +129,7 @@ export const Widgets: FC<ReportProps> = (props) => {
         </Typography>
       </WidgetLayout>
 
-      {isTodayWithinRange && (
+      {isTodayWithinRange && !isClient && (
         <WidgetLayout title="Projected">
           <Typography fontSize="2.5rem">
             {revenueDollarsBeforeToday

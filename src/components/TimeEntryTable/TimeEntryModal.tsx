@@ -13,6 +13,7 @@ import Loading from "components/Loading"
 import dayjs from "dayjs"
 import duration, {Duration} from "dayjs/plugin/duration"
 import {useFormik} from "formik"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateFromISO, dateToISO, stringToDuration} from "utils/helpers"
@@ -40,6 +41,7 @@ const validationSchema = yup.object().shape({
 export const TimeEntryModal: FC<TimeEntryModalProps> = (props) => {
   const {timeEntry, onClose} = props
   const {session} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [loadedInitialAsyncValues, setLoadedInitialAsyncValues] =
     useState(false)

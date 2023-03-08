@@ -10,7 +10,7 @@ import {
 import {TaskState} from "api/sdk"
 import React, {FC, useContext, useState} from "react"
 import {AuthContext} from "utils/context"
-import {AnnotatedTask} from "utils/useAnnotatedEndpoints"
+import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 
 interface TaskStateAction {
   label: string

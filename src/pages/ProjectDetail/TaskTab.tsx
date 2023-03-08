@@ -1,6 +1,7 @@
 import {Project} from "api/sdk"
 import {AddTaskButton} from "components/AddTaskButton"
 import {TaskTable} from "components/TaskTable"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useState} from "react"
 import {useNavigate} from "react-router-dom"
 
@@ -10,18 +11,21 @@ export interface TaskTabProps {
 
 export const TaskTab: FC<TaskTabProps> = ({project}) => {
   const navigate = useNavigate()
+  const permissions = usePermissions()
 
   const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   return (
     <>
-      <div style={{textAlign: "right"}}>
-        <AddTaskButton
-          project={project}
-          afterSubmit={() => setRefreshTrigger((prev) => prev + 1)}
-          sx={{mb: 1}}
-        />
-      </div>
+      {permissions.tasks && (
+        <div style={{textAlign: "right"}}>
+          <AddTaskButton
+            project={project}
+            afterSubmit={() => setRefreshTrigger((prev) => prev + 1)}
+            sx={{mb: 1}}
+          />
+        </div>
+      )}
 
       <TaskTable
         additionalQueryConditions={[{project: {Equal: project._id}}]}

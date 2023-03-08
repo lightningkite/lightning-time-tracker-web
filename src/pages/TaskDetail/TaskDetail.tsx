@@ -1,14 +1,16 @@
-import {Card, CardContent, Container, Typography} from "@mui/material"
-import {Project, Task} from "api/sdk"
+import {TabContext, TabList, TabPanel} from "@mui/lab"
+import {Card, CardContent, Container, Paper, Tab} from "@mui/material"
+import {Task} from "api/sdk"
+import {CommentSection} from "components/CommentSection"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import PageHeader from "components/PageHeader"
-import {TimeEntryTable} from "components/TimeEntryTable"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {useParams} from "react-router-dom"
 import {AuthContext} from "utils/context"
 import {DeleteTaskButton} from "./DeleteTaskButton"
 import {TaskForm} from "./TaskForm"
+import {TimeEntryTab} from "./TimeEntryTab"
 
 const MAX_TITLE_LENGTH = 40
 
@@ -17,26 +19,20 @@ const TaskDetail: FC = () => {
   const {session} = useContext(AuthContext)
 
   const [task, setTask] = useState<Task | null>()
-  const [project, setProject] = useState<Project | null>()
+  const [tab, setTab] = useState("1")
 
   useEffect(() => {
     session.task
       .detail(taskId as string)
       .then(setTask)
       .catch(() => setTask(null))
-
-    projectId &&
-      session.project
-        .detail(projectId)
-        .then(setProject)
-        .catch(() => setProject(null))
   }, [taskId])
 
-  if (task === undefined || (projectId && project === undefined)) {
+  if (task === undefined) {
     return <Loading />
   }
 
-  if (task === null || project === null) {
+  if (task === null) {
     return <ErrorAlert>Error loading task</ErrorAlert>
   }
 
@@ -50,10 +46,13 @@ const TaskDetail: FC = () => {
       <PageHeader
         title={shortSummary}
         breadcrumbs={
-          project
+          projectId !== undefined
             ? [
                 ["All Projects", "/projects"],
-                [project.name, `/projects/${project._id}`],
+                [
+                  task.projectName ?? "Unknown Project",
+                  `/projects/${projectId}`
+                ],
                 [shortSummary, ""]
               ]
             : [
@@ -71,14 +70,25 @@ const TaskDetail: FC = () => {
         </CardContent>
       </Card>
 
-      <Typography variant="h2" sx={{mt: 4, mb: 2}}>
-        Time Entries
-      </Typography>
+      <TabContext value={tab}>
+        <Paper sx={{mt: 4, mb: 1}}>
+          <TabList onChange={(_e, v) => setTab(v as string)}>
+            <Tab label="Comments" value="1" />
+            <Tab label="Time Entries" value="2" />
+          </TabList>
+        </Paper>
 
-      <TimeEntryTable
-        additionalQueryConditions={[{task: {Equal: task._id}}]}
-        hiddenColumns={["project", "task"]}
-      />
+        <TabPanel value="1" sx={{p: 0, pt: 2}}>
+          <Card>
+            <CardContent>
+              <CommentSection task={task} />
+            </CardContent>
+          </Card>
+        </TabPanel>
+        <TabPanel value="2" sx={{p: 0}}>
+          <TimeEntryTab task={task} />
+        </TabPanel>
+      </TabContext>
     </Container>
   )
 }

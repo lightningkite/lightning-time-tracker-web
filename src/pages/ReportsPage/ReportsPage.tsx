@@ -1,13 +1,15 @@
 import {TabContext, TabList, TabPanel} from "@mui/lab"
 import {Box, Container, Tab} from "@mui/material"
-import { Project, User } from "api/sdk"
+import {Project, User} from "api/sdk"
 import PageHeader from "components/PageHeader"
-import React, {FC, useState} from "react"
+import {usePermissions} from "hooks/usePermissions"
+import React, {FC, useContext, useState} from "react"
+import {AuthContext} from "utils/context"
 import {HoursByDateReport} from "./HoursByDateReport"
 import {HoursByProjectReport} from "./HoursByProjectReport"
 import {DateRange, DateRangeSelector} from "./ReportFilters"
 import {RevenueReport} from "./RevenueReport"
-import { TimeEntriesReport } from "./TimeEntriesReport"
+import {TimeEntriesReport} from "./TimeEntriesReport"
 
 export interface ReportFilterValues {
   dateRange: DateRange | null
@@ -20,9 +22,18 @@ export interface ReportProps {
 }
 
 const ReportsPage: FC = () => {
+  const permissions = usePermissions()
+  const {currentUser} = useContext(AuthContext)
+
   const [reportFilterValues, setReportFilterValues] =
     useState<ReportFilterValues>()
   const [value, setValue] = useState("1")
+
+  const isClient = !permissions.timeEntries
+  const multipleProjects =
+    currentUser.isSuperUser ||
+    !currentUser.limitToProjects ||
+    currentUser.limitToProjects.length > 1
 
   return (
     <Container maxWidth="xl">
@@ -35,9 +46,12 @@ const ReportsPage: FC = () => {
           <TabContext value={value}>
             <Box sx={{borderBottom: 1, borderColor: "divider", mt: 2}}>
               <TabList onChange={(_e, newValue) => setValue(newValue)}>
-                <Tab label="Revenue" value="1" />
+                <Tab
+                  label={isClient ? "Estimated Bill" : "Revenue"}
+                  value="1"
+                />
                 <Tab label="Hours by Date" value="2" />
-                <Tab label="Hours by Project" value="3" />
+                {multipleProjects && <Tab label="Hours by Project" value="3" />}
                 <Tab label="Time Entries" value="4" />
               </TabList>
             </Box>
@@ -47,9 +61,11 @@ const ReportsPage: FC = () => {
             <TabPanel value="2" sx={{px: 0}}>
               <HoursByDateReport reportFilterValues={reportFilterValues} />
             </TabPanel>
-            <TabPanel value="3" sx={{px: 0}}>
-              <HoursByProjectReport reportFilterValues={reportFilterValues} />
-            </TabPanel>
+            {multipleProjects && (
+              <TabPanel value="3" sx={{px: 0}}>
+                <HoursByProjectReport reportFilterValues={reportFilterValues} />
+              </TabPanel>
+            )}
             <TabPanel value="4" sx={{px: 0}}>
               <TimeEntriesReport reportFilterValues={reportFilterValues} />
             </TabPanel>

@@ -7,6 +7,7 @@ import {LoadingButton} from "@mui/lab"
 import {Alert, InputAdornment, Stack, TextField} from "@mui/material"
 import {Project} from "api/sdk"
 import {useFormik} from "formik"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useState} from "react"
 import {AuthContext} from "utils/context"
 import * as yup from "yup"
@@ -23,8 +24,8 @@ export interface ProjectFormProps {
 
 export const ProjectForm: FC<ProjectFormProps> = (props) => {
   const {project, setProject} = props
-
   const {session} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [error, setError] = useState("")
 
@@ -68,37 +69,47 @@ export const ProjectForm: FC<ProjectFormProps> = (props) => {
     }
   })
 
+  const canEdit = permissions.manageProjects
+
   return (
     <Stack gap={3}>
-      <TextField label="Name" {...makeFormikTextFieldProps(formik, "name")} />
+      <TextField
+        label="Name"
+        {...makeFormikTextFieldProps(formik, "name")}
+        disabled={!canEdit}
+      />
       <TextField
         label="Rate"
         {...makeFormikNumericTextFieldProps(formik, "rate")}
         InputProps={{
           startAdornment: <InputAdornment position="start">$</InputAdornment>
         }}
+        disabled={!canEdit}
       />
       <TextField
         label="Notes"
         multiline
         minRows={2}
         {...makeFormikTextFieldProps(formik, "notes")}
+        disabled={!canEdit}
       />
 
       {error && <Alert severity="error">{error}</Alert>}
 
-      <LoadingButton
-        onClick={() => {
-          formik.submitForm()
-        }}
-        variant="contained"
-        color="primary"
-        loading={formik.isSubmitting}
-        style={{alignSelf: "end"}}
-        disabled={!formik.dirty}
-      >
-        {formik.dirty ? "Save Changes" : "Saved"}
-      </LoadingButton>
+      {canEdit && (
+        <LoadingButton
+          onClick={() => {
+            formik.submitForm()
+          }}
+          variant="contained"
+          color="primary"
+          loading={formik.isSubmitting}
+          style={{alignSelf: "end"}}
+          disabled={!formik.dirty}
+        >
+          {formik.dirty ? "Save Changes" : "Saved"}
+        </LoadingButton>
+      )}
     </Stack>
   )
 }

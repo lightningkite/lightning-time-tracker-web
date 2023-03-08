@@ -4,9 +4,9 @@ import {
 } from "@lightningkite/mui-lightning-components"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
+import {AnnotatedTask, useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
 import React, {FC} from "react"
 import {dynamicFormatDate} from "utils/helpers"
-import {AnnotatedTask, useAnnotatedEndpoints} from "utils/useAnnotatedEndpoints"
 
 dayjs.extend(duration)
 

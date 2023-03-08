@@ -5,7 +5,11 @@ import {
   FormGroup,
   FormLabel
 } from "@mui/material"
-import {encodePermissions, parsePermissions} from "hooks/usePermissions"
+import {
+  encodePermissions,
+  parsePermissions,
+  PermissionsSet
+} from "hooks/usePermissions"
 import React, {ChangeEvent, FC} from "react"
 import {camelCaseToTitleCase} from "utils/helpers"
 
@@ -19,11 +23,50 @@ export const PermissionsInput: FC<PermissionsInputProps> = (props) => {
 
   const parsedPermissions = parsePermissions(permissions)
 
+  type PermissionKey = keyof typeof parsedPermissions
+
+  function getChildPermissionKey(
+    key: PermissionKey
+  ): null | keyof typeof parsedPermissions {
+    let otherPermissionKey = key.replace("manage", "")
+    // make first char lowercase
+    otherPermissionKey =
+      otherPermissionKey[0].toLowerCase() + otherPermissionKey.slice(1)
+
+    if (otherPermissionKey in parsedPermissions) {
+      return otherPermissionKey as PermissionKey
+    }
+
+    return null
+  }
+
+  function getParentPermissionKey(
+    key: PermissionKey
+  ): null | keyof typeof parsedPermissions {
+    // make first char uppercase
+    let otherPermissionKey = key[0].toUpperCase() + key.slice(1)
+    otherPermissionKey = "manage" + otherPermissionKey
+
+    if (otherPermissionKey in parsedPermissions) {
+      return otherPermissionKey as PermissionKey
+    }
+
+    return null
+  }
+
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
     const key = event.target.name
     const value = event.target.checked
 
-    onChange(encodePermissions({...parsedPermissions, [key]: value}))
+    const newPermissions = {...parsedPermissions, [key]: value}
+
+    const relativePermissionKey = getChildPermissionKey(key as PermissionKey)
+
+    if (relativePermissionKey && value) {
+      newPermissions[relativePermissionKey] = true
+    }
+
+    onChange(encodePermissions(newPermissions))
   }
 
   return (
@@ -36,6 +79,12 @@ export const PermissionsInput: FC<PermissionsInputProps> = (props) => {
             name={permission}
             control={<Checkbox checked={value} onChange={handleChange} />}
             label={camelCaseToTitleCase(permission)}
+            disabled={(() => {
+              const parentPermission = getParentPermissionKey(
+                permission as PermissionKey
+              )
+              return !!parentPermission && parsedPermissions[parentPermission]
+            })()}
           />
         ))}
       </FormGroup>

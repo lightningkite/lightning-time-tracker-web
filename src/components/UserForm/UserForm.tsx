@@ -81,7 +81,7 @@ export const UserForm: FC<UserFormProps> = (props) => {
         active: values.active,
         limitToProjects: values.limitToProjects,
         permissions: values.permissions,
-        projectFavorites: values.projectFavorites,
+        projectFavorites: values.projectFavorites
       }
 
       // Automatically builds the Lightning Server modification given the old object and the new values
@@ -136,8 +136,8 @@ export const UserForm: FC<UserFormProps> = (props) => {
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Dashboard Projects"
-                helperText="Tasks for these projects will always be shown on your dashboard"
+                label="Favorite Projects"
+                helperText="These projects will be shown first in the project view"
               />
             )}
           />

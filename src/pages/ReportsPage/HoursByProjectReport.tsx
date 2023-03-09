@@ -36,7 +36,12 @@ export const HoursByProjectReport: FC<ReportProps> = (props) => {
 
     const [users, projects, timeByProject] = await Promise.all([
       session.user.query({
-        condition: filtersToUserCondition(reportFilterValues),
+        condition: {
+          And: [
+            filtersToUserCondition(reportFilterValues),
+            {isClient: {Equal: false}}
+          ]
+        },
         limit: QUERY_LIMIT
       }),
       session.project.query({
@@ -77,14 +82,10 @@ export const HoursByProjectReport: FC<ReportProps> = (props) => {
     const userTimeResponses = await Promise.all(userTimeRequests)
 
     setTableData(
-      userTimeResponses
-        .filter((projectMilliseconds) =>
-          Object.values(projectMilliseconds).some(Boolean)
-        )
-        .map((projectMilliseconds, i) => ({
-          user: users[i],
-          projectMilliseconds
-        }))
+      userTimeResponses.map((projectMilliseconds, i) => ({
+        user: users[i],
+        projectMilliseconds
+      }))
     )
   }
 

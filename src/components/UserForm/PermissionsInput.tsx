@@ -5,13 +5,28 @@ import {
   FormGroup,
   FormLabel
 } from "@mui/material"
-import {encodePermissions, parsePermissions} from "hooks/usePermissions"
+import {
+  encodePermissions,
+  parsePermissions,
+  PermissionsSet
+} from "hooks/usePermissions"
 import React, {ChangeEvent, FC} from "react"
-import {camelCaseToTitleCase} from "utils/helpers"
 
 export interface PermissionsInputProps {
   permissions: number
   onChange: (permissions: number) => void
+}
+
+const permissionLabelMap: Record<keyof PermissionsSet, string> = {
+  manageUsers: "Manage all users",
+  manageProjects: "Manage all projects",
+  tasks: "Create their own tasks",
+  manageTasks: "Manage all tasks",
+  timeEntries: "Add their own time entries",
+  manageTimeEntries: "Manage all time entries",
+  comments: "Add their own comments",
+  manageComments: "Manage all comments",
+  canCreateTasks: "Create tasks for anyone"
 }
 
 export const PermissionsInput: FC<PermissionsInputProps> = (props) => {
@@ -74,7 +89,7 @@ export const PermissionsInput: FC<PermissionsInputProps> = (props) => {
             key={permission}
             name={permission}
             control={<Checkbox checked={value} onChange={handleChange} />}
-            label={camelCaseToTitleCase(permission)}
+            label={permissionLabelMap[permission as PermissionKey]}
             disabled={(() => {
               const parentPermission = getParentPermissionKey(
                 permission as PermissionKey

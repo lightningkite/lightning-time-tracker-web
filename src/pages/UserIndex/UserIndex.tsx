@@ -40,6 +40,11 @@ export const UserIndex: FC = () => {
             flex: 1
           },
           {
+            field: "isClient",
+            headerName: "Client",
+            type: "boolean"
+          },
+          {
             field: "isSuperUser",
             headerName: "Super User",
             width: 120,

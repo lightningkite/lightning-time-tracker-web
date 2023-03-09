@@ -15,7 +15,7 @@ export const ProjectSwitcher: FC<ProjectSwitcherProps> = (props) => {
 
   function isMyProject(project: Project) {
     return [
-      ...currentUser.defaultFilters.projects,
+      ...currentUser.projectFavorites,
       ...(currentUser.limitToProjects ?? [])
     ].includes(project._id)
   }

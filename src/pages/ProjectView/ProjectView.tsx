@@ -52,7 +52,7 @@ export const ProjectView: FC = () => {
           selected:
             projectFromQuery ??
             projects.find((p) =>
-              currentUser.defaultFilters.projects.includes(p._id)
+              currentUser.projectFavorites.includes(p._id)
             ) ??
             projects[0]
         })

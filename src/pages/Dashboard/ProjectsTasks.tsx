@@ -13,13 +13,13 @@ import {Project, TaskState} from "api/sdk"
 import {AddTaskButton} from "components/AddTaskButton"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
+import {AnnotatedTask, useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
 import React, {FC, useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
 import {booleanCompare, compareTasksByState} from "utils/helpers"
-import {AnnotatedTask, useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
 import {TaskListItem} from "./TaskListItem"
 
-export const ProjectsTasks: FC<{onlyMine: boolean}> = ({onlyMine}) => {
+export const ProjectsTasks: FC = () => {
   const {session, currentOrganization, currentUser} = useContext(AuthContext)
   const {timers} = useContext(TimerContext)
   const {annotatedTaskEndpoint} = useAnnotatedEndpoints()
@@ -34,36 +34,13 @@ export const ProjectsTasks: FC<{onlyMine: boolean}> = ({onlyMine}) => {
       .then(setProjects)
       .catch(() => setProjects(null))
 
-    const filterConditions: Condition<AnnotatedTask>[] = []
-
-    filterConditions.push({
-      state: {Inside: currentUser.defaultFilters.states}
-    })
-
-    filterConditions.push({
-      project: {Inside: currentUser.defaultFilters.projects}
-    })
-
-    filterConditions.length === 0 && filterConditions.push({Always: true})
-
     await annotatedTaskEndpoint
       .query({
         condition: {
           And: [
             {organization: {Equal: currentOrganization._id}},
-            {state: {NotEqual: TaskState.Cancelled}},
-            {state: {NotEqual: TaskState.Delivered}},
-            {
-              Or: [
-                {And: filterConditions},
-                {
-                  And: [
-                    {user: {Equal: currentUser._id}},
-                    {state: {Equal: TaskState.Active}}
-                  ]
-                }
-              ]
-            }
+            {user: {Equal: currentUser._id}},
+            {state: {Equal: TaskState.Active}}
           ]
         }
       })
@@ -85,20 +62,16 @@ export const ProjectsTasks: FC<{onlyMine: boolean}> = ({onlyMine}) => {
 
     projects.forEach((project) => {
       const projectTasks = annotatedTasks.filter(
-        (task) =>
-          task.project === project._id &&
-          (!onlyMine || task.user === currentUser._id)
+        (task) => task.project === project._id
       )
 
-      const myTasksCount = projectTasks.filter(
-        (task) => task.user === currentUser._id
-      ).length
+      const myTasksCount = projectTasks.length
 
       tasksByProject[project._id] = {projectTasks, myTasksCount}
     })
 
     return tasksByProject
-  }, [annotatedTasks, projects, onlyMine])
+  }, [annotatedTasks, projects])
 
   useEffect(() => {
     if (!annotatedTasks || !projects || initialSorting) return

@@ -1,12 +1,15 @@
 import {
+  Aggregate,
   AggregateQuery,
   apiCall,
   Condition,
   EntryChange,
   GroupAggregateQuery,
   GroupCountQuery,
+  ListChange,
   MassModification,
   Modification,
+  Path,
   Query
 } from "@lightningkite/lightning-server-simplified"
 
@@ -30,11 +33,6 @@ export interface Comment {
 export interface EmailPinLogin {
   email: string
   pin: string
-}
-export interface Filters {
-  projects: Array<UUID>
-  states: Array<TaskState>
-  users: Array<UUID>
 }
 export interface HealthStatus {
   level: Level
@@ -138,9 +136,9 @@ export interface User {
   name: string
   webPreferences: string
   isSuperUser: boolean
-  defaultFilters: Filters
   currentTask: UUID | null | undefined
   permissions: number
+  projectFavorites: Array<UUID>
   limitToProjects: Array<UUID> | null | undefined
   isClient: boolean
   active: boolean

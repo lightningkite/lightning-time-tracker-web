@@ -17,11 +17,7 @@ export function generateUsers(
         currentTask: null,
         isSuperUser: true,
         active: true,
-        defaultFilters: {
-          projects: [],
-          states: [],
-          users: []
-        },
+        projectFavorites: [],
         webPreferences: "",
         permissions: 0,
         limitToProjects: null,

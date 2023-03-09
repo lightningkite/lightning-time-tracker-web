@@ -23,7 +23,7 @@ function nthWeekdayOfMonth(date: Dayjs, weekday: Weekday, nth: number): Dayjs {
   }
 }
 
-const cachedHolidaysByYear: Map<number, Dayjs[]> = new Map()
+const cachedHolidaysByYear = new Map<number, Dayjs[]>()
 
 function getHolidaysForYear(year: number): Dayjs[] {
   let holidays = cachedHolidaysByYear.get(year)

@@ -51,11 +51,7 @@ export const AddUserButton: FC<AddUserProps> = (props) => {
         _id: crypto.randomUUID(),
         organization: currentUser.organization,
         currentTask: undefined,
-        defaultFilters: {
-          projects: [],
-          states: [TaskState.Active],
-          users: []
-        },
+        projectFavorites: [],
         webPreferences: "",
         permissions: 0,
         limitToProjects: [],

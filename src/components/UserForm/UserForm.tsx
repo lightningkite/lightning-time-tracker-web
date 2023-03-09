@@ -63,8 +63,7 @@ export const UserForm: FC<UserFormProps> = (props) => {
       isSuperUser: user.isSuperUser,
       isClient: user.isClient,
       limitToProjects: user.limitToProjects ?? [],
-      defaultStates: user.defaultFilters.states,
-      defaultProjects: user.defaultFilters.projects,
+      projectFavorites: user.projectFavorites,
       active: user.active,
       permissions: user.permissions
     },
@@ -82,11 +81,7 @@ export const UserForm: FC<UserFormProps> = (props) => {
         active: values.active,
         limitToProjects: values.limitToProjects,
         permissions: values.permissions,
-        defaultFilters: {
-          ...user.defaultFilters,
-          states: values.defaultStates,
-          projects: values.defaultProjects
-        }
+        projectFavorites: values.projectFavorites,
       }
 
       // Automatically builds the Lightning Server modification given the old object and the new values
@@ -129,12 +124,12 @@ export const UserForm: FC<UserFormProps> = (props) => {
             disableClearable
             value={
               projectOptions?.filter((project) =>
-                formik.values.defaultProjects.includes(project._id)
+                formik.values.projectFavorites.includes(project._id)
               ) ?? []
             }
             onChange={(_e, value) => {
               formik.setFieldValue(
-                "defaultProjects",
+                "projectFavorites",
                 value.map((project) => project._id)
               )
             }}
@@ -146,51 +141,6 @@ export const UserForm: FC<UserFormProps> = (props) => {
               />
             )}
           />
-
-          <FormControl component="fieldset" variant="standard">
-            <FormLabel component="legend">Dashboard States</FormLabel>
-            <FormHelperText>
-              Tasks with these states will always be shown on your dashboard
-            </FormHelperText>
-            <FormGroup>
-              {Object.values(TaskState)
-                .filter(
-                  (state) =>
-                    state !== TaskState.Cancelled &&
-                    state !== TaskState.Delivered
-                )
-                .map((state) => (
-                  <FormControlLabel
-                    key={state}
-                    control={
-                      <Checkbox
-                        checked={formik.values.defaultStates.includes(state)}
-                        onChange={(e) => {
-                          const nowChecked = e.target.checked
-                          const wasChecked =
-                            formik.values.defaultStates.includes(state)
-
-                          if (nowChecked && !wasChecked) {
-                            formik.setFieldValue(
-                              "defaultStates",
-                              formik.values.defaultStates.concat(state)
-                            )
-                          } else if (!nowChecked && wasChecked) {
-                            formik.setFieldValue(
-                              "defaultStates",
-                              formik.values.defaultStates.filter(
-                                (s) => s !== state
-                              )
-                            )
-                          }
-                        }}
-                      />
-                    }
-                    label={capitalize(state)}
-                  />
-                ))}
-            </FormGroup>
-          </FormControl>
         </>
       )}
 

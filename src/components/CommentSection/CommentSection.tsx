@@ -128,7 +128,11 @@ export const CommentSection: FC<CommentSectionProps> = (props) => {
                   variant: "body2",
                   color: "textSecondary"
                 }}
-                secondaryTypographyProps={{variant: "body1", color: "text"}}
+                secondaryTypographyProps={{
+                  variant: "body1",
+                  color: "text",
+                  whiteSpace: "pre-wrap"
+                }}
               />
             </ListItem>
             <Divider />

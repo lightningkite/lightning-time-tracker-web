@@ -27,7 +27,13 @@ import * as yup from "yup"
 const validationSchema = yup.object().shape({
   user: yup.object().required("Required").nullable(),
   project: yup.object().required("Required").nullable(),
-  summary: yup.string().required("Required"),
+  summary: yup
+    .string()
+    .required("Required")
+    .max(
+      75,
+      "This title is too long. Consider putting this information in the description instead."
+    ),
   estimate: yup.number().integer().min(0).nullable()
 })
 

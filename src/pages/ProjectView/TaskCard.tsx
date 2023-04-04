@@ -50,15 +50,33 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
     (currentUser._id === task.user && permissions.tasks) ||
     permissions.manageTasks
 
+  const isEmergency = task.emergency
+  const isCurrentUser = task.user === currentUser._id
+
   return (
-    <Card key={task._id} ref={canDrag ? drag : undefined} style={{opacity}}>
+    <Card
+      key={task._id}
+      ref={canDrag ? drag : undefined}
+      sx={{
+        opacity,
+        ...(isEmergency && {
+          borderColor: "error.dark",
+          borderWidth: 4,
+          borderLeftStyle: "solid"
+        })
+      }}
+    >
       <CardActionArea onClick={() => onClick(task)} disableRipple>
         <CardContent sx={{p: 1}}>
           <Stack direction="row" justifyContent="space-between">
             <Typography variant="body2" color="text.secondary">
-              {task.user === currentUser._id ? (
+              {isCurrentUser ? (
                 <span>
-                  <Star color="primary" fontSize="inherit" sx={{mr: 1}} />
+                  <Star
+                    color={isEmergency ? "error" : "primary"}
+                    fontSize="inherit"
+                    sx={{mr: 1}}
+                  />
                   {task.userName}
                 </span>
               ) : (

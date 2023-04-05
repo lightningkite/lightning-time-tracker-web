@@ -7,7 +7,7 @@ import {
 } from "@lightningkite/mui-lightning-components"
 import {Stack, TextField} from "@mui/material"
 import {DatePicker} from "@mui/x-date-pickers"
-import {Project, Task, TimeEntry} from "api/sdk"
+import {Project, Task, TaskState, TimeEntry} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import Loading from "components/Loading"
 import dayjs from "dayjs"
@@ -143,7 +143,8 @@ export const TimeEntryModal: FC<TimeEntryModalProps> = (props) => {
             additionalQueryConditions={[
               formik.values.project
                 ? {project: {Equal: formik.values.project._id}}
-                : {Never: true}
+                : {Never: true},
+              {state: {NotEqual: TaskState.Delivered}}
             ]}
             {...makeFormikAutocompleteProps(formik, "task")}
           />

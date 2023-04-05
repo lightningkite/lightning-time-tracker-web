@@ -15,7 +15,7 @@ import {
   TextField,
   useTheme
 } from "@mui/material"
-import {Project, Task} from "api/sdk"
+import {Project, Task, TaskState} from "api/sdk"
 import {AutoLoadingButton} from "components/AutoLoadingButton"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
@@ -136,7 +136,8 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
             getOptionLabel={(task) => task.summary}
             searchProperties={["summary"]}
             additionalQueryConditions={[
-              project ? {project: {Equal: project._id}} : {Never: true}
+              project ? {project: {Equal: project._id}} : {Never: true},
+              {state: {NotEqual: TaskState.Delivered}}
             ]}
             dependencies={[project?._id]}
             disabled={!project}

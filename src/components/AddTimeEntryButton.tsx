@@ -7,7 +7,7 @@ import {
 import {Add} from "@mui/icons-material"
 import {Button, Stack, SxProps, TextField} from "@mui/material"
 import {DatePicker} from "@mui/x-date-pickers"
-import {Project, Task, User} from "api/sdk"
+import {Project, Task, TaskState, User} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import dayjs from "dayjs"
 import duration, {Duration} from "dayjs/plugin/duration"
@@ -165,7 +165,8 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
               additionalQueryConditions={[
                 formik.values.project
                   ? {project: {Equal: formik.values.project._id}}
-                  : {Never: true}
+                  : {Never: true},
+                {state: {NotEqual: TaskState.Delivered}}
               ]}
               {...makeFormikAutocompleteProps(formik, "task")}
             />

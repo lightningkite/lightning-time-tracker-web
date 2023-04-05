@@ -75,7 +75,8 @@ export const ProjectView: FC = () => {
             {project: {Equal: state.selected._id}},
             {state: {NotInside: hiddenTaskStates}}
           ]
-        }
+        },
+        limit: 1000
       })
       .then((tasks) => dispatch({type: "setTasks", tasks}))
   }, ["selected" in state && state.selected._id])

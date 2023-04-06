@@ -4,6 +4,7 @@ import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import dayjs from "dayjs"
 import {AnnotatedTask, useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
+import usePeriodicRefresh from "hooks/usePeriodicRefresh"
 import {usePermissions} from "hooks/usePermissions"
 import React, {
   FC,
@@ -31,6 +32,7 @@ export const ProjectView: FC = () => {
   const navigate = useNavigate()
 
   const [state, dispatch] = useReducer(reducer, {status: "loadingProjects"})
+  const taskRefreshTrigger = usePeriodicRefresh(10 * 60)
 
   useEffect(() => {
     session.project
@@ -79,7 +81,7 @@ export const ProjectView: FC = () => {
         limit: 1000
       })
       .then((tasks) => dispatch({type: "setTasks", tasks}))
-  }, ["selected" in state && state.selected._id])
+  }, ["selected" in state && state.selected._id, taskRefreshTrigger])
 
   const tasksByState: Record<TaskState, AnnotatedTask[]> = useMemo(() => {
     const map: Record<TaskState, AnnotatedTask[]> = {
@@ -202,8 +204,8 @@ function reducer(state: State, action: Action): State {
       }
 
     case "setTasks":
-      if (state.status !== "loadingTasks") {
-        throw new Error("Cannot set tasks when not loading tasks")
+      if (state.status !== "loadingTasks" && state.status !== "ready") {
+        throw new Error("Cannot set tasks when not loading tasks or ready")
       }
       return {
         ...state,

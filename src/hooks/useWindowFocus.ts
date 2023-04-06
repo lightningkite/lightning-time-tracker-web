@@ -5,8 +5,6 @@ export default function useWindowFocus(): boolean {
     document.hasFocus() && !document.hidden
   )
 
-  console.log("windowFocus", windowFocus)
-
   React.useEffect(() => {
     const onFocus = () => setWindowFocus(true)
     const onBlur = () => setWindowFocus(false)

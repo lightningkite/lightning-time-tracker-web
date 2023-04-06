@@ -60,11 +60,11 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
 
     session.task
       .query({
+        limit: 1000,
         condition: {
           And: [
             {project: {Equal: project._id}},
-            {state: {NotEqual: TaskState.Delivered}},
-            {state: {NotEqual: TaskState.Cancelled}}
+            {state: {NotInside: [TaskState.Delivered, TaskState.Cancelled]}}
           ]
         }
       })
@@ -187,7 +187,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
             getOptionLabel={(task) => task.summary}
             renderInput={(params) => <TextField {...params} label="Task" />}
             groupBy={(task) =>
-              isMyActiveTask(task) ? "My Active Tasks" : "All"
+              isMyActiveTask(task) ? "My Active Tasks" : "All Open"
             }
           />
         </Stack>

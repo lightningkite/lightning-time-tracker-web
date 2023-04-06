@@ -25,10 +25,10 @@ import HmsInputGroup from "./hmsInputGroup"
 
 export interface TimerItemProps {
   timerKey: string
-  projects: Project[] | undefined
+  projectOptions: Project[] | undefined
 }
 
-export const TimerItem: FC<TimerItemProps> = ({timerKey, projects}) => {
+export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
   const {session, currentUser} = useContext(AuthContext)
   const {timers, removeTimer, submitTimer, updateTimer, toggleTimer} =
     useContext(TimerContext)
@@ -44,6 +44,14 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projects}) => {
   const [expanded, setExpanded] = useState(!timer.project || !timer.task)
 
   const throttledSummary = useThrottle(summary, 1000)
+
+  const sortedProjectOptions = useMemo(
+    () =>
+      projectOptions?.sort((p) =>
+        currentUser.projectFavorites.includes(p._id) ? -1 : 1
+      ),
+    [projectOptions]
+  )
 
   useEffect(() => {
     expanded && task && project && setExpanded(false)
@@ -73,14 +81,6 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projects}) => {
       setTask(null)
     }
   }, [project])
-
-  const sortedProjects = useMemo(
-    () =>
-      projects?.sort((p) =>
-        currentUser.projectFavorites.includes(p._id) ? -1 : 1
-      ),
-    [projects]
-  )
 
   if (loading) return <Skeleton variant="rounded" height={60} />
 
@@ -136,9 +136,9 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projects}) => {
           </Stack>
 
           <Autocomplete
-            options={sortedProjects ?? []}
-            disabled={!sortedProjects}
-            loading={!sortedProjects}
+            options={sortedProjectOptions ?? []}
+            disabled={!sortedProjectOptions}
+            loading={!sortedProjectOptions}
             value={project}
             onChange={(e, value) => setProject(value)}
             getOptionLabel={(project) => project.name}

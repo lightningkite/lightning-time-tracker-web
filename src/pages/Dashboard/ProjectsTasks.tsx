@@ -28,7 +28,7 @@ export const ProjectsTasks: FC = () => {
   const [annotatedTasks, setAnnotatedTasks] = useState<AnnotatedTask[] | null>()
   const [initialSorting, setInitialSorting] = useState<string[]>()
 
-  const refreshTrigger = usePeriodicRefresh(5)
+  const refreshTrigger = usePeriodicRefresh(10 * 60)
 
   const refreshDashboardData = async () => {
     session.project

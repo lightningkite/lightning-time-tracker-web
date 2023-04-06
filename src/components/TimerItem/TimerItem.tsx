@@ -1,8 +1,4 @@
-import {
-  HoverHelp,
-  RestAutocompleteInput,
-  useThrottle
-} from "@lightningkite/mui-lightning-components"
+import {HoverHelp, useThrottle} from "@lightningkite/mui-lightning-components"
 import {DeleteOutline, Pause, PlayArrow, UnfoldLess} from "@mui/icons-material"
 import {
   Alert,
@@ -42,6 +38,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [expanded, setExpanded] = useState(!timer.project || !timer.task)
+  const [taskOptions, setTaskOptions] = useState<Task[]>()
 
   const throttledSummary = useThrottle(summary, 1000)
 
@@ -52,6 +49,33 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
       ),
     [projectOptions]
   )
+
+  useEffect(() => {
+    if (!project) {
+      setTaskOptions([])
+      return
+    }
+
+    setTaskOptions(undefined)
+
+    session.task
+      .query({
+        condition: {
+          And: [
+            {project: {Equal: project._id}},
+            {state: {NotEqual: TaskState.Delivered}},
+            {state: {NotEqual: TaskState.Cancelled}}
+          ]
+        }
+      })
+      .then((tasks) =>
+        setTaskOptions(
+          tasks.sort((a, b) =>
+            isMyActiveTask(a) ? -1 : isMyActiveTask(b) ? 1 : 0
+          )
+        )
+      )
+  }, [project])
 
   useEffect(() => {
     expanded && task && project && setExpanded(false)
@@ -81,6 +105,10 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
       setTask(null)
     }
   }, [project])
+
+  function isMyActiveTask(task: Task): boolean {
+    return task.user === currentUser._id && task.state === TaskState.Active
+  }
 
   if (loading) return <Skeleton variant="rounded" height={60} />
 
@@ -150,19 +178,17 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
             }
           />
 
-          <RestAutocompleteInput
-            label="Task"
-            restEndpoint={session.task}
+          <Autocomplete
+            options={taskOptions ?? []}
+            disabled={!taskOptions}
+            loading={!taskOptions}
             value={task}
-            onChange={setTask}
+            onChange={(e, value) => setTask(value)}
             getOptionLabel={(task) => task.summary}
-            searchProperties={["summary"]}
-            additionalQueryConditions={[
-              project ? {project: {Equal: project._id}} : {Never: true},
-              {state: {NotEqual: TaskState.Delivered}}
-            ]}
-            dependencies={[project?._id]}
-            disabled={!project}
+            renderInput={(params) => <TextField {...params} label="Task" />}
+            groupBy={(task) =>
+              isMyActiveTask(task) ? "My Active Tasks" : "All"
+            }
           />
         </Stack>
       ) : (

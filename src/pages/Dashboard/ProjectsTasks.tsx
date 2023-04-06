@@ -1,4 +1,3 @@
-import {Condition} from "@lightningkite/lightning-server-simplified"
 import {ExpandMore} from "@mui/icons-material"
 import {
   Accordion,
@@ -14,6 +13,7 @@ import {AddTaskButton} from "components/AddTaskButton"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import {AnnotatedTask, useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
+import usePeriodicRefresh from "hooks/usePeriodicRefresh"
 import React, {FC, useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
 import {booleanCompare, compareTasksByState} from "utils/helpers"
@@ -27,6 +27,8 @@ export const ProjectsTasks: FC = () => {
   const [projects, setProjects] = useState<Project[] | null>()
   const [annotatedTasks, setAnnotatedTasks] = useState<AnnotatedTask[] | null>()
   const [initialSorting, setInitialSorting] = useState<string[]>()
+
+  const refreshTrigger = usePeriodicRefresh(5)
 
   const refreshDashboardData = async () => {
     session.project
@@ -50,7 +52,7 @@ export const ProjectsTasks: FC = () => {
 
   useEffect(() => {
     refreshDashboardData()
-  }, [Object.values(timers).length])
+  }, [refreshTrigger, Object.values(timers).length])
 
   const tasksByProject = useMemo(() => {
     if (!annotatedTasks || !projects) return {}

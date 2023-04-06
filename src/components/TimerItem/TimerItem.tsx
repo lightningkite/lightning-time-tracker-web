@@ -6,6 +6,7 @@ import {
 import {DeleteOutline, Pause, PlayArrow, UnfoldLess} from "@mui/icons-material"
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   IconButton,
@@ -17,13 +18,18 @@ import {
 } from "@mui/material"
 import {Project, Task, TaskState} from "api/sdk"
 import {AutoLoadingButton} from "components/AutoLoadingButton"
-import React, {FC, useContext, useEffect, useState} from "react"
+import React, {FC, useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
 import {ContentCollapsed} from "./ContentCollapsed"
 import HmsInputGroup from "./hmsInputGroup"
 
-export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
-  const {session} = useContext(AuthContext)
+export interface TimerItemProps {
+  timerKey: string
+  projects: Project[] | undefined
+}
+
+export const TimerItem: FC<TimerItemProps> = ({timerKey, projects}) => {
+  const {session, currentUser} = useContext(AuthContext)
   const {timers, removeTimer, submitTimer, updateTimer, toggleTimer} =
     useContext(TimerContext)
   const theme = useTheme()
@@ -67,6 +73,14 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
       setTask(null)
     }
   }, [project])
+
+  const sortedProjects = useMemo(
+    () =>
+      projects?.sort((p) =>
+        currentUser.projectFavorites.includes(p._id) ? -1 : 1
+      ),
+    [projects]
+  )
 
   if (loading) return <Skeleton variant="rounded" height={60} />
 
@@ -120,14 +134,22 @@ export const TimerItem: FC<{timerKey: string}> = ({timerKey}) => {
               </IconButton>
             </HoverHelp>
           </Stack>
-          <RestAutocompleteInput
-            label="Project"
-            restEndpoint={session.project}
+
+          <Autocomplete
+            options={sortedProjects ?? []}
+            disabled={!sortedProjects}
+            loading={!sortedProjects}
             value={project}
-            onChange={setProject}
+            onChange={(e, value) => setProject(value)}
             getOptionLabel={(project) => project.name}
-            searchProperties={["name"]}
+            renderInput={(params) => <TextField {...params} label="Project" />}
+            groupBy={(project) =>
+              currentUser.projectFavorites.includes(project._id)
+                ? "Favorites"
+                : "All"
+            }
           />
+
           <RestAutocompleteInput
             label="Task"
             restEndpoint={session.task}

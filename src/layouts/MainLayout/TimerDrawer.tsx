@@ -1,8 +1,9 @@
 import {MoreTime} from "@mui/icons-material"
 import {Box, Button, Drawer, Stack, Toolbar, Typography} from "@mui/material"
+import {Project} from "api/sdk"
 import {TimerItem} from "components/TimerItem"
-import React, {FC, useContext} from "react"
-import {TimerContext} from "utils/context"
+import React, {FC, useContext, useEffect, useState} from "react"
+import {AuthContext, TimerContext} from "utils/context"
 
 export const TIMER_DRAWER_WIDTH = "25rem"
 
@@ -12,6 +13,16 @@ export const TimerDrawer: FC<{
   isMobile: boolean
 }> = ({open, toggleOpen, isMobile}) => {
   const {timers, newTimer} = useContext(TimerContext)
+  const {session} = useContext(AuthContext)
+
+  const [projects, setProjects] = useState<Project[]>()
+
+  useEffect(() => {
+    session.project
+      .query({})
+      .then(setProjects)
+      .catch(() => alert("Error fetching projects"))
+  }, [])
 
   return (
     <Drawer
@@ -31,7 +42,7 @@ export const TimerDrawer: FC<{
 
         <Stack spacing={3} sx={{mt: 3}}>
           {Object.keys(timers).map((timerKey) => (
-            <TimerItem key={timerKey} timerKey={timerKey} />
+            <TimerItem key={timerKey} timerKey={timerKey} projects={projects} />
           ))}
 
           <Button

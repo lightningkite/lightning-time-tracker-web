@@ -180,7 +180,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
 
           <Autocomplete
             options={taskOptions ?? []}
-            disabled={!taskOptions}
+            disabled={!taskOptions || !project}
             loading={!taskOptions}
             value={task}
             onChange={(e, value) => setTask(value)}

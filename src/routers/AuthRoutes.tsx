@@ -48,11 +48,12 @@ const AuthRoutes: FC = () => {
             element={
               <Navigate
                 to={
-                  permissions.tasks
+                  getUrlFromNextParam() ??
+                  (permissions.tasks
                     ? "/dashboard"
                     : permissions.readSomeProjects
                     ? "/project-view"
-                    : "/settings"
+                    : "/settings")
                 }
                 replace
               />
@@ -62,6 +63,24 @@ const AuthRoutes: FC = () => {
       </Routes>
     </Suspense>
   )
+}
+
+/**
+ *
+ * @returns a URL where the path is from the next query parameter, preserve the other query parameters
+ */
+function getUrlFromNextParam(): string | null {
+  if (location.pathname !== "/login") return null
+
+  // Return a URL where the path is from the next query parameter, preserve the other query parameters
+  const url = new URL(location.href)
+  const nextPath = url.searchParams.get("next")
+  if (!nextPath) return null
+
+  url.pathname = nextPath
+  url.searchParams.delete("next")
+
+  return url.pathname + url.search
 }
 
 export default AuthRoutes

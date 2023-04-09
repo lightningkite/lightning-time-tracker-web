@@ -5,7 +5,6 @@ import React, {createContext, FC, ReactElement} from "react"
 
 export interface AuthContextType {
   session: UserSession
-  logout: () => void
   currentUser: User
   setCurrentUser: (newCurrentUser: User) => void
   currentOrganization: Organization

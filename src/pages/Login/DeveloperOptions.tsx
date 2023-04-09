@@ -13,9 +13,9 @@ import {
 } from "@mui/material"
 import {MockApi} from "api/mockApi"
 import {LiveApi} from "api/sdk"
-import {backendURLOptions} from "api/useSessionManager"
-import {UnauthContext} from "utils/context"
+import {backendURLOptions} from "api/sessionHelpers"
 import React, {FC, useContext} from "react"
+import {UnauthContext} from "utils/context"
 
 export const DEVELOPER_SECRET_CODE = "info@lightningkite.com"
 

@@ -15,8 +15,7 @@ import {AuthContext, TimerContextProvider, UnauthContext} from "utils/context"
 import {parsePreferences} from "utils/helpers"
 
 const App: FC = () => {
-  const {api, changeBackendURL, session, authenticate, logout} =
-    useSessionManager()
+  const {api, changeBackendURL, session, authenticate} = useSessionManager()
 
   const [currentUser, setCurrentUser] = useState<User | null>()
   const [currentOrganization, setCurrentOrganization] =
@@ -86,7 +85,6 @@ const App: FC = () => {
             <AuthContext.Provider
               value={{
                 session,
-                logout,
                 currentUser,
                 setCurrentUser,
                 currentOrganization

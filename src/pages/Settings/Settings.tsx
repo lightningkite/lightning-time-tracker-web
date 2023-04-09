@@ -12,6 +12,7 @@ import {
   RadioGroup,
   Typography
 } from "@mui/material"
+import {logout} from "api/sessionHelpers"
 import FormSection from "components/FormSection"
 import PageHeader from "components/PageHeader"
 import {UserForm} from "components/UserForm"
@@ -29,7 +30,7 @@ export interface WebPreferences {
 }
 
 const Settings: FC = () => {
-  const {logout, currentUser, setCurrentUser, session} = useContext(AuthContext)
+  const {currentUser, setCurrentUser, session} = useContext(AuthContext)
   const permissions = usePermissions()
 
   const preferences = parsePreferences(currentUser?.webPreferences)

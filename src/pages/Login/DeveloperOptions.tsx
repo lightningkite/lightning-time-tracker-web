@@ -13,13 +13,28 @@ import {
 } from "@mui/material"
 import {MockApi} from "api/mockApi"
 import {LiveApi} from "api/sdk"
-import {backendURLOptions} from "api/sessionHelpers"
 import React, {FC, useContext} from "react"
 import {UnauthContext} from "utils/context"
 
 export const DEVELOPER_SECRET_CODE = "info@lightningkite.com"
 
 const envBackendURL = import.meta.env.VITE_BACKEND_HTTP_URL
+
+export interface URLOption {
+  url: string
+  label: string
+}
+
+export const backendURLOptions: URLOption[] = [
+  {
+    label: "Prod",
+    url: "https://time.cs.lightningkite.com"
+  }
+]
+
+if (envBackendURL && !backendURLOptions.some((o) => o.url === envBackendURL)) {
+  backendURLOptions.push({label: "Custom Env Default", url: envBackendURL})
+}
 
 const DeveloperOptions: FC = () => {
   const {changeBackendURL, api} = useContext(UnauthContext)

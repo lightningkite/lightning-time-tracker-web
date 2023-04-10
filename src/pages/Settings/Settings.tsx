@@ -12,7 +12,7 @@ import {
   RadioGroup,
   Typography
 } from "@mui/material"
-import {logout} from "api/sessionHelpers"
+import {logout} from "api/useSessionManager"
 import FormSection from "components/FormSection"
 import PageHeader from "components/PageHeader"
 import {UserForm} from "components/UserForm"

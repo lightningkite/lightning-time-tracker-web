@@ -1,13 +1,13 @@
 import {colors, createTheme, CssBaseline, ThemeProvider} from "@mui/material"
 import {LocalizationProvider} from "@mui/x-date-pickers"
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs"
-import {Organization, User} from "api/sdk"
+import {Organization, User, UserSession} from "api/sdk"
 import {useSessionManager} from "api/useSessionManager"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import MainLayout from "layouts/MainLayout"
 import UnauthLayout from "layouts/UnauthLayout"
-import React, {FC, useEffect, useState} from "react"
+import React, {FC, useEffect, useReducer} from "react"
 import {BrowserRouter} from "react-router-dom"
 import {AuthRoutes, UnauthRoutes} from "routers"
 import {theme} from "theme"
@@ -17,52 +17,44 @@ import {parsePreferences} from "utils/helpers"
 const App: FC = () => {
   const {api, changeBackendURL, session, authenticate} = useSessionManager()
 
-  const [currentUser, setCurrentUser] = useState<User | null>()
-  const [currentOrganization, setCurrentOrganization] =
-    useState<Organization | null>()
+  const [state, dispatch] = useReducer(reducer, {
+    status: !!session ? "loading" : "unauthenticated"
+  })
 
-  const isLoggedIn = !!session
-
-  useEffect(() => {
+  async function loadUserData() {
     if (!session) {
-      setCurrentUser(undefined)
+      dispatch({type: "unauthenticated"})
       return
     }
 
-    session.auth
-      .getSelf()
-      .then(setCurrentUser)
-      .catch(() => setCurrentUser(null))
-  }, [isLoggedIn])
+    const currentUser = await session.auth.getSelf()
+    const currentOrganization = await session.organization.detail(
+      currentUser.organization
+    )
+
+    dispatch({
+      type: "authenticated",
+      session,
+      currentUser,
+      currentOrganization
+    })
+  }
 
   useEffect(() => {
-    if (!session || !currentUser) {
-      setCurrentOrganization(undefined)
-      return
-    }
+    loadUserData().catch(() => dispatch({type: "error"}))
+  }, [session])
 
-    session.organization
-      .detail(currentUser.organization)
-      .then(setCurrentOrganization)
-      .catch(() => setCurrentOrganization(null))
-  }, [currentUser])
-
-  if (
-    isLoggedIn &&
-    (currentUser === undefined || currentOrganization === undefined)
-  ) {
+  if (state.status === "loading") {
     return <Loading />
   }
 
-  if (currentUser === null) {
-    return <ErrorAlert>Error loading current user</ErrorAlert>
+  if (state.status === "error") {
+    return <ErrorAlert>Error loading current user information</ErrorAlert>
   }
 
-  if (currentOrganization === null) {
-    return <ErrorAlert>Error loading current organization</ErrorAlert>
-  }
-
-  const preferences = parsePreferences(currentUser?.webPreferences)
+  const preferences = parsePreferences(
+    state.status === "authenticated" ? state.currentUser.webPreferences : null
+  )
 
   return (
     <ThemeProvider
@@ -81,13 +73,14 @@ const App: FC = () => {
       <CssBaseline />
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <BrowserRouter>
-          {session && currentUser && currentOrganization ? (
+          {state.status === "authenticated" ? (
             <AuthContext.Provider
               value={{
-                session,
-                currentUser,
-                setCurrentUser,
-                currentOrganization
+                session: state.session,
+                currentUser: state.currentUser,
+                setCurrentUser: (newUser) =>
+                  dispatch({type: "setCurrentUser", newUser}),
+                currentOrganization: state.currentOrganization
               }}
             >
               <TimerContextProvider>
@@ -112,3 +105,50 @@ const App: FC = () => {
 }
 
 export default App
+
+type State =
+  | {status: "error"}
+  | {status: "unauthenticated"}
+  | {status: "loading"}
+  | {
+      status: "authenticated"
+      session: UserSession
+      currentUser: User
+      currentOrganization: Organization
+    }
+
+type Action =
+  | {type: "error" | "unauthenticated" | "loading"}
+  | {type: "setCurrentUser"; newUser: User}
+  | {
+      type: "authenticated"
+      session: UserSession
+      currentUser: User
+      currentOrganization: Organization
+    }
+
+const reducer = (state: State, action: Action): State => {
+  switch (action.type) {
+    case "unauthenticated":
+      return {status: "unauthenticated"}
+    case "error":
+      return {status: "error"}
+    case "loading":
+      return {status: "loading"}
+    case "setCurrentUser":
+      if (state.status !== "authenticated") {
+        return state
+      }
+      return {
+        ...state,
+        currentUser: action.newUser
+      }
+    case "authenticated":
+      return {
+        status: "authenticated",
+        session: action.session,
+        currentUser: action.currentUser,
+        currentOrganization: action.currentOrganization
+      }
+  }
+}

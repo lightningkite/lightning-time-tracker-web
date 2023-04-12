@@ -35,6 +35,13 @@ export const useSessionManager = (): UseSessionManagerReturn => {
   }, [session])
 
   function changeToken(userToken: string) {
+    const url = new URL(window.location.href)
+
+    if (url.searchParams.get("jwt")) {
+      url.searchParams.delete("jwt")
+      window.history.replaceState({}, "", url.toString())
+    }
+
     setSession(new UserSession(api, userToken))
   }
 
@@ -71,10 +78,6 @@ function getInitialSession(api: LiveApi | MockApi): UserSession | null {
 
   const url = new URL(window.location.href)
   const searchParamsJwt = url.searchParams.get("jwt")
-  if (searchParamsJwt) {
-    url.searchParams.delete("jwt")
-    window.history.replaceState({}, "", url.toString())
-  }
 
   const tokenToUse = localStorageToken ?? searchParamsJwt
   return tokenToUse ? new UserSession(api, tokenToUse) : null

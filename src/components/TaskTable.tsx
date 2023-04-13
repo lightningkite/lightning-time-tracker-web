@@ -48,24 +48,24 @@ export const TaskTable: FC<TaskTableProps> = (props) => {
           headerName: "Summary",
           flex: 1,
           minWidth: 200
-        },
-        {
-          field: "estimate",
-          headerName: "Estimate",
-          minWidth: 100,
-          type: "number"
-        },
-        {
-          field: "budget",
-          headerName: "Budget",
-          minWidth: 100,
-          type: "number",
-          sortable: false,
-          valueGetter: ({row}) =>
-            row.estimate ? row.annotations.totalTaskHours / row.estimate : null,
-          valueFormatter: ({value}) =>
-            value ? `${Math.round((value as number) * 100)}%` : "–"
         }
+        // {
+        //   field: "estimate",
+        //   headerName: "Estimate",
+        //   minWidth: 100,
+        //   type: "number"
+        // },
+        // {
+        //   field: "budget",
+        //   headerName: "Budget",
+        //   minWidth: 100,
+        //   type: "number",
+        //   sortable: false,
+        //   valueGetter: ({row}) =>
+        //     row.estimate ? row.annotations.totalTaskHours / row.estimate : null,
+        //   valueFormatter: ({value}) =>
+        //     value ? `${Math.round((value as number) * 100)}%` : "–"
+        // }
       ]}
     />
   )

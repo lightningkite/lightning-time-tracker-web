@@ -91,7 +91,9 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
         attachments: [],
         estimate: values.estimate ? +values.estimate : null,
         emergency: false,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        createdBy: currentUser._id,
+        creatorName: currentUser.name
       })
 
       afterSubmit({

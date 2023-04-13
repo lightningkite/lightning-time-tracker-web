@@ -1,15 +1,12 @@
 import {
-  Aggregate,
   AggregateQuery,
   apiCall,
   Condition,
   EntryChange,
   GroupAggregateQuery,
   GroupCountQuery,
-  ListChange,
   MassModification,
   Modification,
-  Path,
   Query
 } from "@lightningkite/lightning-server-simplified"
 
@@ -91,6 +88,8 @@ export interface Task {
   estimate: number | null | undefined
   emergency: boolean
   createdAt: Instant
+  createdBy: UUID
+  creatorName: string | null | undefined
 }
 export enum TaskState {
   Cancelled = "Cancelled",
@@ -124,6 +123,7 @@ export interface Timer {
   project: UUID | null | undefined
   summary: string
 }
+export type Triple = unknown
 type UUID = string // java.util.UUID
 export interface UploadInformation {
   uploadUrl: string
@@ -145,6 +145,16 @@ export interface User {
 }
 
 export interface Api {
+  getServerHealth(userToken?: string): Promise<ServerHealth>
+  listRecentExceptions(): Promise<Array<Triple>>
+  uploadFileForRequest(): Promise<UploadInformation>
+  readonly auth: {
+    refreshToken(userToken: string): Promise<string>
+    getSelf(userToken: string): Promise<User>
+    anonymousToken(userToken?: string): Promise<string>
+    emailLoginLink(input: string): Promise<void>
+    emailPINLogin(input: EmailPinLogin): Promise<string>
+  }
   readonly comment: {
     default(userToken: string): Promise<Comment>
     query(input: Query<Comment>, userToken: string): Promise<Array<Comment>>
@@ -464,15 +474,6 @@ export interface Api {
     addPermissions(id: UUID, input: number, userToken: string): Promise<User>
     removePermissions(id: UUID, input: number, userToken: string): Promise<User>
   }
-  readonly auth: {
-    refreshToken(userToken: string): Promise<string>
-    getSelf(userToken: string): Promise<User>
-    anonymousToken(userToken?: string): Promise<string>
-    emailLoginLink(input: string): Promise<void>
-    emailPINLogin(input: EmailPinLogin): Promise<string>
-  }
-  uploadFileForRequest(): Promise<UploadInformation>
-  getServerHealth(userToken: string): Promise<ServerHealth>
 }
 
 export class UserSession {
@@ -481,8 +482,30 @@ export class UserSession {
     return this.api.getServerHealth(this.userToken)
   }
 
+  listRecentExceptions(): Promise<Array<Triple>> {
+    return this.api.listRecentExceptions()
+  }
+
   uploadFileForRequest(): Promise<UploadInformation> {
     return this.api.uploadFileForRequest()
+  }
+
+  readonly auth = {
+    refreshToken: (): Promise<string> => {
+      return this.api.auth.refreshToken(this.userToken)
+    },
+    getSelf: (): Promise<User> => {
+      return this.api.auth.getSelf(this.userToken)
+    },
+    anonymousToken: (): Promise<string> => {
+      return this.api.auth.anonymousToken(this.userToken)
+    },
+    emailLoginLink: (input: string): Promise<void> => {
+      return this.api.auth.emailLoginLink(input)
+    },
+    emailPINLogin: (input: EmailPinLogin): Promise<string> => {
+      return this.api.auth.emailPINLogin(input)
+    }
   }
 
   readonly comment = {
@@ -940,24 +963,6 @@ export class UserSession {
       return this.api.user.removePermissions(id, input, this.userToken)
     }
   }
-
-  readonly auth = {
-    refreshToken: (): Promise<string> => {
-      return this.api.auth.refreshToken(this.userToken)
-    },
-    getSelf: (): Promise<User> => {
-      return this.api.auth.getSelf(this.userToken)
-    },
-    anonymousToken: (): Promise<string> => {
-      return this.api.auth.anonymousToken(this.userToken)
-    },
-    emailLoginLink: (input: string): Promise<void> => {
-      return this.api.auth.emailLoginLink(input)
-    },
-    emailPINLogin: (input: EmailPinLogin): Promise<string> => {
-      return this.api.auth.emailPINLogin(input)
-    }
-  }
 }
 
 export class LiveApi implements Api {
@@ -967,19 +972,62 @@ export class LiveApi implements Api {
     public extraHeaders: Record<string, string> = {}
   ) {}
 
-  uploadFileForRequest(): Promise<UploadInformation> {
-    return apiCall(`${this.httpUrl}/upload-early`, undefined, {
-      method: "GET"
-    }).then((x) => x.json())
-  }
-
-  getServerHealth(userToken: string): Promise<ServerHealth> {
+  getServerHealth(userToken?: string): Promise<ServerHealth> {
     return apiCall(`${this.httpUrl}/meta/health`, undefined, {
       method: "GET",
       headers: userToken
         ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
         : this.extraHeaders
     }).then((x) => x.json())
+  }
+
+  listRecentExceptions(): Promise<Array<Triple>> {
+    return apiCall(`${this.httpUrl}/exceptions`, undefined, {
+      method: "GET"
+    }).then((x) => x.json())
+  }
+
+  uploadFileForRequest(): Promise<UploadInformation> {
+    return apiCall(`${this.httpUrl}/upload-early`, undefined, {
+      method: "GET"
+    }).then((x) => x.json())
+  }
+
+  readonly auth = {
+    refreshToken: (userToken: string): Promise<string> => {
+      return apiCall(`${this.httpUrl}/auth/refresh-token`, undefined, {
+        method: "GET",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    getSelf: (userToken: string): Promise<User> => {
+      return apiCall(`${this.httpUrl}/auth/self`, undefined, {
+        method: "GET",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    anonymousToken: (userToken?: string): Promise<string> => {
+      return apiCall(`${this.httpUrl}/auth/anonymous`, undefined, {
+        method: "GET",
+        headers: userToken
+          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
+          : this.extraHeaders
+      }).then((x) => x.json())
+    },
+    emailLoginLink: (input: string): Promise<void> => {
+      return apiCall(`${this.httpUrl}/auth/login-email`, input, {
+        method: "POST"
+      }).then((x) => undefined)
+    },
+    emailPINLogin: (input: EmailPinLogin): Promise<string> => {
+      return apiCall(`${this.httpUrl}/auth/login-email-pin`, input, {
+        method: "POST"
+      }).then((x) => x.json())
+    }
   }
 
   readonly comment = {
@@ -2269,43 +2317,6 @@ export class LiveApi implements Api {
             : this.extraHeaders
         }
       ).then((x) => x.json())
-    }
-  }
-
-  readonly auth = {
-    refreshToken: (userToken: string): Promise<string> => {
-      return apiCall(`${this.httpUrl}/auth/refresh-token`, undefined, {
-        method: "GET",
-        headers: userToken
-          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
-          : this.extraHeaders
-      }).then((x) => x.json())
-    },
-    getSelf: (userToken: string): Promise<User> => {
-      return apiCall(`${this.httpUrl}/auth/self`, undefined, {
-        method: "GET",
-        headers: userToken
-          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
-          : this.extraHeaders
-      }).then((x) => x.json())
-    },
-    anonymousToken: (userToken?: string): Promise<string> => {
-      return apiCall(`${this.httpUrl}/auth/anonymous`, undefined, {
-        method: "GET",
-        headers: userToken
-          ? {...this.extraHeaders, Authorization: `Bearer ${userToken}`}
-          : this.extraHeaders
-      }).then((x) => x.json())
-    },
-    emailLoginLink: (input: string): Promise<void> => {
-      return apiCall(`${this.httpUrl}/auth/login-email`, input, {
-        method: "POST"
-      }).then((x) => undefined)
-    },
-    emailPINLogin: (input: EmailPinLogin): Promise<string> => {
-      return apiCall(`${this.httpUrl}/auth/login-email-pin`, input, {
-        method: "POST"
-      }).then((x) => x.json())
     }
   }
 }

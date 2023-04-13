@@ -43,7 +43,9 @@ export function generateTasks(params: {
         attachments: [],
         estimate: randNumber({min: 0, max: 20}),
         emergency: false,
-        createdAt: randRecentDate({days: months * 30}).toISOString()
+        createdAt: randRecentDate({days: months * 30}).toISOString(),
+        createdBy: user._id,
+        creatorName: user.name
       }
     }
   )

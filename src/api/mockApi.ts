@@ -76,6 +76,10 @@ export class MockApi implements Api {
     return Promise.reject()
   }
 
+  listRecentExceptions() {
+    return Promise.reject()
+  }
+
   readonly auth = {
     refreshToken: async (): Promise<string> => {
       console.log("refreshToken")

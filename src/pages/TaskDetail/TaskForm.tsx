@@ -19,10 +19,13 @@ import {
 import {Project, Task, TaskState, User} from "api/sdk"
 import {AttachmentsInput} from "components/AttachmentsInput"
 import FormSection from "components/FormSection"
+import { LabeledInfo } from "components/LabeledInfo"
+import dayjs from "dayjs"
 import {useFormik} from "formik"
 import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
+import { dynamicFormatDate } from "utils/helpers"
 import * as yup from "yup"
 
 const validationSchema = yup.object().shape({
@@ -187,6 +190,13 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
           }}
           disabled={!canEdit}
         />
+
+        <LabeledInfo label="Created">
+          {[task.creatorName, dynamicFormatDate(dayjs(task.createdAt))]
+            .filter(Boolean)
+            .join(", ")}
+        </LabeledInfo>
+
         <FormControlLabel
           control={
             <Checkbox

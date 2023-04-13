@@ -64,10 +64,12 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
           </LabeledInfo>
 
           <Stack direction="row" spacing={2} my={2}>
-            <LabeledInfo label="User">{task.userName}</LabeledInfo>
+            <LabeledInfo label="Assignee">{task.userName}</LabeledInfo>
             <LabeledInfo label="State">{task.state}</LabeledInfo>
             <LabeledInfo label="Created">
-              {dynamicFormatDate(dayjs(task.createdAt))}
+              {[task.creatorName, dynamicFormatDate(dayjs(task.createdAt))]
+                .filter(Boolean)
+                .join(", ")}
             </LabeledInfo>
             {permissions.manageTasks && (
               <div>

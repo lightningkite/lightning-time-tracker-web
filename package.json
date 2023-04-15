@@ -17,7 +17,7 @@
     "@emotion/styled": "^11.10.6",
     "@fontsource/roboto": "^4.5.8",
     "@lightningkite/lightning-server-simplified": "^0.5.0",
-    "@lightningkite/mui-lightning-components": "^0.9.3",
+    "@lightningkite/mui-lightning-components": "^0.9.4",
     "@mui/icons-material": "^5.11.16",
     "@mui/lab": "^5.0.0-alpha.120",
     "@mui/material": "^5.12.0",

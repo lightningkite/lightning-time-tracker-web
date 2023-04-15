@@ -103,6 +103,26 @@ export const Widgets: FC<ReportProps> = (props) => {
 
   return (
     <Stack direction="row" spacing={2} sx={{overflowX: "scroll", mb: 3}}>
+      {!currentUser.isClient && (
+        <WidgetLayout title="Efficiency">
+          <Typography
+            fontSize="2.5rem"
+            sx={{
+              "& span": {
+                fontSize: "1.5rem",
+                color: "text.secondary",
+                marginLeft: 1
+              }
+            }}
+          >
+            {revenueDollarsToDate && totalHours
+              ? formatDollars(revenueDollarsToDate / totalHours, false)
+              : "-"}
+            <span>/hr</span>
+          </Typography>
+        </WidgetLayout>
+      )}
+
       {isTodayWithinRange && !currentUser.isClient && (
         <WidgetLayout title="Projected">
           <Typography fontSize="2.5rem">
@@ -133,26 +153,6 @@ export const Widgets: FC<ReportProps> = (props) => {
             : "-"}
         </Typography>
       </WidgetLayout>
-
-      {!currentUser.isClient && (
-        <WidgetLayout title="Efficiency">
-          <Typography
-            fontSize="2.5rem"
-            sx={{
-              "& span": {
-                fontSize: "1.5rem",
-                color: "text.secondary",
-                marginLeft: 1
-              }
-            }}
-          >
-            {revenueDollarsToDate && totalHours
-              ? formatDollars(revenueDollarsToDate / totalHours, false)
-              : "-"}
-            <span>/hr</span>
-          </Typography>
-        </WidgetLayout>
-      )}
 
       <WidgetLayout title="Hours Worked">
         <Typography fontSize="2.5rem">

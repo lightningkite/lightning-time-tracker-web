@@ -45,6 +45,18 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
   const [expanded, setExpanded] = useState<string | null>(null)
 
   useEffect(() => {
+    if (!expanded) return
+
+    // Scroll to the top of the section
+    const element = document.getElementById(expanded)
+    if (element) {
+      setTimeout(() => {
+        element.scrollIntoView({behavior: "smooth", block: "start"})
+      }, 300)
+    }
+  }, [expanded])
+
+  useEffect(() => {
     setTasks(undefined)
     setMsPerTask(undefined)
     setOrphanMsPerTask(undefined)
@@ -154,7 +166,11 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
         )
         .map(({project, projectTasks, orphanHours, totalHours}) => {
           return (
-            <Accordion key={project._id} expanded={project._id === expanded}>
+            <Accordion
+              key={project._id}
+              id={project._id}
+              expanded={project._id === expanded}
+            >
               <AccordionSummary
                 expandIcon={<ExpandMore />}
                 onClick={() =>

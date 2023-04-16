@@ -186,7 +186,7 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
                   </Typography>
                   <HoverHelp description={totalHours.toFixed(2)}>
                     <Typography variant="body2" color="text.secondary">
-                      {Math.round(totalHours)} hr.
+                      ${project.rate ?? 0} &times; {Math.round(totalHours)} hr
                     </Typography>
                   </HoverHelp>
                 </Stack>

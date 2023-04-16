@@ -12,7 +12,7 @@ import {
   TextField,
   useTheme
 } from "@mui/material"
-import {Project, Task, TaskState} from "api/sdk"
+import {Project, Task, TaskState, Timer} from "api/sdk"
 import {AutoLoadingButton} from "components/AutoLoadingButton"
 import React, {FC, useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
@@ -20,17 +20,15 @@ import {ContentCollapsed} from "./ContentCollapsed"
 import HmsInputGroup from "./hmsInputGroup"
 
 export interface TimerItemProps {
-  timerKey: string
+  timer: Timer
   projectOptions: Project[] | undefined
 }
 
-export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
+export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
   const {session, currentUser} = useContext(AuthContext)
-  const {timers, removeTimer, submitTimer, updateTimer, toggleTimer} =
+  const {removeTimer, submitTimer, updateTimer, toggleTimer} =
     useContext(TimerContext)
   const theme = useTheme()
-
-  const timer = timers[timerKey]
 
   const [task, setTask] = useState<Task | null>(null)
   const [project, setProject] = useState<Project | null>(null)
@@ -80,7 +78,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
   useEffect(() => {
     expanded && task && project && setExpanded(false)
 
-    updateTimer(timerKey, {
+    updateTimer(timer._id, {
       project: project?._id,
       task: task?._id,
       summary: throttledSummary
@@ -117,7 +115,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
       <Alert
         severity="error"
         action={
-          <IconButton color="inherit" onClick={() => removeTimer(timerKey)}>
+          <IconButton color="inherit" onClick={() => removeTimer(timer._id)}>
             <DeleteOutline />
           </IconButton>
         }
@@ -136,7 +134,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
             alignItems="center"
             // justifyContent="space-between"
           >
-            <HmsInputGroup timerKey={timerKey} />
+            <HmsInputGroup timer={timer} />
 
             {project && (
               <HoverHelp description="Collapse">
@@ -150,7 +148,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
               <IconButton
                 onClick={() =>
                   confirm("Are you sure you want to delete this timer?") &&
-                  removeTimer(timerKey)
+                  removeTimer(timer._id)
                 }
                 sx={{
                   "&:hover": {
@@ -207,7 +205,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
       <Stack direction="row" justifyContent="space-between" spacing={1}>
         <Button
           variant={timer.lastStarted ? "contained" : "outlined"}
-          onClick={() => toggleTimer(timerKey)}
+          onClick={() => toggleTimer(timer._id)}
           fullWidth
           sx={{maxWidth: 100}}
         >
@@ -215,7 +213,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
         </Button>
         <AutoLoadingButton
           onClick={() =>
-            submitTimer(timerKey).catch((e) => alert("Error submitting timer"))
+            submitTimer(timer._id).catch((e) => alert("Error submitting timer"))
           }
           variant="contained"
           disabled={!project || !summary}

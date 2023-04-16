@@ -1,5 +1,4 @@
-import {Api, Organization, User, UserSession} from "api/sdk"
-import {Dayjs} from "dayjs"
+import {Api, Organization, Timer, User, UserSession} from "api/sdk"
 import {useGlobalTimerManager} from "hooks/useGlobalTimerManager"
 import React, {createContext, FC, ReactElement} from "react"
 
@@ -17,21 +16,12 @@ export interface UnauthContextType {
 }
 
 export interface TimerContextType {
-  timers: Record<string, Timer>
+  timers: Timer[] | undefined
   removeTimer: (key: string) => void
   updateTimer: (key: string, updates: Partial<Timer>) => void
   toggleTimer: (key: string) => void
   newTimer: (initialValues?: Pick<Timer, "task" | "project">) => string
   submitTimer: (key: string) => Promise<void>
-  getTimerForTask: (taskId: string) => string | null
-}
-
-export interface Timer {
-  lastStarted: Dayjs | null
-  accumulatedSeconds: number
-  task: string | null
-  project: string | null
-  summary: string
 }
 
 // AuthContext is available when the user is authenticated

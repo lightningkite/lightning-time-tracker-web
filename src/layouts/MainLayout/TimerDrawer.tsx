@@ -1,6 +1,7 @@
 import {MoreTime} from "@mui/icons-material"
 import {Box, Button, Drawer, Stack, Toolbar, Typography} from "@mui/material"
 import {Project} from "api/sdk"
+import Loading from "components/Loading"
 import {TimerItem} from "components/TimerItem"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
@@ -40,19 +41,27 @@ export const TimerDrawer: FC<{
       <Box p={2}>
         <Typography variant="h2">Timers</Typography>
 
-        <Stack spacing={3} sx={{mt: 3}}>
-          {Object.keys(timers).map((timerKey) => (
-            <TimerItem key={timerKey} timerKey={timerKey} projectOptions={projects} />
-          ))}
+        {timers ? (
+          <Stack spacing={3} sx={{mt: 3}}>
+            {timers.map((timer) => (
+              <TimerItem
+                key={timer._id}
+                timer={timer}
+                projectOptions={projects}
+              />
+            ))}
 
-          <Button
-            variant="outlined"
-            startIcon={<MoreTime />}
-            onClick={() => newTimer()}
-          >
-            Add Timer
-          </Button>
-        </Stack>
+            <Button
+              variant="outlined"
+              startIcon={<MoreTime />}
+              onClick={() => newTimer()}
+            >
+              Add Timer
+            </Button>
+          </Stack>
+        ) : (
+          <Loading />
+        )}
       </Box>
     </Drawer>
   )

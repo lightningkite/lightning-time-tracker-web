@@ -6,6 +6,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
+  Button,
   List,
   ListItem,
   ListItemText,
@@ -43,6 +44,7 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
 
   const [error, setError] = useState("")
   const [expanded, setExpanded] = useState<string | null>(null)
+  const [showAll, setShowAll] = useState(false)
 
   useEffect(() => {
     if (!expanded) return
@@ -159,6 +161,7 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
               (taskMilliseconds + orphanMilliseconds) / MILLISECONDS_PER_HOUR
           }
         })
+        .filter(({projectTasks}) => showAll || projectTasks.length > 0)
         .sort(
           (a, b) =>
             b.totalHours - a.totalHours ||
@@ -226,6 +229,16 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
             </Accordion>
           )
         })}
+
+      {!showAll && (
+        <Button
+          variant="outlined"
+          sx={{mt: 3, display: "block", mx: "auto"}}
+          onClick={() => setShowAll(true)}
+        >
+          Show All
+        </Button>
+      )}
     </Box>
   )
 }

@@ -7,7 +7,6 @@ export function CustomToolbar(props: {
   filePrefix: string
 }) {
   const fileName = props.filePrefix + " - " + filtersToFileName(props.filters)
-  console.log(fileName)
 
   return (
     <GridToolbarContainer sx={{justifyContent: "flex-end"}}>

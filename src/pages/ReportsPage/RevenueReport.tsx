@@ -39,7 +39,7 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
   const [tasks, setTasks] = useState<Task[]>()
   const [msPerTask, setMsPerTask] =
     useState<Record<string, number | null | undefined>>()
-  const [orphanMsPerTask, setOrphanMsPerTask] =
+  const [orphanMsPerProject, setOrphanMsPerProject] =
     useState<Record<string, number | null | undefined>>()
 
   const [error, setError] = useState("")
@@ -61,7 +61,7 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
   useEffect(() => {
     setTasks(undefined)
     setMsPerTask(undefined)
-    setOrphanMsPerTask(undefined)
+    setOrphanMsPerProject(undefined)
 
     const timeEntryCondition = filtersToTimeEntryCondition(reportFilterValues)
 
@@ -109,7 +109,7 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
           projectsResponse
         ]) => {
           setMsPerTask(millisecondsPerTask)
-          setOrphanMsPerTask(orphanMillisecondsPerProject)
+          setOrphanMsPerProject(orphanMillisecondsPerProject)
           setProjects(projectsResponse)
           projectsResponse.length === 1 && setExpanded(projectsResponse[0]._id)
         }
@@ -135,7 +135,7 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
     return <ErrorAlert>{error}</ErrorAlert>
   }
 
-  if (!projects || !tasks || !msPerTask || !orphanMsPerTask) {
+  if (!projects || !tasks || !msPerTask || !orphanMsPerProject) {
     return <Loading />
   }
 
@@ -151,7 +151,7 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
           const taskMilliseconds = projectTasks.reduce((acc, task) => {
             return acc + (msPerTask[task._id] ?? 0)
           }, 0)
-          const orphanMilliseconds = orphanMsPerTask[project._id] ?? 0
+          const orphanMilliseconds = orphanMsPerProject[project._id] ?? 0
 
           return {
             project,

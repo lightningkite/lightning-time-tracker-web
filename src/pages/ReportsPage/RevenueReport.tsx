@@ -1,5 +1,4 @@
 import {Aggregate} from "@lightningkite/lightning-server-simplified"
-import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {ExpandMore} from "@mui/icons-material"
 import {
   Accordion,
@@ -38,6 +37,8 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
   const [projects, setProjects] = useState<Project[]>()
   const [tasks, setTasks] = useState<Task[]>()
   const [msPerTask, setMsPerTask] =
+    useState<Record<string, number | null | undefined>>()
+  const [msPerProject, setMsPerProject] =
     useState<Record<string, number | null | undefined>>()
   const [orphanMsPerProject, setOrphanMsPerProject] =
     useState<Record<string, number | null | undefined>>()
@@ -92,6 +93,18 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
         property: "durationMilliseconds"
       })
 
+    const millisecondsPerProjectRequest = session.timeEntry.groupAggregate({
+      aggregate: Aggregate.Sum,
+      condition: {
+        And: [
+          timeEntryCondition,
+          {organization: {Equal: currentUser.organization}}
+        ]
+      },
+      groupBy: "project",
+      property: "durationMilliseconds"
+    })
+
     const projectsRequest = session.project.query({
       condition: filtersToProjectCondition(reportFilterValues),
       limit: QUERY_LIMIT
@@ -100,17 +113,21 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
     Promise.all([
       millisecondsPerTaskRequest,
       orphanMillisecondsPerProjectRequest,
-      projectsRequest
+      projectsRequest,
+      millisecondsPerProjectRequest
     ])
       .then(
         ([
           millisecondsPerTask,
           orphanMillisecondsPerProject,
-          projectsResponse
+          projectsResponse,
+          millisecondsPerProject
         ]) => {
           setMsPerTask(millisecondsPerTask)
           setOrphanMsPerProject(orphanMillisecondsPerProject)
           setProjects(projectsResponse)
+          setMsPerProject(millisecondsPerProject)
+
           projectsResponse.length === 1 && setExpanded(projectsResponse[0]._id)
         }
       )
@@ -135,7 +152,13 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
     return <ErrorAlert>{error}</ErrorAlert>
   }
 
-  if (!projects || !tasks || !msPerTask || !orphanMsPerProject) {
+  if (
+    !projects ||
+    !tasks ||
+    !msPerTask ||
+    !orphanMsPerProject ||
+    !msPerProject
+  ) {
     return <Loading />
   }
 
@@ -148,17 +171,14 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
           const projectTasks = tasks.filter(
             (task) => task.project === project._id
           )
-          const taskMilliseconds = projectTasks.reduce((acc, task) => {
-            return acc + (msPerTask[task._id] ?? 0)
-          }, 0)
           const orphanMilliseconds = orphanMsPerProject[project._id] ?? 0
+          const totalMilliseconds = msPerProject[project._id] ?? 0
 
           return {
             project,
             projectTasks,
             orphanHours: orphanMilliseconds / MILLISECONDS_PER_HOUR,
-            totalHours:
-              (taskMilliseconds + orphanMilliseconds) / MILLISECONDS_PER_HOUR
+            totalHours: totalMilliseconds / MILLISECONDS_PER_HOUR
           }
         })
         .filter(({projectTasks}) => showAll || projectTasks.length > 0)
@@ -187,11 +207,10 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
                   <Typography fontSize="1.2rem">
                     {formatDollars((project.rate ?? 0) * totalHours, false)}
                   </Typography>
-                  <HoverHelp description={totalHours.toFixed(2)}>
-                    <Typography variant="body2" color="text.secondary">
-                      ${project.rate ?? 0} &times; {Math.round(totalHours)} hr
-                    </Typography>
-                  </HoverHelp>
+
+                  <Typography variant="body2" color="text.secondary">
+                    ${project.rate ?? 0} &times; {totalHours.toFixed(2)} hr
+                  </Typography>
                 </Stack>
               </AccordionSummary>
               <AccordionDetails sx={{p: 0}}>

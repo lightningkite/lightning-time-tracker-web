@@ -18,7 +18,7 @@ import Loading from "components/Loading"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
-import {formatDollars, MILLISECONDS_PER_HOUR} from "utils/helpers"
+import {MILLISECONDS_PER_HOUR, formatDollars} from "utils/helpers"
 import {
   filtersToProjectCondition,
   filtersToTimeEntryCondition

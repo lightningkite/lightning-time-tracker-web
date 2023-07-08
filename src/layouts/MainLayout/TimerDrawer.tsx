@@ -42,7 +42,11 @@ export const TimerDrawer: FC<{
 
         <Stack spacing={3} sx={{mt: 3}}>
           {Object.keys(timers).map((timerKey) => (
-            <TimerItem key={timerKey} timerKey={timerKey} projectOptions={projects} />
+            <TimerItem
+              key={timerKey}
+              timerKey={timerKey}
+              projectOptions={projects}
+            />
           ))}
 
           <Button

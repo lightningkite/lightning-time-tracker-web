@@ -5,4 +5,4 @@ export enum LocalStorageKey {
   TIMERS = "lk-time-timers"
 }
 
-export const QUERY_LIMIT = 10_000;
+export const QUERY_LIMIT = 10_000

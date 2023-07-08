@@ -14,9 +14,9 @@ import {usePermissions} from "hooks/usePermissions"
 import React, {FC, ReactNode, useContext, useState} from "react"
 import {theme} from "theme"
 import {AuthContext, TimerContext} from "utils/context"
-import {NavigationDrawer, NAVIGATION_DRAWER_WIDTH} from "./NavigationDrawer"
+import {NAVIGATION_DRAWER_WIDTH, NavigationDrawer} from "./NavigationDrawer"
 import {SummaryTime} from "./SummaryTime"
-import {TimerDrawer, TIMER_DRAWER_WIDTH} from "./TimerDrawer"
+import {TIMER_DRAWER_WIDTH, TimerDrawer} from "./TimerDrawer"
 
 export interface NavItem {
   label: string

@@ -5,11 +5,11 @@ import dayjs from "dayjs"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
-import {dateToISO, formatDollars, MILLISECONDS_PER_HOUR} from "utils/helpers"
+import {MILLISECONDS_PER_HOUR, dateToISO, formatDollars} from "utils/helpers"
 import {filtersToTimeEntryCondition} from "./ReportFilters"
 import {ReportProps} from "./ReportsPage"
-import {projectedRevenue} from "./widgetHelpers"
 import {WidgetLayout} from "./WidgetLayout"
+import {projectedRevenue} from "./widgetHelpers"
 
 export const Widgets: FC<ReportProps> = (props) => {
   const {reportFilterValues} = props

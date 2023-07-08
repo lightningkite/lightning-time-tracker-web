@@ -7,17 +7,12 @@ import {LoadingButton} from "@mui/lab"
 import {
   Alert,
   Autocomplete,
-  capitalize,
   Checkbox,
-  FormControl,
   FormControlLabel,
-  FormGroup,
-  FormHelperText,
-  FormLabel,
   Stack,
   TextField
 } from "@mui/material"
-import {Project, TaskState, User} from "api/sdk"
+import {Project, User} from "api/sdk"
 import FormSection from "components/FormSection"
 import {useFormik} from "formik"
 import {usePermissions} from "hooks/usePermissions"

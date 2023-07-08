@@ -1,9 +1,9 @@
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {Add, Pause, PlayArrow} from "@mui/icons-material"
 import {IconButton} from "@mui/material"
+import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import React, {FC, useContext} from "react"
 import {TimerContext} from "utils/context"
-import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 
 export const TaskPlayActionButton: FC<{
   annotatedTask: AnnotatedTask

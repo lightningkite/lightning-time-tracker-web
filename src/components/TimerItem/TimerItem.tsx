@@ -39,6 +39,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
   const [error, setError] = useState("")
   const [expanded, setExpanded] = useState(!timer.project || !timer.task)
   const [taskOptions, setTaskOptions] = useState<Task[]>()
+  const [isCreatingNewTask, setIsCreatingNewTask] = useState(false)
 
   const throttledSummary = useThrottle(summary, 1000)
 
@@ -110,6 +111,35 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
     return task.user === currentUser._id && task.state === TaskState.Active
   }
 
+  function createTask(summary: string) {
+    if (!project) return
+
+    setIsCreatingNewTask(true)
+
+    session.task
+      .insert({
+        _id: crypto.randomUUID(),
+        project: project._id,
+        projectName: project.name,
+        organization: project.organization,
+        organizationName: undefined,
+        user: currentUser._id,
+        userName: currentUser.name,
+        state: TaskState.Active,
+        summary,
+        description: "",
+        attachments: [],
+        estimate: undefined,
+        emergency: false,
+        createdAt: new Date().toISOString(),
+        createdBy: currentUser._id,
+        creatorName: currentUser.name
+      })
+      .then((task) => setTask(task))
+      .catch(console.error)
+      .finally(() => setIsCreatingNewTask(false))
+  }
+
   if (loading) return <Skeleton variant="rounded" height={60} />
 
   if (error) {
@@ -178,17 +208,51 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
             }
           />
 
-          <Autocomplete
+          <Autocomplete<Task | string, false, false, true>
             options={taskOptions ?? []}
-            disabled={!taskOptions || !project}
+            disabled={!taskOptions || !project || isCreatingNewTask}
             loading={!taskOptions}
             value={task}
-            onChange={(e, value) => setTask(value)}
-            getOptionLabel={(task) => task.summary}
-            renderInput={(params) => <TextField {...params} label="Task" />}
-            groupBy={(task) =>
-              isMyActiveTask(task) ? "My Active Tasks" : "All Open"
+            onChange={(e, value) =>
+              typeof value === "string" ? createTask(value) : setTask(value)
             }
+            getOptionLabel={(task) =>
+              typeof task === "string" ? `Create task "${task}"` : task.summary
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label={isCreatingNewTask ? "Creating new task..." : "Task"}
+                placeholder={isCreatingNewTask ? "Creating task..." : undefined}
+              />
+            )}
+            groupBy={(task) => {
+              return typeof task === "string"
+                ? "New Task"
+                : isMyActiveTask(task)
+                ? "My Active Tasks"
+                : "All Open"
+            }}
+            filterOptions={(options, {inputValue, getOptionLabel}) => {
+              const filtered = options.filter((option) =>
+                getOptionLabel(option)
+                  .toLowerCase()
+                  .includes(inputValue.toLowerCase())
+              )
+
+              const isExistingTask = filtered.some(
+                (option) => getOptionLabel(option) === inputValue
+              )
+
+              if (inputValue !== "" && !isExistingTask) {
+                filtered.push(inputValue)
+              }
+
+              return filtered
+            }}
+            freeSolo
+            clearOnBlur
+            selectOnFocus
           />
         </Stack>
       ) : (

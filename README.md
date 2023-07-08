@@ -24,19 +24,19 @@ Documentation for included packages:
 
 ## Using the Starter Project
 
-This starter project can be run locally with node 16 by running `npm install` then `npm start`. To use it as a starter for a new project, fork this repo, then follow the steps below.
+This starter project can be run locally with node 18 by running `npm install` then `npm start`. To use it as a starter for a new project, fork this repo, then follow the steps below.
 
 To avoid conflicting localStorage keys with other projects you're developing locally, you can change the prefix of the keys in `src/utils/constants.ts` to something unique to your project.
 
 ## Node
 
-This project is compatible with node version 16 (LTS).
+This project is compatible with node version 18.
 
 NVM is recommended to easily manage installed node versions. Install nvm using this guide: [https://github.com/nvm-sh/nvm](https://github.com/nvm-sh/nvm).
 
 ```bash
-nvm install 16
-nvm use 16
+nvm install 18
+nvm use 18
 ```
 
 ## Environment Variables

@@ -38,7 +38,7 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
   )
 
   const hoursSpent = dayjs
-    .duration(task.annotations.totalTaskHours, "hours")
+    .duration(task._annotations.totalTaskHours, "hours")
     .asHours()
     .toFixed(1)
 

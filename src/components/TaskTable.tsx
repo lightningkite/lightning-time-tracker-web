@@ -62,7 +62,7 @@ export const TaskTable: FC<TaskTableProps> = (props) => {
         //   type: "number",
         //   sortable: false,
         //   valueGetter: ({row}) =>
-        //     row.estimate ? row.annotations.totalTaskHours / row.estimate : null,
+        //     row.estimate ? row._annotations.totalTaskHours / row.estimate : null,
         //   valueFormatter: ({value}) =>
         //     value ? `${Math.round((value as number) * 100)}%` : "–"
         // }

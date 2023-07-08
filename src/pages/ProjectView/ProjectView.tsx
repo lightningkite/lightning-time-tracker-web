@@ -80,7 +80,7 @@ export const ProjectView: FC = () => {
         },
         limit: 1000
       })
-      .then((tasks) => dispatch({type: "setTasks", tasks}))
+      .then((tasks: AnnotatedTask[]) => dispatch({type: "setTasks", tasks}))
   }, ["selected" in state && state.selected._id, taskRefreshTrigger])
 
   const tasksByState: Record<TaskState, AnnotatedTask[]> = useMemo(() => {
@@ -120,16 +120,14 @@ export const ProjectView: FC = () => {
         updates: {state: newState}
       })
 
-      annotatedTaskEndpoint
-        .modify(task._id, {state: {Assign: newState}})
-        .catch(() => {
-          alert("Error updating task state")
-          dispatch({
-            type: "updateTask",
-            taskId: task._id,
-            updates: {state: previousState}
-          })
+      session.task.modify(task._id, {state: {Assign: newState}}).catch(() => {
+        alert("Error updating task state")
+        dispatch({
+          type: "updateTask",
+          taskId: task._id,
+          updates: {state: previousState}
         })
+      })
     },
     [state]
   )

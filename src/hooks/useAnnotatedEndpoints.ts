@@ -1,7 +1,7 @@
 import {
   Aggregate,
   annotateEndpoint,
-  SessionRestEndpoint,
+  ReadonlySessionRestEndpoint,
   WithAnnotations
 } from "@lightningkite/lightning-server-simplified"
 import {Task} from "api/sdk"
@@ -11,7 +11,7 @@ import {AuthContext} from "utils/context"
 export type AnnotatedTask = WithAnnotations<Task, {totalTaskHours: number}>
 
 export interface UseAnnotatedEndpointsReturn {
-  annotatedTaskEndpoint: SessionRestEndpoint<AnnotatedTask>
+  annotatedTaskEndpoint: ReadonlySessionRestEndpoint<AnnotatedTask>
 }
 
 export const useAnnotatedEndpoints = (): UseAnnotatedEndpointsReturn => {
@@ -21,7 +21,7 @@ export const useAnnotatedEndpoints = (): UseAnnotatedEndpointsReturn => {
   // TASKS
   // ***********************************
 
-  const annotatedTaskEndpoint: SessionRestEndpoint<AnnotatedTask> =
+  const annotatedTaskEndpoint: ReadonlySessionRestEndpoint<AnnotatedTask> =
     annotateEndpoint(session.task, async (tasks) => {
       const taskIds = new Set<string>()
 
@@ -40,7 +40,7 @@ export const useAnnotatedEndpoints = (): UseAnnotatedEndpointsReturn => {
 
       return tasks.map((task) => ({
         ...task,
-        annotations: {
+        _annotations: {
           totalTaskHours: (taskTimeAggregates[task._id] ?? 0) / (3600 * 1000)
         }
       }))

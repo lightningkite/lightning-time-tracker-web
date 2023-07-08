@@ -43,7 +43,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({
   const [showModal, setShowModal] = useState(false)
 
   const taskPercentBudget = annotatedTask.estimate
-    ? (annotatedTask.annotations.totalTaskHours / annotatedTask.estimate) * 100
+    ? (annotatedTask._annotations.totalTaskHours / annotatedTask.estimate) * 100
     : 0
 
   const budgetColor: LinearProgressProps["color"] = (() => {
@@ -113,10 +113,12 @@ export const TaskListItem: FC<TaskListItemProps> = ({
                     }
                   >
                     {annotatedTask.estimate
-                      ? `${annotatedTask.annotations.totalTaskHours.toFixed(
+                      ? // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                        `${annotatedTask._annotations.totalTaskHours.toFixed(
                           1
                         )} of ${annotatedTask.estimate} hours`
-                      : `${annotatedTask.annotations.totalTaskHours.toFixed(
+                      : // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                        `${annotatedTask._annotations.totalTaskHours.toFixed(
                           1
                         )} hours`}
                   </Typography>

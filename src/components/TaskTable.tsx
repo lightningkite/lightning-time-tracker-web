@@ -2,11 +2,12 @@ import {
   RestDataTable,
   RestDataTableProps
 } from "@lightningkite/mui-lightning-components"
+import {TaskState} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import {AnnotatedTask, useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
 import React, {FC} from "react"
-import {dynamicFormatDate} from "utils/helpers"
+import {dynamicFormatDate, taskStateLabels} from "utils/helpers"
 
 dayjs.extend(duration)
 
@@ -29,7 +30,8 @@ export const TaskTable: FC<TaskTableProps> = (props) => {
         {
           field: "state",
           headerName: "State",
-          minWidth: 100
+          minWidth: 100,
+          valueFormatter: ({value}) => taskStateLabels[value as TaskState]
         },
         {
           field: "createdAt",

@@ -25,7 +25,7 @@ import {useFormik} from "formik"
 import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
-import {dynamicFormatDate} from "utils/helpers"
+import {dynamicFormatDate, taskStateLabels} from "utils/helpers"
 import * as yup from "yup"
 
 const validationSchema = yup.object().shape({
@@ -167,7 +167,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
           >
             {Object.values(TaskState).map((option) => (
               <MenuItem key={option} value={option}>
-                {option}
+                {taskStateLabels[option]}
               </MenuItem>
             ))}
           </TextField>

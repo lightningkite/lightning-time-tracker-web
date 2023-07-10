@@ -20,6 +20,7 @@ import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useState} from "react"
 import {AuthContext} from "utils/context"
+import {taskStateLabels} from "utils/helpers"
 import {TaskPlayActionButton} from "./TaskPlayActionButton"
 import {TaskStateActionButton} from "./TaskStateActionButton"
 
@@ -98,8 +99,8 @@ export const TaskListItem: FC<TaskListItemProps> = ({
               spacing={1}
             >
               <Typography variant="body2" color="text.secondary">
-                {annotatedTask.state.toUpperCase()} &nbsp;&#x2022;&nbsp;{" "}
-                {annotatedTask.userName}
+                {taskStateLabels[annotatedTask.state].toUpperCase()}{" "}
+                &nbsp;&#x2022;&nbsp; {annotatedTask.userName}
               </Typography>
               {!isMobile && permissions.canSubmitTime && (
                 <Box sx={{width: "8rem"}}>

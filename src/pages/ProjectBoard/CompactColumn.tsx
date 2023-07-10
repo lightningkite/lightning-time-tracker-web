@@ -6,6 +6,7 @@ import duration from "dayjs/plugin/duration"
 import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import React, {FC} from "react"
 import {useDrop} from "react-dnd"
+import {taskStateLabels} from "utils/helpers"
 
 dayjs.extend(duration)
 
@@ -53,7 +54,7 @@ export const CompactColumn: FC<CompactColumnProps> = (props) => {
             color: "text.secondary"
           }}
         >
-          {taskState}
+          {taskStateLabels[taskState]}
         </Typography>
       )}
     </Box>

@@ -100,7 +100,7 @@ export function parsePreferences(
 ): WebPreferences {
   const defaultPreferences: WebPreferences = {
     mode: "dark",
-    themeColor: "#99c8ff",
+    themeColor: "#90D1FF",
     summaryTime: "week"
   }
   try {
@@ -165,4 +165,14 @@ export async function uploadToS3(uploadUrl: string, file: File) {
       throw new Error("Error uploading file")
     }
   })
+}
+
+export const taskStateLabels: Record<TaskState, string> = {
+  [TaskState.Cancelled]: "Cancelled",
+  [TaskState.Hold]: "On Hold",
+  [TaskState.Active]: "Active",
+  [TaskState.PullRequest]: "Pull Request",
+  [TaskState.Testing]: "Testing",
+  [TaskState.Approved]: "Customer Review",
+  [TaskState.Delivered]: "Delivered"
 }

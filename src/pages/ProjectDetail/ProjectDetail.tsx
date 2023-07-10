@@ -4,6 +4,7 @@ import {Project} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import PageHeader from "components/PageHeader"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {useParams} from "react-router-dom"
 import {AuthContext} from "utils/context"
@@ -14,6 +15,7 @@ import {TimeEntryTab} from "./TimeEntryTab"
 const ProjectDetail: FC = () => {
   const {projectId} = useParams()
   const {session} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [project, setProject] = useState<Project | null>()
   const [tab, setTab] = useState("1")
@@ -57,7 +59,9 @@ const ProjectDetail: FC = () => {
         <Paper sx={{mt: 4, mb: 1}}>
           <TabList onChange={(_e, v) => setTab(v as string)}>
             <Tab label="Tasks" value="1" />
-            <Tab label="Time Entries" value="2" />
+            {permissions.canViewIndividualTimeEntries && (
+              <Tab label="Time Entries" value="2" />
+            )}
           </TabList>
         </Paper>
 

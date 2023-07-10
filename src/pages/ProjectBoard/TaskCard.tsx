@@ -46,17 +46,13 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
     ? dayjs.duration(task.estimate, "hours").asHours().toFixed(1)
     : null
 
-  const canDrag =
-    (currentUser._id === task.user && permissions.tasks) ||
-    permissions.manageTasks
-
   const isEmergency = task.emergency
   const isCurrentUser = task.user === currentUser._id
 
   return (
     <Card
       key={task._id}
-      ref={canDrag ? drag : undefined}
+      ref={permissions.canManageAllTasks ? drag : undefined}
       sx={{
         opacity,
         ...(isEmergency && {
@@ -83,13 +79,12 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
                 task.userName
               )}
             </Typography>
-            {permissions.timeEntries && (
-              <Typography variant="body2" color="text.secondary">
-                {hoursEstimated
-                  ? `${hoursSpent} / ${hoursEstimated} hr`
-                  : `${hoursSpent} hr`}
-              </Typography>
-            )}
+
+            <Typography variant="body2" color="text.secondary">
+              {hoursEstimated
+                ? `${hoursSpent} / ${hoursEstimated} hr`
+                : `${hoursSpent} hr`}
+            </Typography>
           </Stack>
           <Typography>{task.summary}</Typography>
         </CardContent>

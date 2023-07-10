@@ -15,7 +15,6 @@ import {
 import {Project, User} from "api/sdk"
 import FormSection from "components/FormSection"
 import {useFormik} from "formik"
-import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import * as yup from "yup"
@@ -33,7 +32,6 @@ export interface UserFormProps {
 
 export const UserForm: FC<UserFormProps> = (props) => {
   const {user, setUser} = props
-  const permissions = usePermissions()
   const {session, currentUser, setCurrentUser} = useContext(AuthContext)
 
   const [error, setError] = useState("")
@@ -94,36 +92,37 @@ export const UserForm: FC<UserFormProps> = (props) => {
 
       <TextField label="Name" {...makeFormikTextFieldProps(formik, "name")} />
 
-      {user._id === currentUser._id && permissions.tasks && (
-        <>
-          <Autocomplete
-            multiple
-            options={projectOptions ?? []}
-            getOptionLabel={(project) => project.name}
-            isOptionEqualToValue={(a, b) => a._id === b._id}
-            disableCloseOnSelect
-            disableClearable
-            value={
-              projectOptions?.filter((project) =>
-                formik.values.projectFavorites.includes(project._id)
-              ) ?? []
-            }
-            onChange={(_e, value) => {
-              formik.setFieldValue(
-                "projectFavorites",
-                value.map((project) => project._id)
-              )
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Favorite Projects"
-                helperText="These projects will be shown first in the project view"
-              />
-            )}
-          />
-        </>
-      )}
+      {user._id === currentUser._id &&
+        !!currentUser.limitToProjects?.length && (
+          <>
+            <Autocomplete
+              multiple
+              options={projectOptions ?? []}
+              getOptionLabel={(project) => project.name}
+              isOptionEqualToValue={(a, b) => a._id === b._id}
+              disableCloseOnSelect
+              disableClearable
+              value={
+                projectOptions?.filter((project) =>
+                  formik.values.projectFavorites.includes(project._id)
+                ) ?? []
+              }
+              onChange={(_e, value) => {
+                formik.setFieldValue(
+                  "projectFavorites",
+                  value.map((project) => project._id)
+                )
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Favorite Projects"
+                  helperText="These projects will be shown first in the project view"
+                />
+              )}
+            />
+          </>
+        )}
 
       {user._id !== currentUser._id && (
         <FormSection title="Permissions">

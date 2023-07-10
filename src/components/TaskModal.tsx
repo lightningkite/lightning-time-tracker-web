@@ -71,7 +71,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
                 .filter(Boolean)
                 .join(", ")}
             </LabeledInfo>
-            {permissions.manageTasks && (
+            {permissions.canManageAllTasks && (
               <div>
                 <Button
                   variant="text"
@@ -120,7 +120,9 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
             >
               <TabList onChange={(_e, v) => setTab(v as string)}>
                 <Tab label="Comments" value="1" />
-                <Tab label="Time Entries" value="2" />
+                {permissions.canViewIndividualTimeEntries && (
+                  <Tab label="Time Entries" value="2" />
+                )}
               </TabList>
             </Box>
 

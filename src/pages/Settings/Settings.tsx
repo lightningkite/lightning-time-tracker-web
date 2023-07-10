@@ -75,7 +75,7 @@ const Settings: FC = () => {
         </CardContent>
       </Card>
 
-      {permissions.timeEntries && (
+      {permissions.canSubmitTime && (
         <>
           <Typography variant="h2" sx={{mb: 2, mt: 4}}>
             Application Settings

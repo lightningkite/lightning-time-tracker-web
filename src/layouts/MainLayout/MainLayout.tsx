@@ -77,7 +77,7 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
             {currentOrganization.name}
           </Typography>
 
-          {permissions.timeEntries && (
+          {permissions.canSubmitTime && (
             <Stack direction="row" alignItems="center" spacing={1} ml="auto">
               <SummaryTime />
 

@@ -44,39 +44,36 @@ export const NavigationDrawer: FC<{
       label: "Dashboard",
       to: "/dashboard",
       icon: Dashboard,
-      show: permissions.tasks
+      show: permissions.canBeAssignedTasks
     },
     {
       label: "Project Boards",
       to: "/project-boards",
-      icon: ViewWeek,
-      show: permissions.tasks || permissions.readSomeProjects
+      icon: ViewWeek
     },
     {
       label: "My Time",
       to: "/my-time",
       icon: AccessTime,
-      show: permissions.timeEntries
+      show: permissions.canSubmitTime
     },
     {
       label: "Projects",
       to: "/projects",
       icon: AccountTree,
-      show: permissions.readSomeProjects || permissions.manageProjects
+      show: permissions.canViewProjectsTab
     },
     {
       label: "Reports",
       to: "/reports",
       icon: Insights,
-      show:
-        permissions.readSomeProjects ||
-        (permissions.manageTasks && permissions.manageTimeEntries)
+      show: permissions.canViewReportsTab
     },
     {
       label: "Users",
       to: "/users",
       icon: People,
-      show: permissions.manageUsers
+      show: permissions.canManageAllUsers
     },
     {label: "Settings", to: "/settings", icon: Settings}
   ]

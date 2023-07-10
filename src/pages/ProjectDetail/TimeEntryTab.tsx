@@ -2,24 +2,28 @@ import {Project} from "api/sdk"
 import {AddTimeEntryButton} from "components/AddTimeEntryButton"
 import {TimeEntryTable} from "components/TimeEntryTable"
 import {usePermissions} from "hooks/usePermissions"
-import React, {FC, useState} from "react"
+import React, {FC, useContext, useState} from "react"
+import {AuthContext} from "utils/context"
 
 export interface TimeEntryTabProps {
   project: Project
 }
 
 export const TimeEntryTab: FC<TimeEntryTabProps> = ({project}) => {
-  const [refreshTrigger, setRefreshTrigger] = useState(0)
   const permissions = usePermissions()
+  const {currentUser} = useContext(AuthContext)
+
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   return (
     <>
-      {permissions.timeEntries && (
+      {(permissions.canSubmitTime || permissions.canManageAllTime) && (
         <div style={{textAlign: "right"}}>
           <AddTimeEntryButton
             project={project}
             afterSubmit={() => setRefreshTrigger((prev) => prev + 1)}
             sx={{mb: 1}}
+            user={currentUser}
           />
         </div>
       )}
@@ -27,7 +31,7 @@ export const TimeEntryTab: FC<TimeEntryTabProps> = ({project}) => {
         additionalQueryConditions={[{project: {Equal: project._id}}]}
         hiddenColumns={["projectName"]}
         dependencies={[refreshTrigger]}
-        preventClick={!permissions.timeEntries}
+        preventClick={!permissions.canManageAllTime}
       />
     </>
   )

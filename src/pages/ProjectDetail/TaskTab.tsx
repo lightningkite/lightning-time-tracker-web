@@ -17,7 +17,7 @@ export const TaskTab: FC<TaskTabProps> = ({project}) => {
 
   return (
     <>
-      {(permissions.tasks || permissions.canCreateTasks) && (
+      {(permissions.canManageAllTasks || permissions.canReportNewTasks) && (
         <div style={{textAlign: "right"}}>
           <AddTaskButton
             project={project}

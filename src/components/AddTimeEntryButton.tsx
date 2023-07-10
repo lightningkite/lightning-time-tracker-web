@@ -12,6 +12,7 @@ import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import dayjs from "dayjs"
 import duration, {Duration} from "dayjs/plugin/duration"
 import {useFormik} from "formik"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO, stringToDuration} from "utils/helpers"
@@ -58,6 +59,7 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
     sx
   } = props
   const {session, currentUser} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [showCreateForm, setShowCreateForm] = useState(false)
 
@@ -128,7 +130,7 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
         }}
       >
         <Stack gap={3}>
-          {!initialUser && (
+          {!initialUser && permissions.canManageAllTime && (
             <RestAutocompleteInput
               label="User"
               restEndpoint={session.user}

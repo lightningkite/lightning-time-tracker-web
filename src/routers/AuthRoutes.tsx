@@ -57,11 +57,9 @@ const AuthRoutes: FC = () => {
               <Navigate
                 to={
                   getUrlFromNextParam() ??
-                  (permissions.tasks
+                  (permissions.canBeAssignedTasks
                     ? "/dashboard"
-                    : permissions.readSomeProjects
-                    ? "/project-boards"
-                    : "/settings")
+                    : "/project-boards")
                 }
                 replace
               />

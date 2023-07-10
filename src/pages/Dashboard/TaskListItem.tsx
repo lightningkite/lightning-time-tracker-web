@@ -64,7 +64,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({
               annotatedTask={annotatedTask}
               refreshDashboard={refreshDashboard}
             />
-            {permissions.timeEntries && (
+            {permissions.canSubmitTime && (
               <TaskPlayActionButton annotatedTask={annotatedTask} />
             )}
           </Stack>
@@ -101,7 +101,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({
                 {annotatedTask.state.toUpperCase()} &nbsp;&#x2022;&nbsp;{" "}
                 {annotatedTask.userName}
               </Typography>
-              {!isMobile && permissions.timeEntries && (
+              {!isMobile && permissions.canSubmitTime && (
                 <Box sx={{width: "8rem"}}>
                   <Typography
                     sx={{mt: 1, mb: 0.25}}

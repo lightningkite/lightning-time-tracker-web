@@ -5,6 +5,7 @@ import {CommentSection} from "components/CommentSection"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import PageHeader, {BreadCrumb} from "components/PageHeader"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useMemo, useState} from "react"
 import {useLocation, useParams} from "react-router-dom"
 import {AuthContext} from "utils/context"
@@ -17,6 +18,7 @@ const MAX_TITLE_LENGTH = 40
 const TaskDetail: FC = () => {
   const {taskId} = useParams()
   const {session} = useContext(AuthContext)
+  const permissions = usePermissions()
   const location = useLocation()
 
   const [task, setTask] = useState<Task | null>()
@@ -91,7 +93,9 @@ const TaskDetail: FC = () => {
         <Paper sx={{mt: 4, mb: 1}}>
           <TabList onChange={(_e, v) => setTab(v as string)}>
             <Tab label="Comments" value="1" />
-            <Tab label="Time Entries" value="2" />
+            {permissions.canViewIndividualTimeEntries && (
+              <Tab label="Time Entries" value="2" />
+            )}
           </TabList>
         </Paper>
 

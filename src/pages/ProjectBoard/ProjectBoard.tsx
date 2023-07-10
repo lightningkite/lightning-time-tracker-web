@@ -153,7 +153,7 @@ export const ProjectBoard: FC = () => {
           sx={{overflowX: "auto", px: 2}}
           divider={<Divider orientation="vertical" flexItem />}
         >
-          {permissions.tasks && (
+          {permissions.canManageAllTasks && (
             <CompactColumn
               handleDrop={handleDrop}
               taskState={TaskState.Cancelled}
@@ -175,7 +175,7 @@ export const ProjectBoard: FC = () => {
               />
             ))}
 
-          {permissions.tasks && (
+          {permissions.canManageAllTasks && (
             <CompactColumn
               handleDrop={handleDrop}
               taskState={TaskState.Delivered}

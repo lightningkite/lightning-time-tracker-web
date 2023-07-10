@@ -69,7 +69,7 @@ export const ProjectForm: FC<ProjectFormProps> = (props) => {
     }
   })
 
-  const canEdit = permissions.manageProjects
+  const canEdit = permissions.canManageAllProjects
 
   return (
     <Stack gap={3}>

@@ -19,6 +19,7 @@ export const MyTimeEntries: FC = () => {
       <PageHeader title="My Time Entries">
         <AddTimeEntryButton
           afterSubmit={() => setRefreshTrigger((prev) => prev + 1)}
+          user={currentUser}
         />
       </PageHeader>
 

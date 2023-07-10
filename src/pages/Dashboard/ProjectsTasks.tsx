@@ -14,6 +14,7 @@ import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import {AnnotatedTask, useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
 import usePeriodicRefresh from "hooks/usePeriodicRefresh"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
 import {booleanCompare, compareTasksByState} from "utils/helpers"
@@ -23,6 +24,7 @@ export const ProjectsTasks: FC = () => {
   const {session, currentOrganization, currentUser} = useContext(AuthContext)
   const {timers} = useContext(TimerContext)
   const {annotatedTaskEndpoint} = useAnnotatedEndpoints()
+  const permissions = usePermissions()
 
   const [projects, setProjects] = useState<Project[] | null>()
   const [annotatedTasks, setAnnotatedTasks] = useState<AnnotatedTask[] | null>()
@@ -121,16 +123,18 @@ export const ProjectsTasks: FC = () => {
                   sx={{mr: 2, visibility: myTasksCount ? "visible" : "hidden"}}
                 />
                 <Typography variant="h2">{project?.name}</Typography>
-                <AddTaskButton
-                  project={project}
-                  afterSubmit={(newAnnotatedTask) =>
-                    setAnnotatedTasks([
-                      ...(annotatedTasks ?? []),
-                      newAnnotatedTask
-                    ])
-                  }
-                  sx={{ml: "auto", mr: 2}}
-                />
+                {permissions.canManageAllTasks && (
+                  <AddTaskButton
+                    project={project}
+                    afterSubmit={(newAnnotatedTask) =>
+                      setAnnotatedTasks([
+                        ...(annotatedTasks ?? []),
+                        newAnnotatedTask
+                      ])
+                    }
+                    sx={{ml: "auto", mr: 2}}
+                  />
+                )}
               </AccordionSummary>
               <AccordionDetails sx={{p: 0}}>
                 <List>

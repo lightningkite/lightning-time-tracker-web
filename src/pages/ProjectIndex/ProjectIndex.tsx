@@ -19,7 +19,7 @@ export const ProjectIndex: FC = () => {
   return (
     <Container maxWidth="md">
       <PageHeader title="Projects">
-        {permissions.manageProjects && (
+        {permissions.canManageAllProjects && (
           <AddProjectButton
             afterSubmit={() => setRefreshTrigger((prev) => prev + 1)}
           />

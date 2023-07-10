@@ -44,7 +44,7 @@ export interface TaskFormProps {
 export const TaskForm: FC<TaskFormProps> = (props) => {
   const {task, setTask} = props
 
-  const {session, currentUser} = useContext(AuthContext)
+  const {session} = useContext(AuthContext)
   const permissions = usePermissions()
 
   const [error, setError] = useState("")
@@ -105,9 +105,9 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       .catch(() => alert("Error loading initial values"))
   }, [])
 
-  const canEdit =
-    (task.user === currentUser._id && permissions.tasks) ||
-    permissions.manageTasks
+  const canEdit = permissions.canManageAllTasks
+  const canEditSomeFields =
+    canEdit || [TaskState.Active, TaskState.Hold].includes(task.state)
 
   return (
     <>
@@ -115,7 +115,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
         <TextField
           label="Summary"
           {...makeFormikTextFieldProps(formik, "summary")}
-          disabled={!canEdit}
+          disabled={!canEditSomeFields}
         />
 
         <TextField
@@ -124,7 +124,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
           {...makeFormikTextFieldProps(formik, "description")}
           minRows={3}
           sx={{mb: 3}}
-          disabled={!canEdit}
+          disabled={!canEditSomeFields}
         />
 
         <AttachmentsInput
@@ -137,7 +137,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
               ? (formik.errors.attachments as string)
               : undefined
           }
-          disabled={!canEdit}
+          disabled={!canEditSomeFields}
         />
       </FormSection>
 

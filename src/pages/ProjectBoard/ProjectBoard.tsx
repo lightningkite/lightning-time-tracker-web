@@ -24,7 +24,7 @@ import {TaskStateColumn} from "./TaskStateColumn"
 
 const hiddenTaskStates: TaskState[] = [TaskState.Cancelled, TaskState.Delivered]
 
-export const ProjectView: FC = () => {
+export const ProjectBoard: FC = () => {
   const {session, currentUser} = useContext(AuthContext)
   const {annotatedTaskEndpoint} = useAnnotatedEndpoints()
   const permissions = usePermissions()

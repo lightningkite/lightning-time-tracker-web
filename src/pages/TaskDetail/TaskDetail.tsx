@@ -4,9 +4,9 @@ import {Task} from "api/sdk"
 import {CommentSection} from "components/CommentSection"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
-import PageHeader from "components/PageHeader"
-import React, {FC, useContext, useEffect, useState} from "react"
-import {useParams} from "react-router-dom"
+import PageHeader, {BreadCrumb} from "components/PageHeader"
+import React, {FC, useContext, useEffect, useMemo, useState} from "react"
+import {useLocation, useParams} from "react-router-dom"
 import {AuthContext} from "utils/context"
 import {DeleteTaskButton} from "./DeleteTaskButton"
 import {TaskForm} from "./TaskForm"
@@ -15,8 +15,9 @@ import {TimeEntryTab} from "./TimeEntryTab"
 const MAX_TITLE_LENGTH = 40
 
 const TaskDetail: FC = () => {
-  const {taskId, projectId} = useParams()
+  const {taskId} = useParams()
   const {session} = useContext(AuthContext)
+  const location = useLocation()
 
   const [task, setTask] = useState<Task | null>()
   const [tab, setTab] = useState("1")
@@ -28,6 +29,44 @@ const TaskDetail: FC = () => {
       .catch(() => setTask(null))
   }, [taskId])
 
+  const shortSummary = useMemo(() => {
+    if (!task) return ""
+
+    return task.summary.length > MAX_TITLE_LENGTH
+      ? task.summary.slice(0, MAX_TITLE_LENGTH) + "..."
+      : task.summary
+  }, [task])
+
+  const breadcrumbs: BreadCrumb[] = useMemo(() => {
+    if (!task) return []
+
+    const page = location.pathname.split("/").find((seg) => seg !== "")
+
+    if (page === "dashboard")
+      return [
+        ["Dashboard", "/dashboard"],
+        [shortSummary, ""]
+      ]
+
+    if (page === "projects")
+      return [
+        ["All Projects", "/projects"],
+        [task.projectName ?? "Unknown Project", `/projects/${task.project}`],
+        [shortSummary, ""]
+      ]
+
+    if (page === "project-boards")
+      return [
+        [
+          task.projectName ?? "Unknown Project",
+          `/project-boards?project=${task.project}`
+        ],
+        [shortSummary, ""]
+      ]
+
+    return []
+  }, [task])
+
   if (task === undefined) {
     return <Loading />
   }
@@ -36,31 +75,9 @@ const TaskDetail: FC = () => {
     return <ErrorAlert>Error loading task</ErrorAlert>
   }
 
-  const shortSummary =
-    task.summary.length > MAX_TITLE_LENGTH
-      ? task.summary.slice(0, MAX_TITLE_LENGTH) + "..."
-      : task.summary
-
   return (
     <Container maxWidth="md">
-      <PageHeader
-        title={shortSummary}
-        breadcrumbs={
-          projectId !== undefined
-            ? [
-                ["All Projects", "/projects"],
-                [
-                  task.projectName ?? "Unknown Project",
-                  `/projects/${projectId}`
-                ],
-                [shortSummary, ""]
-              ]
-            : [
-                ["Dashboard", "/dashboard"],
-                [shortSummary, ""]
-              ]
-        }
-      >
+      <PageHeader title={shortSummary} breadcrumbs={breadcrumbs}>
         <DeleteTaskButton task={task} />
       </PageHeader>
 

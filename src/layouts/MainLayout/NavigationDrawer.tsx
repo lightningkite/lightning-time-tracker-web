@@ -47,8 +47,8 @@ export const NavigationDrawer: FC<{
       show: permissions.tasks
     },
     {
-      label: "Project View",
-      to: "/project-view",
+      label: "Project Boards",
+      to: "/project-boards",
       icon: ViewWeek,
       show: permissions.tasks || permissions.readSomeProjects
     },

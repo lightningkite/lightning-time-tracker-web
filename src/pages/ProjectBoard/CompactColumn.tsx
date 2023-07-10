@@ -1,4 +1,4 @@
-import {CheckCircle} from "@mui/icons-material"
+import {Cancel, CheckCircle} from "@mui/icons-material"
 import {Box, Typography} from "@mui/material"
 import {TaskState} from "api/sdk"
 import dayjs from "dayjs"
@@ -9,21 +9,24 @@ import {useDrop} from "react-dnd"
 
 dayjs.extend(duration)
 
-export interface DeliveredColumnProps {
+export interface CompactColumnProps {
   handleDrop: (task: AnnotatedTask, newState: TaskState) => void
+  taskState: TaskState
 }
 
-export const DeliveredColumn: FC<DeliveredColumnProps> = (props) => {
-  const {handleDrop} = props
+export const CompactColumn: FC<CompactColumnProps> = (props) => {
+  const {handleDrop, taskState} = props
 
   const [{isOver, canDrop}, drop] = useDrop({
     accept: Object.values(TaskState),
-    drop: (task) => handleDrop(task as AnnotatedTask, TaskState.Delivered),
+    drop: (task) => handleDrop(task as AnnotatedTask, taskState),
     collect: (monitor) => ({
       isOver: monitor.isOver(),
       canDrop: monitor.canDrop()
     })
   })
+
+  const Icon = taskState === TaskState.Delivered ? CheckCircle : Cancel
 
   return (
     <Box
@@ -39,11 +42,8 @@ export const DeliveredColumn: FC<DeliveredColumnProps> = (props) => {
       }}
       ref={drop}
     >
-      <CheckCircle
-        sx={{
-          color: canDrop ? "white" : "text.disabled"
-        }}
-      />
+      <Icon sx={{color: canDrop ? "white" : "text.disabled"}} />
+
       {canDrop && (
         <Typography
           sx={{
@@ -53,7 +53,7 @@ export const DeliveredColumn: FC<DeliveredColumnProps> = (props) => {
             color: "text.secondary"
           }}
         >
-          Delivered
+          {taskState}
         </Typography>
       )}
     </Box>

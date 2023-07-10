@@ -18,7 +18,7 @@ import {DndProvider} from "react-dnd"
 import {HTML5Backend} from "react-dnd-html5-backend"
 import {useLocation, useNavigate} from "react-router-dom"
 import {AuthContext} from "utils/context"
-import {DeliveredColumn} from "./DeliveredColumn"
+import {CompactColumn} from "./CompactColumn"
 import {ProjectSwitcher} from "./ProjectSwitcher"
 import {TaskStateColumn} from "./TaskStateColumn"
 
@@ -152,6 +152,13 @@ export const ProjectBoard: FC = () => {
           sx={{overflowX: "auto", px: 2}}
           divider={<Divider orientation="vertical" flexItem />}
         >
+          {permissions.tasks && (
+            <CompactColumn
+              handleDrop={handleDrop}
+              taskState={TaskState.Cancelled}
+            />
+          )}
+
           {Object.values(TaskState)
             .filter((taskState) => !hiddenTaskStates.includes(taskState))
             .map((taskState) => (
@@ -166,7 +173,13 @@ export const ProjectBoard: FC = () => {
                 onAddedTask={(task) => dispatch({type: "addTask", task})}
               />
             ))}
-          {permissions.tasks && <DeliveredColumn handleDrop={handleDrop} />}
+
+          {permissions.tasks && (
+            <CompactColumn
+              handleDrop={handleDrop}
+              taskState={TaskState.Delivered}
+            />
+          )}
         </Stack>
       </DndProvider>
     </Container>

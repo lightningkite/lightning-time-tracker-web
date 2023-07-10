@@ -96,7 +96,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
   useEffect(() => {
     Promise.all([
       session.project.detail(task.project),
-      session.user.detail(task.user)
+      task.user ? session.user.detail(task.user) : null
     ])
       .then(([project, user]) => {
         formik.resetForm({values: {...formik.values, user, project}})

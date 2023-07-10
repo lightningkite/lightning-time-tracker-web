@@ -42,7 +42,11 @@ export const ProjectsTasks: FC = () => {
           And: [
             {organization: {Equal: currentOrganization._id}},
             {user: {Equal: currentUser._id}},
-            {state: {Equal: TaskState.Active}}
+            {
+              state: {
+                Or: [{Equal: TaskState.Active}, {Equal: TaskState.PullRequest}]
+              }
+            }
           ]
         }
       })

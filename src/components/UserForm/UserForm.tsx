@@ -19,7 +19,6 @@ import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import * as yup from "yup"
-import {PermissionsInput} from "./PermissionsInput"
 
 // Form validation schema. See: https://www.npmjs.com/package/yup#object
 const validationSchema = yup.object().shape({
@@ -56,31 +55,18 @@ export const UserForm: FC<UserFormProps> = (props) => {
       email: user.email,
       name: user.name,
       isSuperUser: user.isSuperUser,
-      isClient: user.isClient,
       limitToProjects: user.limitToProjects ?? [],
       projectFavorites: user.projectFavorites,
       active: user.active,
-      permissions: user.permissions
+      role: user.role
     },
     validationSchema,
     // When the form is submitted, this function is called if the form values are valid
     onSubmit: async (values, {resetForm}) => {
       setError("")
 
-      // Convert date fields from Date back to ISO string
-      const formattedValues: Partial<User> = {
-        email: values.email,
-        name: values.name,
-        isSuperUser: values.isSuperUser,
-        isClient: values.isClient,
-        active: values.active,
-        limitToProjects: values.limitToProjects,
-        permissions: values.permissions,
-        projectFavorites: values.projectFavorites
-      }
-
       // Automatically builds the Lightning Server modification given the old object and the new values
-      const modification = makeObjectModification(user, formattedValues)
+      const modification = makeObjectModification(user, values)
 
       // Handle the case where nothing changed (this shouldn't happen, but we gotta make TypeScript happy)
       if (!modification) {
@@ -151,13 +137,6 @@ export const UserForm: FC<UserFormProps> = (props) => {
 
             <FormControlLabel
               control={
-                <Checkbox {...makeFormikCheckboxProps(formik, "isClient")} />
-              }
-              label="Is Client"
-            />
-
-            <FormControlLabel
-              control={
                 <Checkbox {...makeFormikCheckboxProps(formik, "isSuperUser")} />
               }
               label="Is Super User"
@@ -191,13 +170,6 @@ export const UserForm: FC<UserFormProps> = (props) => {
                     helperText="This user will only be able to access these projects"
                   />
                 )}
-              />
-
-              <PermissionsInput
-                permissions={formik.values.permissions}
-                onChange={(permissions) => {
-                  formik.setFieldValue("permissions", permissions)
-                }}
               />
             </>
           )}

@@ -19,9 +19,8 @@ export function generateUsers(
         active: true,
         projectFavorites: [],
         webPreferences: "",
-        permissions: 0,
         limitToProjects: null,
-        isClient: false
+        role: null
       }
     }
   )

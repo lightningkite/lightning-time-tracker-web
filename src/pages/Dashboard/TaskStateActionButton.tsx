@@ -27,6 +27,10 @@ const actions: Record<
   },
   [TaskState.Active]: {
     back: {label: "Hold", nextState: TaskState.Hold},
+    next: {label: "Pull Request", nextState: TaskState.PullRequest}
+  },
+  [TaskState.PullRequest]: {
+    back: {label: "Needs Development", nextState: TaskState.Active},
     next: {label: "Ready to Test", nextState: TaskState.Testing}
   },
   [TaskState.Testing]: {

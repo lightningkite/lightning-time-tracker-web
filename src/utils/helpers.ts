@@ -59,6 +59,7 @@ export function getTimerSeconds(timer: Timer): number {
 const taskStateOrder: Record<TaskState, number> = {
   [TaskState.Hold]: 0,
   [TaskState.Active]: 1,
+  [TaskState.PullRequest]: 1.5,
   [TaskState.Testing]: 2,
   [TaskState.Approved]: 3,
   [TaskState.Delivered]: 4,

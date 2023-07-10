@@ -52,8 +52,8 @@ export const AddUserButton: FC<AddUserProps> = (props) => {
         currentTask: undefined,
         projectFavorites: [],
         webPreferences: "",
-        permissions: 0,
         limitToProjects: [],
+        role: null,
         active: true
       })
 

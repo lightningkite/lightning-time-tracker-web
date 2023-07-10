@@ -133,7 +133,8 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
         emergency: false,
         createdAt: new Date().toISOString(),
         createdBy: currentUser._id,
-        creatorName: currentUser.name
+        creatorName: currentUser.name,
+        pullRequestLink: null
       })
       .then((task) => setTask(task))
       .catch(console.error)

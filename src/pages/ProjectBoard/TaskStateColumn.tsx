@@ -8,6 +8,7 @@ import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useState} from "react"
 import {useDrop} from "react-dnd"
+import {camelCaseToTitleCase} from "utils/helpers"
 import {TaskCard} from "./TaskCard"
 
 dayjs.extend(duration)
@@ -54,7 +55,7 @@ export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
           alignItems="center"
           sx={{mb: 2}}
         >
-          <Typography variant="h3">{state}</Typography>
+          <Typography variant="h3">{camelCaseToTitleCase(state)}</Typography>
           {tasks && (
             <Typography variant="h3" color="text.secondary">
               {tasks.length}

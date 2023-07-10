@@ -87,6 +87,7 @@ export const ProjectBoard: FC = () => {
     const map: Record<TaskState, AnnotatedTask[]> = {
       [TaskState.Active]: [],
       [TaskState.Delivered]: [],
+      [TaskState.PullRequest]: [],
       [TaskState.Hold]: [],
       [TaskState.Testing]: [],
       [TaskState.Approved]: [], // Unused

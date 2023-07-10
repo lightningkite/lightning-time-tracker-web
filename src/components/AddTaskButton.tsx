@@ -93,7 +93,8 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
         emergency: false,
         createdAt: new Date().toISOString(),
         createdBy: currentUser._id,
-        creatorName: currentUser.name
+        creatorName: currentUser.name,
+        pullRequestLink: null
       })
 
       afterSubmit({

@@ -24,8 +24,7 @@ import {ColorPicker} from "./ColorPicker"
 
 export interface WebPreferences {
   mode: "light" | "dark"
-  color: string
-  colorBrightness: number
+  themeColor: string
   summaryTime: "day" | "week"
 }
 

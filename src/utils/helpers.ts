@@ -99,8 +99,7 @@ export function parsePreferences(
 ): WebPreferences {
   const defaultPreferences: WebPreferences = {
     mode: "dark",
-    color: "lightBlue",
-    colorBrightness: 500,
+    themeColor: "#99c8ff",
     summaryTime: "week"
   }
   try {
@@ -108,16 +107,6 @@ export function parsePreferences(
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       preferencesJSON || "{}"
     ) as Partial<WebPreferences> // Probably
-
-    const isValidBrightness =
-      !!parsed.colorBrightness &&
-      [100, 200, 300, 400, 500, 600, 700, 800, 900].includes(
-        parsed.colorBrightness
-      )
-
-    if (!isValidBrightness) {
-      delete parsed.colorBrightness
-    }
 
     return {...defaultPreferences, ...parsed}
   } catch (e) {

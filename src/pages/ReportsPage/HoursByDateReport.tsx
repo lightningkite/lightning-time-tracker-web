@@ -1,7 +1,7 @@
 import {Aggregate} from "@lightningkite/lightning-server-simplified"
 import {Alert, Card} from "@mui/material"
 import {DataGrid, GridEnrichedColDef} from "@mui/x-data-grid"
-import {User} from "api/sdk"
+import {User, UserRole} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {QUERY_LIMIT} from "utils/constants"
@@ -35,7 +35,16 @@ export const HoursByDateReport: FC<ReportProps> = (props) => {
       condition: {
         And: [
           filtersToUserCondition(reportFilterValues),
-          {isClient: {Equal: false}}
+          {
+            Or: [
+              {isSuperUser: {Equal: true}},
+              {
+                role: {
+                  Inside: [UserRole.InternalTeamMember, UserRole.Contractor]
+                }
+              }
+            ]
+          }
         ]
       },
       limit: QUERY_LIMIT

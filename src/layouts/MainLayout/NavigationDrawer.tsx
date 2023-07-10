@@ -67,7 +67,8 @@ export const NavigationDrawer: FC<{
       label: "Reports",
       to: "/reports",
       icon: Insights,
-      show: permissions.canViewReportsTab
+      show:
+        permissions.canViewClientReports || permissions.canViewInternalReports
     },
     {
       label: "Users",

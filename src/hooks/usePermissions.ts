@@ -29,7 +29,9 @@ export function usePermissions() {
 
     canReportNewTasks: true,
 
-    canViewReportsTab: isA(UserRole.InternalTeamMember, UserRole.Client),
+    canViewInternalReports: isA(UserRole.InternalTeamMember),
+
+    canViewClientReports: isA(UserRole.Client),
 
     canManageAllUsers: false as boolean,
 

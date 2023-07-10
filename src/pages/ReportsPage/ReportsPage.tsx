@@ -2,6 +2,7 @@ import {TabContext, TabList, TabPanel} from "@mui/lab"
 import {Box, Container, Tab} from "@mui/material"
 import {Project, User} from "api/sdk"
 import PageHeader from "components/PageHeader"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useState} from "react"
 import {AuthContext} from "utils/context"
 import {HoursByDateReport} from "./HoursByDateReport"
@@ -22,6 +23,7 @@ export interface ReportProps {
 
 const ReportsPage: FC = () => {
   const {currentUser} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [reportFilterValues, setReportFilterValues] =
     useState<ReportFilterValues>()
@@ -44,7 +46,11 @@ const ReportsPage: FC = () => {
             <Box sx={{borderBottom: 1, borderColor: "divider", mt: 2}}>
               <TabList onChange={(_e, newValue) => setValue(newValue)}>
                 <Tab
-                  label={currentUser.isClient ? "Estimated Bill" : "Revenue"}
+                  label={
+                    permissions.canViewInternalReports
+                      ? "Revenue"
+                      : "Estimated Bill"
+                  }
                   value="1"
                 />
                 <Tab label="Hours by Date" value="2" />

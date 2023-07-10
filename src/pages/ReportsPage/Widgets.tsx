@@ -2,6 +2,7 @@ import {Aggregate} from "@lightningkite/lightning-server-simplified"
 import {Stack, Typography} from "@mui/material"
 import {Project} from "api/sdk"
 import dayjs from "dayjs"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
@@ -15,6 +16,7 @@ export const Widgets: FC<ReportProps> = (props) => {
   const {reportFilterValues} = props
   const {dateRange} = reportFilterValues
   const {session, currentUser} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [totalHours, setTotalHours] = useState<number>()
   const [revenueDollarsBeforeToday, setRevenueDollarsBeforeToday] =
@@ -103,7 +105,7 @@ export const Widgets: FC<ReportProps> = (props) => {
 
   return (
     <Stack direction="row" spacing={2} sx={{overflowX: "scroll", mb: 3}}>
-      {!currentUser.isClient && (
+      {permissions.canViewInternalReports && (
         <WidgetLayout title="Efficiency">
           <Typography
             fontSize="2.5rem"
@@ -123,7 +125,7 @@ export const Widgets: FC<ReportProps> = (props) => {
         </WidgetLayout>
       )}
 
-      {isTodayWithinRange && !currentUser.isClient && (
+      {isTodayWithinRange && permissions.canViewInternalReports && (
         <WidgetLayout title="Projected">
           <Typography fontSize="2.5rem">
             {revenueDollarsBeforeToday
@@ -139,11 +141,11 @@ export const Widgets: FC<ReportProps> = (props) => {
       <WidgetLayout
         title={(() => {
           if (isTodayWithinRange) {
-            return currentUser.isClient
-              ? "Est. Bill to Date"
-              : "Revenue to Date"
+            return permissions.canViewInternalReports
+              ? "Revenue to Date"
+              : "Est. Bill to Date"
           } else {
-            return currentUser.isClient ? "Est. Bill" : "Revenue"
+            return permissions.canViewInternalReports ? "Revenue" : "Est. Bill"
           }
         })()}
       >

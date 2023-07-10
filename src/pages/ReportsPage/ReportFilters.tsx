@@ -3,6 +3,7 @@ import {FilterBar} from "@lightningkite/mui-lightning-components"
 import {Skeleton} from "@mui/material"
 import {Project, Task, TimeEntry, User} from "api/sdk"
 import dayjs, {Dayjs} from "dayjs"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO} from "utils/helpers"
@@ -18,7 +19,7 @@ const PAY_PERIOD_END = 15
 const dateRangeOptions: {
   label: string
   value: DateRange
-  hideFromClient?: boolean
+  payRelated?: boolean
 }[] = [
   {
     label: "Month",
@@ -50,7 +51,7 @@ const dateRangeOptions: {
   },
   {
     label: "Pay Period",
-    hideFromClient: true,
+    payRelated: true,
     value:
       dayjs().date() <= PAY_PERIOD_END
         ? {
@@ -64,7 +65,7 @@ const dateRangeOptions: {
   },
   {
     label: "Pay Period - previous",
-    hideFromClient: true,
+    payRelated: true,
     value:
       dayjs().date() <= PAY_PERIOD_END
         ? {
@@ -93,6 +94,7 @@ export interface ReportFiltersProps {
 export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
   const {setReportFilterValues} = props
   const {session, currentUser} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [users, setUsers] = useState<User[]>()
   const [projects, setProjects] = useState<Project[]>()
@@ -118,7 +120,7 @@ export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
           name: FilterNames.DATE_RANGE,
           placeholder: "Date Range",
           options: dateRangeOptions.filter(
-            (o) => !currentUser.isClient || !o.hideFromClient
+            (o) => permissions.canSubmitTime || !o.payRelated
           ),
           optionToID: (o) => o.label,
           optionToLabel: (o) => o.label,

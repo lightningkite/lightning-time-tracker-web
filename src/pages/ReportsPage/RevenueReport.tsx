@@ -45,7 +45,7 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
 
   const [error, setError] = useState("")
   const [expanded, setExpanded] = useState<string | null>(null)
-  const [showAll, setShowAll] = useState(currentUser.isClient)
+  const [showAll, setShowAll] = useState(false)
 
   useEffect(() => {
     if (!expanded) return
@@ -249,7 +249,7 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
           )
         })}
 
-      {!currentUser.isClient && !showAll && (
+      {!showAll && (
         <Button
           variant="outlined"
           sx={{mt: 3, display: "block", mx: "auto"}}

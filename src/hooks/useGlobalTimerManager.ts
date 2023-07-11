@@ -100,8 +100,8 @@ export const useGlobalTimerManager = (): TimerContextType => {
 
     const timers = applyTimerChanges(state.lastFetched, state.changes)
     timers.forEach((timer) => {
-      if (timer._id === id && !timer.lastStarted) startTimer(id)
-      else if (timer.lastStarted) stopTimer(id)
+      if (timer._id === id && !timer.lastStarted) startTimer(timer._id)
+      else if (timer.lastStarted) stopTimer(timer._id)
     })
   }
 

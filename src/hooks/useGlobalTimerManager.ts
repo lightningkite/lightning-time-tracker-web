@@ -49,19 +49,13 @@ export const useGlobalTimerManager = (): TimerContextType => {
     const changeRequests = makeChangeRequests(previous, state.changes, session)
     const newTimers = applyTimerChanges(previous, state.changes)
 
-    console.log({state, changeRequests, newTimers})
-
     dispatch({type: "resetValues", lastFetched: newTimers})
 
-    await Promise.all(changeRequests)
-      .then((responses) => {
-        console.log({responses})
-      })
-      .catch(() =>
-        fetchTimers().then((timers) =>
-          dispatch({type: "resetValues", lastFetched: timers})
-        )
+    await Promise.all(changeRequests).catch(() =>
+      fetchTimers().then((timers) =>
+        dispatch({type: "resetValues", lastFetched: timers})
       )
+    )
   }
 
   function removeTimer(id: string): void {

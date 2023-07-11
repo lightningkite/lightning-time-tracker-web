@@ -16,9 +16,8 @@ export interface HMS {
 const HmsInputGroup: FC<{timerKey: string}> = ({timerKey}) => {
   const {timers, toggleTimer, updateTimer} = useContext(TimerContext)
 
-  const [hms, setHms] = useState<HMS | null>(null)
-
   const timer = timers[timerKey]
+  const [hms, setHms] = useState<HMS>(hmsFromTimer(timer))
 
   useEffect(() => {
     setHms(hmsFromTimer(timer))
@@ -27,9 +26,6 @@ const HmsInputGroup: FC<{timerKey: string}> = ({timerKey}) => {
   }, [timer])
 
   const handleChange = (field: keyof HMS, value: number) => {
-    console.log(field, value)
-    if (!hms) return
-
     const newHms = {...hms, [field]: value}
 
     updateTimer(timerKey, {
@@ -40,8 +36,6 @@ const HmsInputGroup: FC<{timerKey: string}> = ({timerKey}) => {
   }
 
   const pause = () => timer.lastStarted && toggleTimer(timerKey)
-
-  if (!hms) return <div></div>
 
   return (
     <Stack

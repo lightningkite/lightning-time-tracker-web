@@ -1,5 +1,5 @@
-import {Star} from "@mui/icons-material"
 import {
+  Avatar,
   Card,
   CardActionArea,
   CardContent,
@@ -13,6 +13,7 @@ import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext} from "react"
 import {useDrag} from "react-dnd"
 import {AuthContext} from "utils/context"
+import {getContrastingColor, getNameInitials} from "utils/helpers"
 
 dayjs.extend(duration)
 
@@ -23,7 +24,7 @@ export interface TaskCardProps {
 
 export const TaskCard: FC<TaskCardProps> = (props) => {
   const {task, onClick} = props
-  const {currentUser} = useContext(AuthContext)
+  const {currentUser, userColors} = useContext(AuthContext)
   const permissions = usePermissions()
 
   const [{opacity}, drag] = useDrag(
@@ -51,7 +52,6 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
     permissions.manageTasks
 
   const isEmergency = task.emergency
-  const isCurrentUser = task.user === currentUser._id
 
   return (
     <Card
@@ -68,30 +68,34 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
     >
       <CardActionArea onClick={() => onClick(task)} disableRipple>
         <CardContent sx={{p: 1}}>
-          <Stack direction="row" justifyContent="space-between">
+          <Stack direction="row" gap={1} alignItems="center">
+            <Avatar
+              // src="https://avatars.githubusercontent.com/u/8319056?v=4"
+              sx={{
+                backgroundColor: userColors[task.user],
+                width: "1.6rem",
+                height: "1.6rem",
+                fontSize: "0.75rem",
+                fontWeight: "bold",
+                border: `1px solid ${userColors[task.user]}`,
+                color: getContrastingColor(userColors[task.user] ?? "#444444")
+              }}
+            >
+              {getNameInitials(task.userName ?? "")}
+            </Avatar>
             <Typography variant="body2" color="text.secondary">
-              {isCurrentUser ? (
-                <span>
-                  <Star
-                    color={isEmergency ? "error" : "primary"}
-                    fontSize="inherit"
-                    sx={{mr: 1}}
-                  />
-                  {task.userName}
-                </span>
-              ) : (
-                task.userName
-              )}
+              {task.userName}
             </Typography>
             {permissions.timeEntries && (
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" ml="auto">
                 {hoursEstimated
                   ? `${hoursSpent} / ${hoursEstimated} hr`
                   : `${hoursSpent} hr`}
               </Typography>
             )}
           </Stack>
-          <Typography>{task.summary}</Typography>
+
+          <Typography mt={0.5}>{task.summary}</Typography>
         </CardContent>
       </CardActionArea>
     </Card>

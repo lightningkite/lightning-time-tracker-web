@@ -164,3 +164,20 @@ export async function uploadToS3(uploadUrl: string, file: File) {
     }
   })
 }
+
+export function getNameInitials(name: string): string {
+  const split = name.split(" ")
+  const first = split.at(0)
+  const last = split.at(-1)
+
+  return `${first?.charAt(0) ?? ""}${last?.charAt(0) ?? ""}`.toUpperCase()
+}
+
+export function getContrastingColor(hex: string): "black" | "white" {
+  const r = parseInt(hex.substring(1, 3), 16)
+  const g = parseInt(hex.substring(3, 5), 16)
+  const b = parseInt(hex.substring(5, 7), 16)
+
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000
+  return yiq >= 128 ? "black" : "white"
+}

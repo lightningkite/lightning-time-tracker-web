@@ -106,8 +106,6 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
     formik.setFieldValue("task", null)
   }, [formik.values.project])
 
-  console.log(formik.values, props)
-
   return (
     <>
       <Button

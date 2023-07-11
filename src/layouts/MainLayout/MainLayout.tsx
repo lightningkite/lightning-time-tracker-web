@@ -90,9 +90,7 @@ const MainLayout: FC<{children: ReactNode}> = ({children}) => {
                   edge="start"
                 >
                   <Badge
-                    badgeContent={
-                      openTimers ? null : Object.keys(timers).length
-                    }
+                    badgeContent={openTimers || !timers ? null : timers.length}
                     color="primary"
                   >
                     {!openTimers ? <TimerOutlined /> : <Close />}

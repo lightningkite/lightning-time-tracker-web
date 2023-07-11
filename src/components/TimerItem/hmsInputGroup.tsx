@@ -1,10 +1,11 @@
 import {Stack, Typography} from "@mui/material"
+import {Timer} from "api/sdk"
 import dayjs from "dayjs"
+import duration, {Duration} from "dayjs/plugin/duration"
 import React, {FC, useContext, useEffect, useState} from "react"
-import {Timer, TimerContext} from "utils/context"
+import {TimerContext} from "utils/context"
 import HmsInputField from "./hmsInputField"
 
-import duration, {Duration} from "dayjs/plugin/duration"
 dayjs.extend(duration)
 
 export interface HMS {
@@ -13,10 +14,9 @@ export interface HMS {
   seconds: number
 }
 
-const HmsInputGroup: FC<{timerKey: string}> = ({timerKey}) => {
-  const {timers, toggleTimer, updateTimer} = useContext(TimerContext)
+const HmsInputGroup: FC<{timer: Timer}> = ({timer}) => {
+  const {toggleTimer, updateTimer} = useContext(TimerContext)
 
-  const timer = timers[timerKey]
   const [hms, setHms] = useState<HMS>(hmsFromTimer(timer))
 
   useEffect(() => {
@@ -28,14 +28,14 @@ const HmsInputGroup: FC<{timerKey: string}> = ({timerKey}) => {
   const handleChange = (field: keyof HMS, value: number) => {
     const newHms = {...hms, [field]: value}
 
-    updateTimer(timerKey, {
+    updateTimer(timer._id, {
       lastStarted: null,
       accumulatedSeconds:
         newHms.hours * 3600 + newHms.minutes * 60 + newHms.seconds
     })
   }
 
-  const pause = () => timer.lastStarted && toggleTimer(timerKey)
+  const pause = () => timer.lastStarted && toggleTimer(timer._id)
 
   return (
     <Stack

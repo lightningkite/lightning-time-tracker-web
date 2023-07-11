@@ -10,7 +10,7 @@ import {
   TextField,
   useTheme
 } from "@mui/material"
-import {Project, Task, TaskState} from "api/sdk"
+import {Project, Task, TaskState, Timer} from "api/sdk"
 import {AutoLoadingButton} from "components/AutoLoadingButton"
 import React, {
   FC,
@@ -25,17 +25,15 @@ import {ContentCollapsed} from "./ContentCollapsed"
 import HmsInputGroup from "./hmsInputGroup"
 
 export interface TimerItemProps {
-  timerKey: string
+  timer: Timer
   projectOptions: Project[] | undefined
 }
 
-export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
+export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
   const {session, currentUser} = useContext(AuthContext)
-  const {timers, removeTimer, submitTimer, updateTimer, toggleTimer} =
+  const {removeTimer, submitTimer, updateTimer, toggleTimer} =
     useContext(TimerContext)
   const theme = useTheme()
-
-  const timer = timers[timerKey]
 
   const [summary, setSummary] = useState(timer.summary)
   const [expanded, setExpanded] = useState(!timer.project || !timer.task)
@@ -88,7 +86,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
   }, [timer.project])
 
   useEffect(() => {
-    updateTimer(timerKey, {summary: throttledSummary})
+    updateTimer(timer._id, {summary: throttledSummary})
   }, [throttledSummary])
 
   useEffect(() => {
@@ -96,7 +94,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
 
     setExpanded(false)
 
-    if (task.project !== project._id) updateTimer(timerKey, {task: undefined})
+    if (task.project !== project._id) updateTimer(timer._id, {task: undefined})
   }, [timer.task, timer.project])
 
   const isMyActiveTask = useCallback((task: Task): boolean => {
@@ -133,7 +131,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
           setSortedTaskOptions((tasks) =>
             tasks ? [task, ...tasks] : undefined
           )
-          updateTimer(timerKey, {task: task._id})
+          updateTimer(timer._id, {task: task._id})
         })
         .catch(console.error)
         .finally(() => setIsCreatingNewTask(false))
@@ -146,7 +144,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
       {expanded ? (
         <Stack spacing={2}>
           <Stack direction="row" alignItems="center">
-            <HmsInputGroup timerKey={timerKey} />
+            <HmsInputGroup timer={timer} />
 
             {timer.project && (
               <HoverHelp description="Collapse">
@@ -160,7 +158,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
               <IconButton
                 onClick={() =>
                   confirm("Are you sure you want to delete this timer?") &&
-                  removeTimer(timerKey)
+                  removeTimer(timer._id)
                 }
                 sx={{
                   "&:hover": {
@@ -179,7 +177,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
             loading={!sortedProjects}
             value={project ?? null}
             onChange={(e, value) => {
-              updateTimer(timerKey, {project: value?._id, task: null})
+              updateTimer(timer._id, {project: value?._id, task: null})
             }}
             getOptionLabel={(project) => project.name}
             renderInput={(params) => <TextField {...params} label="Project" />}
@@ -198,7 +196,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
             onChange={(e, value) =>
               typeof value === "string"
                 ? createTask(value)
-                : updateTimer(timerKey, {task: value?._id})
+                : updateTimer(timer._id, {task: value?._id})
             }
             getOptionLabel={(task) =>
               typeof task === "string" ? `Create task "${task}"` : task.summary
@@ -261,7 +259,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
       <Stack direction="row" justifyContent="space-between" spacing={1}>
         <Button
           variant={timer.lastStarted ? "contained" : "outlined"}
-          onClick={() => toggleTimer(timerKey)}
+          onClick={() => toggleTimer(timer._id)}
           fullWidth
           sx={{maxWidth: 100}}
         >
@@ -269,7 +267,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
         </Button>
         <AutoLoadingButton
           onClick={() =>
-            submitTimer(timerKey).catch((e) => alert("Error submitting timer"))
+            submitTimer(timer._id).catch((e) => alert("Error submitting timer"))
           }
           variant="contained"
           disabled={!timer.project || !summary}

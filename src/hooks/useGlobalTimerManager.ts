@@ -1,141 +1,153 @@
-import {useThrottle} from "@lightningkite/mui-lightning-components"
+import {makeObjectModification} from "@lightningkite/lightning-server-simplified"
+import {Timer, UserSession} from "api/sdk"
 import dayjs from "dayjs"
-import {useContext, useEffect, useState} from "react"
-import {LocalStorageKey} from "../utils/constants"
-import {AuthContext, Timer, TimerContextType} from "../utils/context"
-import {dateToISO, getTimerSeconds} from "../utils/helpers"
-
 import duration from "dayjs/plugin/duration"
+import {useContext, useEffect, useReducer} from "react"
+import {AuthContext, TimerContextType} from "../utils/context"
+import {dateToISO, getTimerSeconds} from "../utils/helpers"
+import {useDebounce} from "./useDebounce"
+import usePeriodicRefresh from "./usePeriodicRefresh"
+
 dayjs.extend(duration)
 
-type ParsedTimer = Omit<Timer, "lastStarted"> & {
-  lastStarted: string | null
+interface TimerChange {
+  updates?: Partial<Timer>
+  delete?: boolean
+  create?: Timer
 }
 
 export const useGlobalTimerManager = (): TimerContextType => {
   const {session, currentUser} = useContext(AuthContext)
 
-  const [timers, setTimers] = useState<Record<string, Timer>>(() => {
-    try {
-      const storedTimers = localStorage.getItem(LocalStorageKey.TIMERS)
-      const parsedTimers = JSON.parse(storedTimers ?? "{}") as Record<
-        string,
-        ParsedTimer
-      >
+  const [state, dispatch] = useReducer(reducer, {status: "loading"})
 
-      const formattedTimers: Record<string, Timer> = Object.entries(
-        parsedTimers
-      ).reduce(
-        (acc, [key, value]) => ({
-          ...acc,
-          [key]: {
-            ...value,
-            lastStarted: value.lastStarted ? dayjs(value.lastStarted) : null
-          }
-        }),
-        {}
-      )
+  const debouncedState = useDebounce(state, 1000)
+  const refreshTrigger = usePeriodicRefresh(60 * 10)
 
-      return formattedTimers
-    } catch {
-      return {}
-    }
-  })
-
-  const debouncedTimers = useThrottle(timers, 500)
+  function fetchTimers() {
+    return session.timer.query({
+      condition: {user: {Equal: currentUser._id}}
+    })
+  }
 
   useEffect(() => {
-    localStorage.setItem(
-      LocalStorageKey.TIMERS,
-      JSON.stringify(debouncedTimers)
+    fetchTimers()
+      .then((timers) => dispatch({type: "resetValues", lastFetched: timers}))
+      .catch((error) => dispatch({type: "error", description: error.message}))
+  }, [])
+
+  useEffect(() => {
+    syncTimers()
+  }, [debouncedState, refreshTrigger])
+
+  async function syncTimers() {
+    if (state.status !== "ready") return
+    if (Object.keys(state.changes).length === 0) return
+
+    const previous = state.lastFetched ?? (await fetchTimers())
+
+    const changeRequests = makeChangeRequests(previous, state.changes, session)
+    const newTimers = applyTimerChanges(previous, state.changes)
+
+    dispatch({type: "resetValues", lastFetched: newTimers})
+
+    await Promise.all(changeRequests).catch(() =>
+      fetchTimers().then((timers) =>
+        dispatch({type: "resetValues", lastFetched: timers})
+      )
     )
-  }, [debouncedTimers])
+  }
 
-  function removeTimer(key: string): void {
-    setTimers((prev) => {
-      const {[key]: _, ...rest} = prev
-      return rest
+  function removeTimer(id: string): void {
+    dispatch({type: "modifyChange", id, change: {delete: true}})
+  }
+
+  function updateTimer(id: string, updates: Partial<Timer>): void {
+    dispatch({type: "modifyChange", id, change: {updates}})
+  }
+
+  function startTimer(id: string): void {
+    dispatch({
+      type: "modifyChange",
+      id,
+      change: {updates: {lastStarted: new Date().toISOString()}}
     })
   }
 
-  function updateTimer(key: string, updates: Partial<Timer>): void {
-    if (!timers[key]) {
-      alert("Timer not found")
-      return
-    }
+  function stopTimer(id: string): void {
+    if (state.status !== "ready") return
 
-    setTimers((prev) => {
-      const newTimers = {...prev}
-      newTimers[key] = {
-        ...newTimers[key],
-        ...updates
+    const previousTimer = {
+      ...(state.lastFetched.find((t) => t._id === id) ?? {}),
+      ...(state.changes[id]?.create ?? {}),
+      ...(state.changes[id]?.updates ?? {})
+    } as Timer
+
+    dispatch({
+      type: "modifyChange",
+      id,
+      change: {
+        updates: {
+          lastStarted: null,
+          accumulatedSeconds: getTimerSeconds(previousTimer)
+        }
       }
-      return newTimers
     })
   }
 
-  function startTimer(key: string): void {
-    setTimers((prev) => {
-      const newTimers = {...prev}
-      newTimers[key].lastStarted = dayjs()
-      return newTimers
-    })
-  }
+  function toggleTimer(id: string) {
+    if (state.status !== "ready") return
 
-  function stopTimer(key: string): void {
-    const timer = timers[key]
-
-    setTimers((prev) => {
-      if (!timer.lastStarted) return prev
-
-      const newTimers = {...prev}
-
-      newTimers[key].accumulatedSeconds =
-        timer.accumulatedSeconds + dayjs().diff(timer.lastStarted, "second")
-      newTimers[key].lastStarted = null
-      return newTimers
-    })
-  }
-
-  function toggleTimer(keyToToggle: string) {
-    Object.keys(timers).forEach((key) => {
-      const timer = timers[key]
-
-      if (key === keyToToggle && !timer.lastStarted) startTimer(key)
-      else if (timer.lastStarted) stopTimer(key)
+    const timers = applyTimerChanges(state.lastFetched, state.changes)
+    timers.forEach((timer) => {
+      if (timer._id === id && !timer.lastStarted) startTimer(id)
+      else if (timer.lastStarted) stopTimer(id)
     })
   }
 
   function newTimer(initialValues?: Pick<Timer, "task" | "project">): string {
+    if (state.status !== "ready") {
+      throw new Error("Timers not ready")
+    }
+
     // Stop any currently running timers
-    Object.entries(timers).forEach(([key, timer]) => {
-      if (timer.lastStarted) stopTimer(key)
+    const timers = applyTimerChanges(state.lastFetched, state.changes)
+    timers.forEach((timer) => {
+      if (timer.lastStarted) stopTimer(timer._id)
     })
 
+    const newTimerId = crypto.randomUUID()
+
     const newTimer: Timer = {
-      lastStarted: dayjs(),
+      _id: newTimerId,
+      user: currentUser._id,
+      organization: currentUser.organization,
+      lastStarted: new Date().toISOString(),
       accumulatedSeconds: 0,
       task: initialValues?.task ?? null,
       project: initialValues?.project ?? null,
       summary: ""
     }
 
-    const newTimerKey = crypto.randomUUID()
+    dispatch({type: "modifyChange", id: newTimerId, change: {create: newTimer}})
 
-    setTimers((timers) => {
-      const updatedTimers = {...timers}
-      updatedTimers[newTimerKey] = newTimer
-      return updatedTimers
-    })
-
-    return newTimerKey
+    return newTimerId
   }
 
-  async function submitTimer(key: string) {
-    const timer = timers[key]
+  async function submitTimer(id: string) {
+    if (state.status !== "ready") {
+      throw new Error("Timers not ready")
+    }
 
-    if (!timer.project) {
+    const timer = applyTimerChanges(state.lastFetched, state.changes).find(
+      (t) => t._id === id
+    )
+
+    if (!timer) {
       throw new Error("Timer not found")
+    }
+    if (!timer.project) {
+      throw new Error("Timer has no project")
     }
 
     await session.timeEntry.insert({
@@ -155,21 +167,122 @@ export const useGlobalTimerManager = (): TimerContextType => {
       userName: undefined
     })
 
-    removeTimer(key)
-  }
-
-  function getTimerForTask(taskId: string): string | null {
-    const timer = Object.keys(timers).find((key) => timers[key].task === taskId)
-    return timer ?? null
+    removeTimer(id)
   }
 
   return {
-    timers,
+    timers:
+      state.status === "ready"
+        ? applyTimerChanges(state.lastFetched, state.changes)
+        : undefined,
     removeTimer,
     updateTimer,
     toggleTimer,
     newTimer,
-    submitTimer,
-    getTimerForTask
+    submitTimer
   }
 }
+
+type State =
+  | {status: "loading"}
+  | {status: "error"; description: string}
+  | {
+      status: "ready"
+      lastFetched: Timer[]
+      changes: Record<string, TimerChange>
+    }
+
+type Action =
+  | {type: "loading"}
+  | {type: "error"; description: string}
+  | {type: "resetValues"; lastFetched: Timer[]}
+  | {type: "modifyChange"; id: string; change: TimerChange}
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "loading":
+      return {status: "loading"}
+    case "error":
+      return {status: "error", description: action.description}
+    case "resetValues":
+      return {
+        status: "ready",
+        lastFetched: action.lastFetched,
+        changes: {}
+      }
+    case "modifyChange": {
+      if (state.status !== "ready") return state
+      const newChange = mergeTimerChanges(
+        state.changes[action.id] ?? {},
+        action.change
+      )
+      return {
+        ...state,
+        changes: {
+          ...state.changes,
+          [action.id]: newChange
+        }
+      }
+    }
+  }
+}
+
+function mergeTimerChanges(a: TimerChange, b: TimerChange): TimerChange {
+  return {
+    create: a.create ?? b.create,
+    delete: a.delete ?? b.delete,
+    updates: {...a.updates, ...b.updates}
+  }
+}
+
+function applyTimerChanges(
+  previous: Timer[],
+  changes: Record<string, TimerChange>
+): Timer[] {
+  const newTimers: Timer[] = previous.map((t) => ({...t}))
+
+  Object.entries(changes).forEach(([id, change], index) => {
+    const existingTimer = newTimers.find((t) => t._id === id)
+
+    if (change.delete && existingTimer) {
+      newTimers.splice(index, 1)
+    } else if (change.create && !existingTimer) {
+      newTimers.push({...change.create, ...change.updates})
+    } else if (existingTimer) {
+      Object.assign(existingTimer, change.updates)
+    }
+  })
+
+  return newTimers
+}
+
+function makeChangeRequests(
+  previous: Timer[],
+  changes: Record<string, TimerChange>,
+  session: UserSession
+): Promise<unknown>[] {
+  const changeRequests: Promise<unknown>[] = []
+
+  Object.entries(changes).forEach(([id, change]) => {
+    const existingTimer = previous.find((t) => t._id === id)
+
+    if (change.delete && existingTimer) {
+      changeRequests.push(session.timer.delete(id))
+    } else if (change.create && !existingTimer) {
+      changeRequests.push(
+        session.timer.insert({...change.create, ...change.updates})
+      )
+    } else if (existingTimer && change.updates) {
+      changeRequests.push(
+        session.timer.modify(
+          id,
+          makeObjectModification(existingTimer, change.updates)
+        )
+      )
+    }
+  })
+
+  return changeRequests
+}
+
+// 012786d5-6a7d-4179-a09b-940da06f4a89

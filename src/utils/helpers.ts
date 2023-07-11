@@ -1,8 +1,7 @@
-import {Task, TaskState, TimeEntry} from "api/sdk"
+import {Task, TaskState, TimeEntry, Timer} from "api/sdk"
 import dayjs, {Dayjs} from "dayjs"
 import duration, {Duration} from "dayjs/plugin/duration"
 import {WebPreferences} from "pages/Settings/Settings"
-import {Timer} from "./context"
 
 dayjs.extend(duration)
 

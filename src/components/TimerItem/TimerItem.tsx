@@ -103,37 +103,42 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
     return task.user === currentUser._id && task.state === TaskState.Active
   }, [])
 
-  const createTask = useCallback((summary: string) => {
-    if (!project) return
+  const createTask = useCallback(
+    (summary: string) => {
+      if (!project) return
 
-    setIsCreatingNewTask(true)
+      setIsCreatingNewTask(true)
 
-    session.task
-      .insert({
-        _id: crypto.randomUUID(),
-        project: project._id,
-        projectName: project.name,
-        organization: project.organization,
-        organizationName: undefined,
-        user: currentUser._id,
-        userName: currentUser.name,
-        state: TaskState.Active,
-        summary,
-        description: "",
-        attachments: [],
-        estimate: undefined,
-        emergency: false,
-        createdAt: new Date().toISOString(),
-        createdBy: currentUser._id,
-        creatorName: currentUser.name
-      })
-      .then((task) => {
-        setSortedTaskOptions((tasks) => (tasks ? [task, ...tasks] : undefined))
-        updateTimer(timerKey, {task: task._id})
-      })
-      .catch(console.error)
-      .finally(() => setIsCreatingNewTask(false))
-  }, [])
+      session.task
+        .insert({
+          _id: crypto.randomUUID(),
+          project: project._id,
+          projectName: project.name,
+          organization: project.organization,
+          organizationName: undefined,
+          user: currentUser._id,
+          userName: currentUser.name,
+          state: TaskState.Active,
+          summary,
+          description: "",
+          attachments: [],
+          estimate: undefined,
+          emergency: false,
+          createdAt: new Date().toISOString(),
+          createdBy: currentUser._id,
+          creatorName: currentUser.name
+        })
+        .then((task) => {
+          setSortedTaskOptions((tasks) =>
+            tasks ? [task, ...tasks] : undefined
+          )
+          updateTimer(timerKey, {task: task._id})
+        })
+        .catch(console.error)
+        .finally(() => setIsCreatingNewTask(false))
+    },
+    [project]
+  )
 
   return (
     <Paper sx={{p: 1}}>

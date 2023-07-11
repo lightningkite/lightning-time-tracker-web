@@ -13,7 +13,7 @@ import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext} from "react"
 import {useDrag} from "react-dnd"
 import {AuthContext} from "utils/context"
-import {getNameInitials} from "utils/helpers"
+import {getContrastingColor, getNameInitials} from "utils/helpers"
 
 dayjs.extend(duration)
 
@@ -77,7 +77,8 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
                 height: "1.6rem",
                 fontSize: "0.75rem",
                 fontWeight: "bold",
-                border: `1px solid ${userColors[task.user]}`
+                border: `1px solid ${userColors[task.user]}`,
+                color: getContrastingColor(userColors[task.user])
               }}
             >
               {getNameInitials(task.userName ?? "")}

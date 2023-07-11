@@ -4,6 +4,7 @@ import PageHeader from "components/PageHeader"
 import React, {FC, useContext, useState} from "react"
 import {useNavigate} from "react-router-dom"
 import {AuthContext} from "utils/context"
+import {camelCaseToTitleCase} from "utils/helpers"
 import {AddUserButton} from "./AddUserButton"
 
 export const UserIndex: FC = () => {
@@ -27,6 +28,7 @@ export const UserIndex: FC = () => {
         onRowClick={(user) => navigate(`/users/${user._id}`)}
         searchFields={["name", "email"]}
         dependencies={[refreshTrigger]}
+        defaultSorting={[{field: "name", sort: "asc"}]}
         columns={[
           {
             field: "name",
@@ -40,13 +42,21 @@ export const UserIndex: FC = () => {
             flex: 1
           },
           {
-            field: "role",
-            headerName: "Role"
+            field: "userPermissions",
+            headerName: "Role",
+            width: 200,
+            sortable: false,
+            renderCell: ({row}) =>
+              row.isSuperUser
+                ? "Super User"
+                : row.role
+                ? camelCaseToTitleCase(row.role)
+                : "None"
           },
           {
-            field: "isSuperUser",
-            headerName: "Super User",
-            width: 120,
+            field: "active",
+            headerName: "Active",
+            width: 80,
             type: "boolean"
           }
         ]}

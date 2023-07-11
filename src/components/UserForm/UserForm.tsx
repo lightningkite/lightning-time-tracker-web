@@ -8,15 +8,20 @@ import {
   Alert,
   Autocomplete,
   Checkbox,
+  FormControl,
   FormControlLabel,
+  InputLabel,
+  MenuItem,
+  Select,
   Stack,
   TextField
 } from "@mui/material"
-import {Project, User} from "api/sdk"
+import {Project, User, UserRole} from "api/sdk"
 import FormSection from "components/FormSection"
 import {useFormik} from "formik"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
+import {camelCaseToTitleCase} from "utils/helpers"
 import * as yup from "yup"
 
 // Form validation schema. See: https://www.npmjs.com/package/yup#object
@@ -144,6 +149,23 @@ export const UserForm: FC<UserFormProps> = (props) => {
 
           {!formik.values.isSuperUser && (
             <>
+              <FormControl fullWidth>
+                <InputLabel>Role</InputLabel>
+                <Select
+                  label="Role"
+                  value={formik.values.role}
+                  onChange={(e) => {
+                    formik.setFieldValue("role", e.target.value)
+                  }}
+                >
+                  {Object.values(UserRole).map((role) => (
+                    <MenuItem key={role} value={role}>
+                      {camelCaseToTitleCase(role)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
               <Autocomplete
                 multiple
                 options={projectOptions ?? []}

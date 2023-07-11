@@ -139,11 +139,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
     <Paper sx={{p: 1}}>
       {expanded ? (
         <Stack spacing={2}>
-          <Stack
-            direction="row"
-            alignItems="center"
-            // justifyContent="space-between"
-          >
+          <Stack direction="row" alignItems="center">
             <HmsInputGroup timerKey={timerKey} />
 
             {timer.project && (

@@ -1,4 +1,4 @@
-import {colors, createTheme, CssBaseline, ThemeProvider} from "@mui/material"
+import {createTheme, CssBaseline, ThemeProvider} from "@mui/material"
 import {LocalizationProvider} from "@mui/x-date-pickers"
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs"
 import {Organization, User, UserSession} from "api/sdk"
@@ -28,15 +28,24 @@ const App: FC = () => {
     }
 
     const currentUser = await session.auth.getSelf()
-    const currentOrganization = await session.organization.detail(
-      currentUser.organization
-    )
+    const [currentOrganization, activeUsers] = await Promise.all([
+      session.organization.detail(currentUser.organization),
+      session.user.query({
+        condition: {organization: {Equal: currentUser.organization}},
+        limit: 10_000
+      })
+    ])
 
     dispatch({
       type: "authenticated",
       session,
       currentUser,
-      currentOrganization
+      currentOrganization,
+      activeUsers,
+      userColors: activeUsers.reduce<Record<string, string>>((acc, user) => {
+        acc[user._id] = parsePreferences(user.webPreferences).themeColor
+        return acc
+      }, {})
     })
   }
 
@@ -72,11 +81,9 @@ const App: FC = () => {
           {state.status === "authenticated" ? (
             <AuthContext.Provider
               value={{
-                session: state.session,
-                currentUser: state.currentUser,
+                ...state,
                 setCurrentUser: (newUser) =>
-                  dispatch({type: "setCurrentUser", newUser}),
-                currentOrganization: state.currentOrganization
+                  dispatch({type: "setCurrentUser", newUser})
               }}
             >
               <TimerContextProvider>
@@ -111,6 +118,8 @@ type State =
       session: UserSession
       currentUser: User
       currentOrganization: Organization
+      activeUsers: User[]
+      userColors: Record<string, string>
     }
 
 type Action =
@@ -121,6 +130,8 @@ type Action =
       session: UserSession
       currentUser: User
       currentOrganization: Organization
+      activeUsers: User[]
+      userColors: Record<string, string>
     }
 
 const reducer = (state: State, action: Action): State => {
@@ -142,9 +153,7 @@ const reducer = (state: State, action: Action): State => {
     case "authenticated":
       return {
         status: "authenticated",
-        session: action.session,
-        currentUser: action.currentUser,
-        currentOrganization: action.currentOrganization
+        ...action
       }
   }
 }

@@ -6,7 +6,6 @@ export function generateOrganizations(total: number): Organization[] {
     return {
       _id: randUuid(),
       name: "Lightning Kite",
-      owner: "",
       createdAt: new Date().toISOString()
     }
   })

@@ -44,7 +44,6 @@ export interface Memory {
 export interface Organization {
     _id: UUID
     name: string
-    owner: UUID
     createdAt: Instant
 }
 export interface Project {
@@ -134,6 +133,7 @@ export interface User {
     active: boolean
 }
 export enum UserRole {
+    Owner = "Owner",
     InternalTeamMember = "InternalTeamMember",
     Contractor = "Contractor",
     Client = "Client",

@@ -78,7 +78,7 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
                 fontSize: "0.75rem",
                 fontWeight: "bold",
                 border: `1px solid ${userColors[task.user]}`,
-                color: getContrastingColor(userColors[task.user])
+                color: getContrastingColor(userColors[task.user] ?? "#444444")
               }}
             >
               {getNameInitials(task.userName ?? "")}

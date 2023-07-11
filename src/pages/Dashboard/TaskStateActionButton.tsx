@@ -8,9 +8,9 @@ import {
   MenuItem
 } from "@mui/material"
 import {TaskState} from "api/sdk"
+import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import React, {FC, useContext, useState} from "react"
 import {AuthContext} from "utils/context"
-import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 
 interface TaskStateAction {
   label: string

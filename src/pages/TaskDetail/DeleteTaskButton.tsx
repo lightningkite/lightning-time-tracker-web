@@ -9,25 +9,23 @@ import {
 } from "@mui/material"
 import {Task} from "api/sdk"
 import React, {FC, useContext, useState} from "react"
-import {useLocation, useNavigate} from "react-router-dom"
+import {useNavigate} from "react-router-dom"
 import {AuthContext} from "utils/context"
 import {AutoLoadingButton} from "../../components/AutoLoadingButton"
 
 export const DeleteTaskButton: FC<{task: Task}> = ({task}) => {
   const {session} = useContext(AuthContext)
   const navigate = useNavigate()
-  const location = useLocation()
 
   const [openDialog, setOpenDialog] = useState(false)
 
   const handleOpen = () => setOpenDialog(true)
   const handleClose = () => setOpenDialog(false)
-  const isFromDashboard = location.pathname.includes("/dashboard")
 
   async function deleteTask() {
     await session.task
       .delete(task._id)
-      .then(() => navigate(isFromDashboard ? "/dashboard" : "/tasks"))
+      .then(() => navigate(-1))
       .catch(() => alert("Failed to delete task"))
   }
 

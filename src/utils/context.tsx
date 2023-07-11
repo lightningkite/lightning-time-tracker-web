@@ -1,6 +1,6 @@
 import {Api, Organization, Timer, User, UserSession} from "api/sdk"
 import {useGlobalTimerManager} from "hooks/useGlobalTimerManager"
-import React, {createContext, FC, ReactElement} from "react"
+import React, {FC, ReactElement, createContext} from "react"
 
 export interface AuthContextType {
   session: UserSession
@@ -17,11 +17,11 @@ export interface UnauthContextType {
 
 export interface TimerContextType {
   timers: Timer[] | undefined
-  removeTimer: (key: string) => void
-  updateTimer: (key: string, updates: Partial<Timer>) => void
-  toggleTimer: (key: string) => void
+  removeTimer: (id: string) => void
+  updateTimer: (id: string, updates: Partial<Timer>) => void
+  toggleTimer: (id: string) => void
   newTimer: (initialValues?: Pick<Timer, "task" | "project">) => string
-  submitTimer: (key: string) => Promise<void>
+  submitTimer: (id: string) => Promise<void>
 }
 
 // AuthContext is available when the user is authenticated

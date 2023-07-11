@@ -6,9 +6,9 @@ import {
   FormLabel
 } from "@mui/material"
 import {
+  PermissionsSet,
   encodePermissions,
-  parsePermissions,
-  PermissionsSet
+  parsePermissions
 } from "hooks/usePermissions"
 import React, {ChangeEvent, FC} from "react"
 

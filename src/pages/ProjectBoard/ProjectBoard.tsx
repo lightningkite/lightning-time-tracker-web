@@ -18,13 +18,13 @@ import {DndProvider} from "react-dnd"
 import {HTML5Backend} from "react-dnd-html5-backend"
 import {useLocation, useNavigate} from "react-router-dom"
 import {AuthContext} from "utils/context"
-import {DeliveredColumn} from "./DeliveredColumn"
+import {CompactColumn} from "./CompactColumn"
 import {ProjectSwitcher} from "./ProjectSwitcher"
 import {TaskStateColumn} from "./TaskStateColumn"
 
 const hiddenTaskStates: TaskState[] = [TaskState.Cancelled, TaskState.Delivered]
 
-export const ProjectView: FC = () => {
+export const ProjectBoard: FC = () => {
   const {session, currentUser} = useContext(AuthContext)
   const {annotatedTaskEndpoint} = useAnnotatedEndpoints()
   const permissions = usePermissions()
@@ -80,7 +80,7 @@ export const ProjectView: FC = () => {
         },
         limit: 1000
       })
-      .then((tasks) => dispatch({type: "setTasks", tasks}))
+      .then((tasks: AnnotatedTask[]) => dispatch({type: "setTasks", tasks}))
   }, ["selected" in state && state.selected._id, taskRefreshTrigger])
 
   const tasksByState: Record<TaskState, AnnotatedTask[]> = useMemo(() => {
@@ -120,16 +120,14 @@ export const ProjectView: FC = () => {
         updates: {state: newState}
       })
 
-      annotatedTaskEndpoint
-        .modify(task._id, {state: {Assign: newState}})
-        .catch(() => {
-          alert("Error updating task state")
-          dispatch({
-            type: "updateTask",
-            taskId: task._id,
-            updates: {state: previousState}
-          })
+      session.task.modify(task._id, {state: {Assign: newState}}).catch(() => {
+        alert("Error updating task state")
+        dispatch({
+          type: "updateTask",
+          taskId: task._id,
+          updates: {state: previousState}
         })
+      })
     },
     [state]
   )
@@ -154,6 +152,13 @@ export const ProjectView: FC = () => {
           sx={{overflowX: "auto", px: 2}}
           divider={<Divider orientation="vertical" flexItem />}
         >
+          {permissions.tasks && (
+            <CompactColumn
+              handleDrop={handleDrop}
+              taskState={TaskState.Cancelled}
+            />
+          )}
+
           {Object.values(TaskState)
             .filter((taskState) => !hiddenTaskStates.includes(taskState))
             .map((taskState) => (
@@ -168,7 +173,13 @@ export const ProjectView: FC = () => {
                 onAddedTask={(task) => dispatch({type: "addTask", task})}
               />
             ))}
-          {permissions.tasks && <DeliveredColumn handleDrop={handleDrop} />}
+
+          {permissions.tasks && (
+            <CompactColumn
+              handleDrop={handleDrop}
+              taskState={TaskState.Delivered}
+            />
+          )}
         </Stack>
       </DndProvider>
     </Container>

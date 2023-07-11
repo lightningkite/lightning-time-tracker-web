@@ -62,11 +62,7 @@ const App: FC = () => {
         ...theme,
         palette: {
           mode: preferences.mode,
-          primary: {
-            main: (colors as any)[preferences.color][
-              preferences.colorBrightness
-            ]
-          }
+          primary: {main: preferences.themeColor}
         }
       })}
     >

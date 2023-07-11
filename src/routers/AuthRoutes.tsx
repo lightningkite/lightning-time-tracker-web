@@ -7,7 +7,7 @@ import {Navigate, Route, Routes} from "react-router-dom"
 // navigates to it. This is highly recommended for large apps since it reduces
 // the initial bundle size and improves performance.
 const Dashboard = React.lazy(() => import("pages/Dashboard"))
-const ProjectView = React.lazy(() => import("pages/ProjectView"))
+const ProjectView = React.lazy(() => import("pages/ProjectBoard"))
 const UserIndex = React.lazy(() => import("pages/UserIndex"))
 const UserDetail = React.lazy(() => import("pages/UserDetail"))
 const Settings = React.lazy(() => import("pages/Settings"))
@@ -28,16 +28,24 @@ const AuthRoutes: FC = () => {
         <Route>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/tasks/:taskId" element={<TaskDetail />} />
-          <Route path="/project-view" element={<ProjectView />} />
+
+          <Route path="/project-boards" element={<ProjectView />} />
+          <Route
+            path="/project-boards/tasks/:taskId"
+            element={<TaskDetail />}
+          />
+
           <Route path="/users" element={<UserIndex />} />
           <Route path="/users/:userId" element={<UserDetail />} />
           <Route path="/users/:userId/tasks/:taskId" element={<TaskDetail />} />
+
           <Route path="/projects" element={<ProjectIndex />} />
           <Route path="/projects/:projectId" element={<ProjectDetail />} />
           <Route
             path="/projects/:projectId/tasks/:taskId"
             element={<TaskDetail />}
           />
+
           <Route path="/my-time" element={<MyTimeEntries />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/reports" element={<Reports />} />
@@ -52,7 +60,7 @@ const AuthRoutes: FC = () => {
                   (permissions.tasks
                     ? "/dashboard"
                     : permissions.readSomeProjects
-                    ? "/project-view"
+                    ? "/project-boards"
                     : "/settings")
                 }
                 replace

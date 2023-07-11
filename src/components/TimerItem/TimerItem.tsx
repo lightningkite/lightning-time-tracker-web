@@ -1,20 +1,25 @@
 import {HoverHelp, useThrottle} from "@lightningkite/mui-lightning-components"
 import {DeleteOutline, Pause, PlayArrow, UnfoldLess} from "@mui/icons-material"
 import {
-  Alert,
   Autocomplete,
   Box,
   Button,
   IconButton,
   Paper,
-  Skeleton,
   Stack,
   TextField,
   useTheme
 } from "@mui/material"
 import {Project, Task, TaskState, Timer} from "api/sdk"
 import {AutoLoadingButton} from "components/AutoLoadingButton"
-import React, {FC, useContext, useEffect, useMemo, useState} from "react"
+import React, {
+  FC,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from "react"
 import {AuthContext, TimerContext} from "utils/context"
 import {ContentCollapsed} from "./ContentCollapsed"
 import HmsInputGroup from "./hmsInputGroup"
@@ -30,113 +35,117 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     useContext(TimerContext)
   const theme = useTheme()
 
-  const [task, setTask] = useState<Task | null>(null)
-  const [project, setProject] = useState<Project | null>(null)
   const [summary, setSummary] = useState(timer.summary)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
   const [expanded, setExpanded] = useState(!timer.project || !timer.task)
-  const [taskOptions, setTaskOptions] = useState<Task[]>()
+  const [sortedTaskOptions, setSortedTaskOptions] = useState<Task[]>()
+  const [isCreatingNewTask, setIsCreatingNewTask] = useState(false)
 
   const throttledSummary = useThrottle(summary, 1000)
 
-  const sortedProjectOptions = useMemo(
-    () =>
-      projectOptions?.sort((p) =>
-        currentUser.projectFavorites.includes(p._id) ? -1 : 1
-      ),
-    [projectOptions]
+  const sortedProjects = useMemo(() => {
+    return projectOptions?.sort((p) =>
+      currentUser.projectFavorites.includes(p._id) ? -1 : 1
+    )
+  }, [projectOptions])
+
+  const project = useMemo(
+    () => projectOptions?.find((p) => p._id === timer.project),
+    [timer.project, projectOptions]
+  )
+
+  const task = useMemo(
+    () => sortedTaskOptions?.find((t) => t._id === timer.task),
+    [timer.task, sortedTaskOptions]
   )
 
   useEffect(() => {
-    if (!project) {
-      setTaskOptions([])
+    if (!timer.project) {
+      setSortedTaskOptions([])
       return
     }
 
-    setTaskOptions(undefined)
+    setSortedTaskOptions(undefined)
 
     session.task
       .query({
         limit: 1000,
         condition: {
           And: [
-            {project: {Equal: project._id}},
+            {project: {Equal: timer.project}},
             {state: {NotInside: [TaskState.Delivered, TaskState.Cancelled]}}
           ]
         }
       })
       .then((tasks) =>
-        setTaskOptions(
+        setSortedTaskOptions(
           tasks.sort((a, b) =>
             isMyActiveTask(a) ? -1 : isMyActiveTask(b) ? 1 : 0
           )
         )
       )
-  }, [project])
+  }, [timer.project])
 
   useEffect(() => {
-    expanded && task && project && setExpanded(false)
-
-    updateTimer(timer._id, {
-      project: project?._id,
-      task: task?._id,
-      summary: throttledSummary
-    })
-  }, [task, project, throttledSummary])
+    updateTimer(timer._id, {summary: throttledSummary})
+  }, [throttledSummary])
 
   useEffect(() => {
-    Promise.all([
-      !!timer.project && session.project.detail(timer.project),
-      !!timer.task && session.task.detail(timer.task)
-    ])
-      .then(([project, task]) => {
-        project && setProject(project)
-        task && setTask(task)
-      })
-      .catch(() => setError("Project or task not found"))
-      .finally(() => setLoading(false))
+    if (!task || !project) return
+
+    setExpanded(false)
+
+    if (task.project !== project._id) updateTimer(timer._id, {task: undefined})
+  }, [timer.task, timer.project])
+
+  const isMyActiveTask = useCallback((task: Task): boolean => {
+    return task.user === currentUser._id && task.state === TaskState.Active
   }, [])
 
-  useEffect(() => {
-    if (task?.project !== project?._id) {
-      setTask(null)
-    }
-  }, [project])
+  const createTask = useCallback(
+    (summary: string) => {
+      if (!project) return
 
-  function isMyActiveTask(task: Task): boolean {
-    return task.user === currentUser._id && task.state === TaskState.Active
-  }
+      setIsCreatingNewTask(true)
 
-  if (loading) return <Skeleton variant="rounded" height={60} />
-
-  if (error) {
-    return (
-      <Alert
-        severity="error"
-        action={
-          <IconButton color="inherit" onClick={() => removeTimer(timer._id)}>
-            <DeleteOutline />
-          </IconButton>
-        }
-      >
-        {error}
-      </Alert>
-    )
-  }
+      session.task
+        .insert({
+          _id: crypto.randomUUID(),
+          project: project._id,
+          projectName: project.name,
+          organization: project.organization,
+          organizationName: undefined,
+          user: currentUser._id,
+          userName: currentUser.name,
+          state: TaskState.Active,
+          summary,
+          description: "",
+          attachments: [],
+          estimate: undefined,
+          emergency: false,
+          createdAt: new Date().toISOString(),
+          createdBy: currentUser._id,
+          creatorName: currentUser.name
+        })
+        .then((task) => {
+          setSortedTaskOptions((tasks) =>
+            tasks ? [task, ...tasks] : undefined
+          )
+          updateTimer(timer._id, {task: task._id})
+        })
+        .catch(console.error)
+        .finally(() => setIsCreatingNewTask(false))
+    },
+    [project]
+  )
 
   return (
     <Paper sx={{p: 1}}>
       {expanded ? (
         <Stack spacing={2}>
-          <Stack
-            direction="row"
-            alignItems="center"
-            // justifyContent="space-between"
-          >
+          <Stack direction="row" alignItems="center">
             <HmsInputGroup timer={timer} />
 
-            {project && (
+            {timer.project && (
               <HoverHelp description="Collapse">
                 <IconButton onClick={() => setExpanded(false)}>
                   <UnfoldLess />
@@ -162,11 +171,13 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           </Stack>
 
           <Autocomplete
-            options={sortedProjectOptions ?? []}
-            disabled={!sortedProjectOptions}
-            loading={!sortedProjectOptions}
-            value={project}
-            onChange={(e, value) => setProject(value)}
+            options={sortedProjects ?? []}
+            disabled={!sortedProjects}
+            loading={!sortedProjects}
+            value={project ?? null}
+            onChange={(e, value) => {
+              updateTimer(timer._id, {project: value?._id, task: null})
+            }}
             getOptionLabel={(project) => project.name}
             renderInput={(params) => <TextField {...params} label="Project" />}
             groupBy={(project) =>
@@ -176,24 +187,65 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
             }
           />
 
-          <Autocomplete
-            options={taskOptions ?? []}
-            disabled={!taskOptions || !project}
-            loading={!taskOptions}
-            value={task}
-            onChange={(e, value) => setTask(value)}
-            getOptionLabel={(task) => task.summary}
-            renderInput={(params) => <TextField {...params} label="Task" />}
-            groupBy={(task) =>
-              isMyActiveTask(task) ? "My Active Tasks" : "All Open"
+          <Autocomplete<Task | string, false, false, true>
+            options={sortedTaskOptions ?? []}
+            disabled={!sortedTaskOptions || !timer.project || isCreatingNewTask}
+            loading={!sortedTaskOptions || isCreatingNewTask}
+            value={task ?? null}
+            onChange={(e, value) =>
+              typeof value === "string"
+                ? createTask(value)
+                : updateTimer(timer._id, {task: value?._id})
             }
+            getOptionLabel={(task) =>
+              typeof task === "string" ? `Create task "${task}"` : task.summary
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label={isCreatingNewTask ? "Creating new task..." : "Task"}
+                placeholder={isCreatingNewTask ? "Creating task..." : undefined}
+              />
+            )}
+            groupBy={(task) => {
+              return typeof task === "string"
+                ? "New Task"
+                : isMyActiveTask(task)
+                ? "My Active Tasks"
+                : "All Open"
+            }}
+            filterOptions={(options, {inputValue, getOptionLabel}) => {
+              const filtered = options.filter((option) =>
+                getOptionLabel(option)
+                  .toLowerCase()
+                  .includes(inputValue.toLowerCase())
+              )
+
+              const isExistingTask = filtered.some(
+                (option) => getOptionLabel(option) === inputValue
+              )
+
+              if (inputValue !== "" && !isExistingTask) {
+                filtered.push(inputValue)
+              }
+
+              return filtered
+            }}
+            freeSolo
+            clearOnBlur
+            selectOnFocus
           />
         </Stack>
       ) : (
         <Box sx={{cursor: "pointer"}} onClick={() => setExpanded(true)}>
-          <ContentCollapsed task={task} project={project} timer={timer} />
+          <ContentCollapsed
+            task={task ?? null}
+            project={project ?? null}
+            timer={timer}
+          />
         </Box>
       )}
+
       <TextField
         label="Summary"
         value={summary}
@@ -202,6 +254,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
         sx={{my: 2}}
         fullWidth
       />
+
       <Stack direction="row" justifyContent="space-between" spacing={1}>
         <Button
           variant={timer.lastStarted ? "contained" : "outlined"}
@@ -216,7 +269,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
             submitTimer(timer._id).catch((e) => alert("Error submitting timer"))
           }
           variant="contained"
-          disabled={!project || !summary}
+          disabled={!timer.project || !summary}
           fullWidth
           sx={{maxWidth: 100}}
         >

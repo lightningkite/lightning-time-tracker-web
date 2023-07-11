@@ -1,11 +1,11 @@
 import {Aggregate} from "@lightningkite/lightning-server-simplified"
-import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {ExpandMore} from "@mui/icons-material"
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
   Box,
+  Button,
   List,
   ListItem,
   ListItemText,
@@ -18,7 +18,7 @@ import Loading from "components/Loading"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
-import {formatDollars, MILLISECONDS_PER_HOUR} from "utils/helpers"
+import {MILLISECONDS_PER_HOUR, formatDollars} from "utils/helpers"
 import {
   filtersToProjectCondition,
   filtersToTimeEntryCondition
@@ -38,11 +38,14 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
   const [tasks, setTasks] = useState<Task[]>()
   const [msPerTask, setMsPerTask] =
     useState<Record<string, number | null | undefined>>()
-  const [orphanMsPerTask, setOrphanMsPerTask] =
+  const [msPerProject, setMsPerProject] =
+    useState<Record<string, number | null | undefined>>()
+  const [orphanMsPerProject, setOrphanMsPerProject] =
     useState<Record<string, number | null | undefined>>()
 
   const [error, setError] = useState("")
   const [expanded, setExpanded] = useState<string | null>(null)
+  const [showAll, setShowAll] = useState(currentUser.isClient)
 
   useEffect(() => {
     if (!expanded) return
@@ -59,7 +62,7 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
   useEffect(() => {
     setTasks(undefined)
     setMsPerTask(undefined)
-    setOrphanMsPerTask(undefined)
+    setOrphanMsPerProject(undefined)
 
     const timeEntryCondition = filtersToTimeEntryCondition(reportFilterValues)
 
@@ -90,6 +93,18 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
         property: "durationMilliseconds"
       })
 
+    const millisecondsPerProjectRequest = session.timeEntry.groupAggregate({
+      aggregate: Aggregate.Sum,
+      condition: {
+        And: [
+          timeEntryCondition,
+          {organization: {Equal: currentUser.organization}}
+        ]
+      },
+      groupBy: "project",
+      property: "durationMilliseconds"
+    })
+
     const projectsRequest = session.project.query({
       condition: filtersToProjectCondition(reportFilterValues),
       limit: QUERY_LIMIT
@@ -98,17 +113,21 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
     Promise.all([
       millisecondsPerTaskRequest,
       orphanMillisecondsPerProjectRequest,
-      projectsRequest
+      projectsRequest,
+      millisecondsPerProjectRequest
     ])
       .then(
         ([
           millisecondsPerTask,
           orphanMillisecondsPerProject,
-          projectsResponse
+          projectsResponse,
+          millisecondsPerProject
         ]) => {
           setMsPerTask(millisecondsPerTask)
-          setOrphanMsPerTask(orphanMillisecondsPerProject)
+          setOrphanMsPerProject(orphanMillisecondsPerProject)
           setProjects(projectsResponse)
+          setMsPerProject(millisecondsPerProject)
+
           projectsResponse.length === 1 && setExpanded(projectsResponse[0]._id)
         }
       )
@@ -133,7 +152,13 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
     return <ErrorAlert>{error}</ErrorAlert>
   }
 
-  if (!projects || !tasks || !msPerTask || !orphanMsPerTask) {
+  if (
+    !projects ||
+    !tasks ||
+    !msPerTask ||
+    !orphanMsPerProject ||
+    !msPerProject
+  ) {
     return <Loading />
   }
 
@@ -146,19 +171,17 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
           const projectTasks = tasks.filter(
             (task) => task.project === project._id
           )
-          const taskMilliseconds = projectTasks.reduce((acc, task) => {
-            return acc + (msPerTask[task._id] ?? 0)
-          }, 0)
-          const orphanMilliseconds = orphanMsPerTask[project._id] ?? 0
+          const orphanMilliseconds = orphanMsPerProject[project._id] ?? 0
+          const totalMilliseconds = msPerProject[project._id] ?? 0
 
           return {
             project,
             projectTasks,
             orphanHours: orphanMilliseconds / MILLISECONDS_PER_HOUR,
-            totalHours:
-              (taskMilliseconds + orphanMilliseconds) / MILLISECONDS_PER_HOUR
+            totalHours: totalMilliseconds / MILLISECONDS_PER_HOUR
           }
         })
+        .filter(({projectTasks}) => showAll || projectTasks.length > 0)
         .sort(
           (a, b) =>
             b.totalHours - a.totalHours ||
@@ -184,11 +207,10 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
                   <Typography fontSize="1.2rem">
                     {formatDollars((project.rate ?? 0) * totalHours, false)}
                   </Typography>
-                  <HoverHelp description={totalHours.toFixed(2)}>
-                    <Typography variant="body2" color="text.secondary">
-                      {Math.round(totalHours)} hr.
-                    </Typography>
-                  </HoverHelp>
+
+                  <Typography variant="body2" color="text.secondary">
+                    ${project.rate ?? 0} &times; {totalHours.toFixed(2)} hr
+                  </Typography>
                 </Stack>
               </AccordionSummary>
               <AccordionDetails sx={{p: 0}}>
@@ -226,6 +248,16 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
             </Accordion>
           )
         })}
+
+      {!currentUser.isClient && !showAll && (
+        <Button
+          variant="outlined"
+          sx={{mt: 3, display: "block", mx: "auto"}}
+          onClick={() => setShowAll(true)}
+        >
+          Show All
+        </Button>
+      )}
     </Box>
   )
 }

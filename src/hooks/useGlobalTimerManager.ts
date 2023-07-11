@@ -68,30 +68,30 @@ export const useGlobalTimerManager = (): TimerContextType => {
     dispatch({type: "modifyChange", id, change: {delete: true}})
   }
 
-  function updateTimer(key: string, updates: Partial<Timer>): void {
-    dispatch({type: "modifyChange", id: key, change: {updates}})
+  function updateTimer(id: string, updates: Partial<Timer>): void {
+    dispatch({type: "modifyChange", id, change: {updates}})
   }
 
-  function startTimer(key: string): void {
+  function startTimer(id: string): void {
     dispatch({
       type: "modifyChange",
-      id: key,
+      id,
       change: {updates: {lastStarted: new Date().toISOString()}}
     })
   }
 
-  function stopTimer(key: string): void {
+  function stopTimer(id: string): void {
     if (state.status !== "ready") return
 
     const previousTimer = {
-      ...(state.lastFetched.find((t) => t._id === key) ?? {}),
-      ...(state.changes[key]?.create ?? {}),
-      ...(state.changes[key]?.updates ?? {})
+      ...(state.lastFetched.find((t) => t._id === id) ?? {}),
+      ...(state.changes[id]?.create ?? {}),
+      ...(state.changes[id]?.updates ?? {})
     } as Timer
 
     dispatch({
       type: "modifyChange",
-      id: key,
+      id,
       change: {
         updates: {
           lastStarted: null,

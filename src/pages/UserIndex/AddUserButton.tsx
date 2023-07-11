@@ -10,7 +10,6 @@ import {
   Stack,
   TextField
 } from "@mui/material"
-import {TaskState} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import {useFormik} from "formik"
 import React, {FC, useContext, useState} from "react"

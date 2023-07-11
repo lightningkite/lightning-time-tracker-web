@@ -7,6 +7,8 @@ export interface AuthContextType {
   currentUser: User
   setCurrentUser: (newCurrentUser: User) => void
   currentOrganization: Organization
+  activeUsers: User[]
+  userColors: Record<string, string>
 }
 
 export interface UnauthContextType {

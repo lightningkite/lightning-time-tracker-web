@@ -164,3 +164,11 @@ export async function uploadToS3(uploadUrl: string, file: File) {
     }
   })
 }
+
+export function getNameInitials(name: string): string {
+  const split = name.split(" ")
+  const first = split.at(0)
+  const last = split.at(-1)
+
+  return `${first?.charAt(0) ?? ""}${last?.charAt(0) ?? ""}`.toUpperCase()
+}

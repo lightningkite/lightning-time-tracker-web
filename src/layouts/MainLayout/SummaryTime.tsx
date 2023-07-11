@@ -25,8 +25,10 @@ export const SummaryTime: FC = () => {
 
   const preferences = parsePreferences(currentUser.webPreferences)
 
-  const calculateUnsubmittedSeconds = () => {
-    const seconds = Object.values(timers).reduce(
+  const recalculateUnsubmittedSeconds = () => {
+    if (!timers) return
+
+    const seconds = timers.reduce(
       (acc, timer) => acc + getTimerSeconds(timer),
       0
     )
@@ -60,7 +62,7 @@ export const SummaryTime: FC = () => {
   }
 
   useEffect(() => {
-    const interval = setInterval(calculateUnsubmittedSeconds, 1000)
+    const interval = setInterval(recalculateUnsubmittedSeconds, 1000)
     return () => clearInterval(interval)
   }, [timers])
 
@@ -84,7 +86,7 @@ export const SummaryTime: FC = () => {
       })
       .then((milliseconds) => setSubmittedSeconds((milliseconds ?? 0) / 1000))
       .catch(console.error)
-  }, [Object.keys(timers).length, preferences.summaryTime])
+  }, [timers?.length, preferences.summaryTime])
 
   return (
     <HoverHelp

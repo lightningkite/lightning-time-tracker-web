@@ -52,7 +52,7 @@ export const ProjectsTasks: FC = () => {
 
   useEffect(() => {
     refreshDashboardData()
-  }, [refreshTrigger, Object.values(timers).length])
+  }, [refreshTrigger, timers?.length])
 
   const tasksByProject = useMemo(() => {
     if (!annotatedTasks || !projects) return {}

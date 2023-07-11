@@ -1,9 +1,8 @@
 import {Stack, Typography} from "@mui/material"
-import {Project, Task} from "api/sdk"
+import {Project, Task, Timer} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import React, {FC, useEffect, useState} from "react"
-import {Timer} from "utils/context"
 import {getTimerSeconds} from "utils/helpers"
 
 dayjs.extend(duration)

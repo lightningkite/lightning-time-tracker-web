@@ -10,13 +10,10 @@ export const TaskPlayActionButton: FC<{
 }> = ({annotatedTask}) => {
   const {newTimer, timers, toggleTimer} = useContext(TimerContext)
 
-  const [timerKey] = Object.entries(timers).find(
-    ([_key, timer]) => timer.task === annotatedTask._id
-  ) ?? [undefined]
+  const timer = timers?.find((t) => t.task === annotatedTask._id)
+  const isPlaying = !!timer?.lastStarted
 
-  const isPlaying = !!timerKey && !!timers[timerKey].lastStarted
-
-  if (!timerKey) {
+  if (!timer) {
     return (
       <HoverHelp description="New timer">
         <IconButton
@@ -27,6 +24,7 @@ export const TaskPlayActionButton: FC<{
             })
           }
           sx={{color: "text.disabled"}}
+          disabled={!timers}
         >
           <Add />
         </IconButton>
@@ -36,14 +34,14 @@ export const TaskPlayActionButton: FC<{
 
   if (isPlaying) {
     return (
-      <IconButton onClick={() => toggleTimer(timerKey)}>
+      <IconButton onClick={() => toggleTimer(timer._id)} disabled={!timers}>
         <Pause color="success" />
       </IconButton>
     )
   }
 
   return (
-    <IconButton onClick={() => toggleTimer(timerKey)}>
+    <IconButton onClick={() => toggleTimer(timer._id)} disabled={!timers}>
       <PlayArrow />
     </IconButton>
   )

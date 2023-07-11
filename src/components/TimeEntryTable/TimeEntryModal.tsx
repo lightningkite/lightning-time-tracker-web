@@ -66,8 +66,6 @@ export const TimeEntryModal: FC<TimeEntryModalProps> = (props) => {
 
       const modification = makeObjectModification(timeEntry, formattedValues)
 
-      console.log(formattedValues, modification)
-
       if (!modification) return
       await session.timeEntry.modify((timeEntry as TimeEntry)._id, modification)
 

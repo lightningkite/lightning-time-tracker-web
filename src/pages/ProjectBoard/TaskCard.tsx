@@ -52,7 +52,6 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
     permissions.manageTasks
 
   const isEmergency = task.emergency
-  const isCurrentUser = task.user === currentUser._id
 
   return (
     <Card

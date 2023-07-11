@@ -12,7 +12,14 @@ import {
 } from "@mui/material"
 import {Project, Task, TaskState} from "api/sdk"
 import {AutoLoadingButton} from "components/AutoLoadingButton"
-import React, {FC, useContext, useEffect, useMemo, useState} from "react"
+import React, {
+  FC,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from "react"
 import {AuthContext, TimerContext} from "utils/context"
 import {ContentCollapsed} from "./ContentCollapsed"
 import HmsInputGroup from "./hmsInputGroup"
@@ -43,13 +50,15 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
     )
   }, [projectOptions])
 
-  const projectsById = useMemo(() => {
-    return new Map<string, Project>(projectOptions?.map((p) => [p._id, p]))
-  }, [projectOptions])
+  const project = useMemo(
+    () => projectOptions?.find((p) => p._id === timer.project),
+    [timer.project, projectOptions]
+  )
 
-  const tasksById = useMemo(() => {
-    return new Map<string, Task>(sortedTaskOptions?.map((t) => [t._id, t]))
-  }, [sortedTaskOptions])
+  const task = useMemo(
+    () => sortedTaskOptions?.find((t) => t._id === timer.task),
+    [timer.task, sortedTaskOptions]
+  )
 
   useEffect(() => {
     if (!timer.project) {
@@ -83,22 +92,18 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
   }, [throttledSummary])
 
   useEffect(() => {
-    const task = tasksById.get(timer.task ?? "")
-    const project = projectsById.get(timer.project ?? "")
-
     if (!task || !project) return
 
     setExpanded(false)
 
-    if (task?.project !== project?._id) updateTimer(timerKey, {task: undefined})
+    if (task.project !== project._id) updateTimer(timerKey, {task: undefined})
   }, [timer.task, timer.project])
 
-  function isMyActiveTask(task: Task): boolean {
+  const isMyActiveTask = useCallback((task: Task): boolean => {
     return task.user === currentUser._id && task.state === TaskState.Active
-  }
+  }, [])
 
-  function createTask(summary: string) {
-    const project = timer.project && projectsById.get(timer.project)
+  const createTask = useCallback((summary: string) => {
     if (!project) return
 
     setIsCreatingNewTask(true)
@@ -128,7 +133,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
       })
       .catch(console.error)
       .finally(() => setIsCreatingNewTask(false))
-  }
+  }, [])
 
   return (
     <Paper sx={{p: 1}}>
@@ -170,7 +175,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
             options={sortedProjects ?? []}
             disabled={!sortedProjects}
             loading={!sortedProjects}
-            value={projectsById.get(timer.project ?? "") ?? null}
+            value={project ?? null}
             onChange={(e, value) => {
               updateTimer(timerKey, {project: value?._id, task: null})
             }}
@@ -187,7 +192,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
             options={sortedTaskOptions ?? []}
             disabled={!sortedTaskOptions || !timer.project || isCreatingNewTask}
             loading={!sortedTaskOptions || isCreatingNewTask}
-            value={timer.task}
+            value={task ?? null}
             onChange={(e, value) =>
               typeof value === "string"
                 ? createTask(value)
@@ -235,12 +240,13 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
       ) : (
         <Box sx={{cursor: "pointer"}} onClick={() => setExpanded(true)}>
           <ContentCollapsed
-            task={tasksById.get(timer.task ?? "") ?? null}
-            project={projectsById.get(timer.project ?? "") ?? null}
+            task={task ?? null}
+            project={project ?? null}
             timer={timer}
           />
         </Box>
       )}
+
       <TextField
         label="Summary"
         value={summary}
@@ -249,6 +255,7 @@ export const TimerItem: FC<TimerItemProps> = ({timerKey, projectOptions}) => {
         sx={{my: 2}}
         fullWidth
       />
+
       <Stack direction="row" justifyContent="space-between" spacing={1}>
         <Button
           variant={timer.lastStarted ? "contained" : "outlined"}

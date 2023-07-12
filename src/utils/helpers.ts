@@ -1,4 +1,5 @@
-import {Task, TaskState, TimeEntry, Timer} from "api/sdk"
+import {Condition} from "@lightningkite/lightning-server-simplified"
+import {Task, TaskState, TimeEntry, Timer, User, UserRole} from "api/sdk"
 import dayjs, {Dayjs} from "dayjs"
 import duration, {Duration} from "dayjs/plugin/duration"
 import {WebPreferences} from "pages/Settings/Settings"
@@ -191,4 +192,46 @@ export function getContrastingColor(hex: string): "black" | "white" {
 
   const yiq = (r * 299 + g * 587 + b * 114) / 1000
   return yiq >= 128 ? "black" : "white"
+}
+
+export function makeUserTaskCondition(params: {
+  project: string
+  organization: string
+}): Condition<User> {
+  return {
+    And: [
+      {organization: {Equal: params.organization}},
+      {role: {NotInside: [UserRole.Client]}},
+      {
+        Or: [
+          {isSuperUser: {Equal: true}},
+          {role: {Inside: [UserRole.Owner, UserRole.InternalTeamMember]}},
+          {limitToProjects: {SetAnyElements: {Equal: params.project}}}
+        ]
+      }
+    ]
+  }
+}
+
+export function makeUserTimeCondition(params: {
+  project: string | undefined
+  organization: string
+}): Condition<User> {
+  return {
+    And: [
+      {organization: {Equal: params.organization}},
+      {role: {NotInside: [UserRole.Client, UserRole.ExternalTeamMember]}},
+      {
+        Or: [
+          {isSuperUser: {Equal: true}},
+          {role: {Inside: [UserRole.Owner, UserRole.InternalTeamMember]}},
+          {
+            limitToProjects: params.project
+              ? {SetAnyElements: {Equal: params.project}}
+              : {Always: true}
+          }
+        ]
+      }
+    ]
+  }
 }

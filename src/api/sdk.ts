@@ -114,6 +114,8 @@ export interface Timer {
     project: UUID | null | undefined
     summary: string
 }
+export interface Triple {
+}
 type UUID = string  // java.util.UUID
 export interface UploadInformation {
     uploadUrl: string
@@ -144,6 +146,7 @@ export enum UserRole {
 
 export interface Api {
     getServerHealth(userToken?: string): Promise<ServerHealth>
+    listRecentExceptions(): Promise<Array<Triple>>
     uploadFileForRequest(): Promise<UploadInformation>
     readonly auth: {
         refreshToken(userToken: string): Promise<string>
@@ -294,6 +297,7 @@ export interface Api {
 export class UserSession {
     constructor(public api: Api, public userToken: string) {}
     getServerHealth(): Promise<ServerHealth> { return this.api.getServerHealth(this.userToken) } 
+    listRecentExceptions(): Promise<Array<Triple>> { return this.api.listRecentExceptions() } 
     uploadFileForRequest(): Promise<UploadInformation> { return this.api.uploadFileForRequest() } 
     readonly auth = {
         refreshToken: (): Promise<string> => { return this.api.auth.refreshToken(this.userToken) }, 
@@ -451,6 +455,17 @@ export class LiveApi implements Api {
             {
                 method: "GET",
                 headers: userToken ? { ...this.extraHeaders, "Authorization": `Bearer ${userToken}` } : this.extraHeaders,
+            }, 
+            undefined,
+            this.responseInterceptors, 
+        ).then(x => x.json())
+    }
+    listRecentExceptions(): Promise<Array<Triple>> {
+        return apiCall(
+            `${this.httpUrl}/exceptions`,
+            undefined,
+            {
+                method: "GET",
             }, 
             undefined,
             this.responseInterceptors, 

@@ -48,18 +48,24 @@ export const ProjectBoard: FC = () => {
           (p) => p._id === projectIdInQuery
         )
 
-        dispatch({
-          type: "setProjects",
-          projects,
-          selected:
-            projectFromQuery ??
-            projects.find((p) =>
-              currentUser.projectFavorites.includes(p._id)
-            ) ??
-            projects[0]
-        })
+        if (projects.length === 0) {
+          dispatch({type: "error", message: "No projects found"})
+        } else {
+          dispatch({
+            type: "setProjects",
+            projects,
+            selected:
+              projectFromQuery ??
+              projects.find((p) =>
+                currentUser.projectFavorites.includes(p._id)
+              ) ??
+              projects[0]
+          })
+        }
       })
-      .catch(() => dispatch({type: "error"}))
+      .catch(() =>
+        dispatch({type: "error", message: "Failed to load projects"})
+      )
   }, [])
 
   useEffect(() => {
@@ -134,7 +140,7 @@ export const ProjectBoard: FC = () => {
   )
 
   if (state.status === "loadingProjects") return <Loading />
-  if (state.status === "error") return <ErrorAlert>Error occurred</ErrorAlert>
+  if (state.status === "error") return <ErrorAlert>{state.message}</ErrorAlert>
 
   return (
     <Container maxWidth="xl" disableGutters>
@@ -203,7 +209,7 @@ type State =
       tasks: AnnotatedTask[]
       selected: Project
     }
-  | {status: "error"}
+  | {status: "error"; message: string}
 
 type Action =
   | {type: "setProjects"; projects: Project[]; selected: Project}
@@ -211,7 +217,7 @@ type Action =
   | {type: "updateTask"; taskId: string; updates: Partial<AnnotatedTask>}
   | {type: "addTask"; task: AnnotatedTask}
   | {type: "changeProject"; selected: Project}
-  | {type: "error"}
+  | {type: "error"; message: string}
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -265,6 +271,6 @@ function reducer(state: State, action: Action): State {
       }
 
     case "error":
-      return {status: "error"}
+      return {status: "error", message: action.message}
   }
 }

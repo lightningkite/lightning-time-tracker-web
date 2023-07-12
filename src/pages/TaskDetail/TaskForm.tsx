@@ -64,7 +64,8 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       attachments: task.attachments,
       description: task.description,
       estimate: task.estimate?.toString() ?? "",
-      emergency: task.emergency
+      emergency: task.emergency,
+      pullRequestLink: task.pullRequestLink
     },
     validationSchema,
 
@@ -129,6 +130,12 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
           minRows={3}
           sx={{mb: 3}}
           disabled={!canEditSomeFields}
+        />
+
+        <TextField
+          label="Pull Request"
+          {...makeFormikTextFieldProps(formik, "pullRequestLink")}
+          disabled={!canEdit}
         />
 
         <AttachmentsInput

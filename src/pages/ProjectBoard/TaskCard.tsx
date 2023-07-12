@@ -93,7 +93,7 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
               </Typography>
             )}
 
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" ml="auto">
               {hoursEstimated
                 ? `${hoursSpent} / ${hoursEstimated} hr`
                 : `${hoursSpent} hr`}

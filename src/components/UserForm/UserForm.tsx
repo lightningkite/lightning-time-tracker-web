@@ -134,17 +134,19 @@ export const UserForm: FC<UserFormProps> = (props) => {
           <Stack direction="row" spacing={2}>
             <FormControlLabel
               control={
-                <Checkbox {...makeFormikCheckboxProps(formik, "active")} />
-              }
-              label="Active"
-            />
-
-            <FormControlLabel
-              control={
                 <Checkbox {...makeFormikCheckboxProps(formik, "isSuperUser")} />
               }
               label="Is Super User"
             />
+
+            {!formik.values.isSuperUser && (
+              <FormControlLabel
+                control={
+                  <Checkbox {...makeFormikCheckboxProps(formik, "active")} />
+                }
+                label="Active"
+              />
+            )}
           </Stack>
 
           {!formik.values.isSuperUser && (

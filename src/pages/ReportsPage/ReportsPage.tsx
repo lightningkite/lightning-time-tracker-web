@@ -1,6 +1,6 @@
 import {TabContext, TabList, TabPanel} from "@mui/lab"
 import {Box, Container, Tab} from "@mui/material"
-import {Project, User} from "api/sdk"
+import {Project, User, UserRole} from "api/sdk"
 import PageHeader from "components/PageHeader"
 import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useState} from "react"
@@ -29,10 +29,17 @@ const ReportsPage: FC = () => {
     useState<ReportFilterValues>()
   const [value, setValue] = useState("1")
 
-  const multipleProjects =
-    currentUser.isSuperUser ||
-    !currentUser.limitToProjects ||
-    currentUser.limitToProjects.length > 1
+  const multipleProjects: boolean = (() => {
+    const {isSuperUser, role, limitToProjects} = currentUser
+
+    if (isSuperUser) return true
+    if (!role) return false
+
+    return (
+      [UserRole.Owner, UserRole.InternalTeamMember].includes(role) ||
+      (!!limitToProjects && limitToProjects.length > 1)
+    )
+  })()
 
   return (
     <Container maxWidth="xl">

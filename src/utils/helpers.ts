@@ -203,8 +203,9 @@ export function makeUserTaskCondition(params: {
       {isSuperUser: {Equal: true}},
       {
         And: [
+          {active: {Equal: true}},
           {organization: {Equal: params.organization}},
-          {role: {NotInside: [UserRole.Client]}},
+          {role: {IfNotNull: {NotInside: [UserRole.Client]}}},
           {
             Or: [
               {
@@ -236,8 +237,15 @@ export function makeUserTimeCondition(params: {
       {isSuperUser: {Equal: true}},
       {
         And: [
+          {active: {Equal: true}},
           {organization: {Equal: params.organization}},
-          {role: {NotInside: [UserRole.Client, UserRole.ExternalTeamMember]}},
+          {
+            role: {
+              IfNotNull: {
+                NotInside: [UserRole.Client, UserRole.ExternalTeamMember]
+              }
+            }
+          },
           {
             Or: [
               {

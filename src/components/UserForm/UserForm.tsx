@@ -97,37 +97,34 @@ export const UserForm: FC<UserFormProps> = (props) => {
 
       <TextField label="Name" {...makeFormikTextFieldProps(formik, "name")} />
 
-      {user._id === currentUser._id &&
-        !!currentUser.limitToProjects?.length && (
-          <>
-            <Autocomplete
-              multiple
-              options={projectOptions ?? []}
-              getOptionLabel={(project) => project.name}
-              isOptionEqualToValue={(a, b) => a._id === b._id}
-              disableCloseOnSelect
-              disableClearable
-              value={
-                projectOptions?.filter((project) =>
-                  formik.values.projectFavorites.includes(project._id)
-                ) ?? []
-              }
-              onChange={(_e, value) => {
-                formik.setFieldValue(
-                  "projectFavorites",
-                  value.map((project) => project._id)
-                )
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Favorite Projects"
-                  helperText="These projects will be shown first in the project view"
-                />
-              )}
+      {user._id === currentUser._id && (
+        <Autocomplete
+          multiple
+          options={projectOptions ?? []}
+          getOptionLabel={(project) => project.name}
+          isOptionEqualToValue={(a, b) => a._id === b._id}
+          disableCloseOnSelect
+          disableClearable
+          value={
+            projectOptions?.filter((project) =>
+              formik.values.projectFavorites.includes(project._id)
+            ) ?? []
+          }
+          onChange={(_e, value) => {
+            formik.setFieldValue(
+              "projectFavorites",
+              value.map((project) => project._id)
+            )
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Favorite Projects"
+              helperText="These projects will be shown first in the project view"
             />
-          </>
-        )}
+          )}
+        />
+      )}
 
       {user._id !== currentUser._id && (
         <FormSection title="Permissions">

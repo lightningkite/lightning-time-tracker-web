@@ -152,6 +152,15 @@ export const ProjectsTasks: FC = () => {
                         annotatedTask={task}
                         refreshDashboard={refreshDashboardData}
                         key={task._id}
+                        updateTask={(updatedTask) =>
+                          setAnnotatedTasks((prev) =>
+                            prev?.map((t) =>
+                              t._id === updatedTask._id
+                                ? {...t, ...updatedTask}
+                                : t
+                            )
+                          )
+                        }
                       />
                     ))}
                 </List>

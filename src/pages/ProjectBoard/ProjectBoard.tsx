@@ -172,6 +172,13 @@ export const ProjectBoard: FC = () => {
                 handleDrop={handleDrop}
                 project={state.selected}
                 onAddedTask={(task) => dispatch({type: "addTask", task})}
+                updateTask={(updatedTask) =>
+                  dispatch({
+                    type: "updateTask",
+                    taskId: updatedTask._id,
+                    updates: updatedTask
+                  })
+                }
               />
             ))}
 

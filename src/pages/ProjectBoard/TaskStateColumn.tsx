@@ -1,5 +1,5 @@
 import {Box, Skeleton, Stack, Typography} from "@mui/material"
-import {Project, TaskState} from "api/sdk"
+import {Project, Task, TaskState} from "api/sdk"
 import {AddTaskButton} from "components/AddTaskButton"
 import {TaskModal} from "components/TaskModal"
 import dayjs from "dayjs"
@@ -8,7 +8,7 @@ import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useState} from "react"
 import {useDrop} from "react-dnd"
-import {camelCaseToTitleCase, taskStateLabels} from "utils/helpers"
+import {taskStateLabels} from "utils/helpers"
 import {TaskCard} from "./TaskCard"
 
 dayjs.extend(duration)
@@ -17,12 +17,13 @@ export interface TaskStateColumnProps {
   project: Project
   state: TaskState
   tasks: AnnotatedTask[] | undefined
+  updateTask: (task: Task) => void
   handleDrop: (task: AnnotatedTask, newState: TaskState) => void
   onAddedTask: (task: AnnotatedTask) => void
 }
 
 export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
-  const {state, tasks, handleDrop, project, onAddedTask} = props
+  const {state, tasks, handleDrop, project, onAddedTask, updateTask} = props
   const permissions = usePermissions()
 
   const [selectedTask, setSelectedTask] = useState<AnnotatedTask | null>(null)
@@ -122,7 +123,7 @@ export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
       <TaskModal
         task={selectedTask}
         handleClose={() => setSelectedTask(null)}
-        getEditRoute={(task) => `/project-boards/tasks/${task._id}`}
+        setTask={updateTask}
       />
     </>
   )

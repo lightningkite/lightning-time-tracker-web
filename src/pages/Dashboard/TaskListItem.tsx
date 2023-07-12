@@ -13,6 +13,7 @@ import {
   useMediaQuery,
   useTheme
 } from "@mui/material"
+import {Task} from "api/sdk"
 import {TaskModal} from "components/TaskModal"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
@@ -29,11 +30,13 @@ dayjs.extend(duration)
 export interface TaskListItemProps {
   annotatedTask: AnnotatedTask
   refreshDashboard: () => Promise<void>
+  updateTask: (task: Task) => void
 }
 
 export const TaskListItem: FC<TaskListItemProps> = ({
   annotatedTask,
-  refreshDashboard
+  refreshDashboard,
+  updateTask
 }) => {
   const {currentUser} = useContext(AuthContext)
   const theme = useTheme()
@@ -151,7 +154,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({
       <TaskModal
         task={showModal ? annotatedTask : null}
         handleClose={() => setShowModal(false)}
-        getEditRoute={(task) => `/dashboard/tasks/${task._id}`}
+        setTask={updateTask}
       />
     </>
   )

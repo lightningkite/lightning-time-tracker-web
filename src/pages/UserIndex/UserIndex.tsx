@@ -13,7 +13,6 @@ export const UserIndex: FC = () => {
   const {session} = useContext(AuthContext)
   const permissions = usePermissions()
 
-  const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [showInactive, setShowInactive] = useState(false)
 
   return (
@@ -21,7 +20,7 @@ export const UserIndex: FC = () => {
       <PageHeader title="Users List">
         {permissions.canManageAllUsers && (
           <AddUserButton
-            afterSubmit={() => setRefreshTrigger((prev) => prev + 1)}
+            afterSubmit={(newUser) => navigate(`/users/${newUser._id}`)}
           />
         )}
 
@@ -41,7 +40,7 @@ export const UserIndex: FC = () => {
         restEndpoint={session.user}
         onRowClick={(user) => navigate(`/users/${user._id}`)}
         searchFields={["name", "email"]}
-        dependencies={[refreshTrigger, showInactive]}
+        dependencies={[showInactive]}
         defaultSorting={[{field: "name", sort: "asc"}]}
         additionalQueryConditions={
           showInactive ? [] : [{active: {Equal: true}}]

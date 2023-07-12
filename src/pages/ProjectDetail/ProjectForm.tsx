@@ -86,13 +86,14 @@ export const ProjectForm: FC<ProjectFormProps> = (props) => {
         }}
         disabled={!canEdit}
       />
-      <TextField
-        label="Notes"
-        multiline
-        minRows={2}
-        {...makeFormikTextFieldProps(formik, "notes")}
-        disabled={!canEdit}
-      />
+      {canEdit && (
+        <TextField
+          label="Notes"
+          multiline
+          minRows={2}
+          {...makeFormikTextFieldProps(formik, "notes")}
+        />
+      )}
 
       {error && <Alert severity="error">{error}</Alert>}
 

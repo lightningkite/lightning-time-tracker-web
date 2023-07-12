@@ -80,7 +80,7 @@ const TaskDetail: FC = () => {
   return (
     <Container maxWidth="md">
       <PageHeader title={shortSummary} breadcrumbs={breadcrumbs}>
-        <DeleteTaskButton task={task} />
+        {permissions.canManageAllTasks && <DeleteTaskButton task={task} />}
       </PageHeader>
 
       <Card>

@@ -1,10 +1,10 @@
 import {Condition} from "@lightningkite/lightning-server-simplified"
-import {FilterBar} from "@lightningkite/mui-lightning-components"
+import {FilterBar, FilterOption} from "@lightningkite/mui-lightning-components"
 import {Skeleton} from "@mui/material"
 import {Project, Task, TimeEntry, User} from "api/sdk"
 import dayjs, {Dayjs} from "dayjs"
 import {usePermissions} from "hooks/usePermissions"
-import React, {FC, useContext, useEffect, useState} from "react"
+import React, {FC, useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO} from "utils/helpers"
 import {ReportFilterValues} from "./ReportsPage"
@@ -99,6 +99,45 @@ export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
   const [users, setUsers] = useState<User[]>()
   const [projects, setProjects] = useState<Project[]>()
 
+  const filterOptions = useMemo(() => {
+    if (!users || !projects) return []
+
+    const options: FilterOption<any>[] = [
+      {
+        type: "select",
+        name: FilterNames.DATE_RANGE,
+        placeholder: "Date Range",
+        options: dateRangeOptions.filter(
+          (o) => permissions.canSubmitTime || !o.payRelated
+        ),
+        optionToID: (o) => o.label,
+        optionToLabel: (o) => o.label,
+        defaultValue: dateRangeOptions[0],
+        includeByDefault: true
+      },
+      {
+        type: "multiSelect",
+        name: FilterNames.USERS,
+        placeholder: "Users",
+        options: users.sort((a, b) => a.name.localeCompare(b.name)),
+        optionToID: (u) => u._id,
+        optionToLabel: (u) => u.name
+      },
+      {
+        type: "multiSelect",
+        name: FilterNames.PROJECTS,
+        placeholder: "Projects",
+        options: projects.sort((a, b) => a.name.localeCompare(b.name)),
+        optionToID: (p) => p._id,
+        optionToLabel: (p) => p.name
+      }
+    ]
+
+    return options.filter(
+      (o) => permissions.canViewIndividualUsers || o.name !== FilterNames.USERS
+    )
+  }, [users, projects])
+
   useEffect(() => {
     session.user
       .query({condition: {organization: {Equal: currentUser.organization}}})
@@ -114,36 +153,7 @@ export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
 
   return (
     <FilterBar
-      filterOptions={[
-        {
-          type: "select",
-          name: FilterNames.DATE_RANGE,
-          placeholder: "Date Range",
-          options: dateRangeOptions.filter(
-            (o) => permissions.canSubmitTime || !o.payRelated
-          ),
-          optionToID: (o) => o.label,
-          optionToLabel: (o) => o.label,
-          defaultValue: dateRangeOptions[0],
-          includeByDefault: true
-        },
-        {
-          type: "multiSelect",
-          name: FilterNames.USERS,
-          placeholder: "Users",
-          options: users.sort((a, b) => a.name.localeCompare(b.name)),
-          optionToID: (u) => u._id,
-          optionToLabel: (u) => u.name
-        },
-        {
-          type: "multiSelect",
-          name: FilterNames.PROJECTS,
-          placeholder: "Projects",
-          options: projects.sort((a, b) => a.name.localeCompare(b.name)),
-          optionToID: (p) => p._id,
-          optionToLabel: (p) => p.name
-        }
-      ]}
+      filterOptions={filterOptions}
       onActiveFiltersChange={(activeFilters) => {
         const dateRange: DateRange | undefined = activeFilters.find(
           (filter) => filter.filterOption.name === FilterNames.DATE_RANGE

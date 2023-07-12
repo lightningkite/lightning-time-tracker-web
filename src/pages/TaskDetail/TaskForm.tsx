@@ -98,10 +98,14 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
     }
   })
 
+  const canEdit = permissions.canManageAllTasks
+  const canEditSomeFields =
+    canEdit || [TaskState.Active, TaskState.Hold].includes(task.state)
+
   useEffect(() => {
     Promise.all([
       session.project.detail(task.project),
-      task.user ? session.user.detail(task.user) : null
+      task.user && canEdit ? session.user.detail(task.user) : null
     ])
       .then(([project, user]) => {
         formik.resetForm({values: {...formik.values, user, project}})
@@ -109,10 +113,6 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       })
       .catch(() => alert("Error loading initial values"))
   }, [])
-
-  const canEdit = permissions.canManageAllTasks
-  const canEditSomeFields =
-    canEdit || [TaskState.Active, TaskState.Hold].includes(task.state)
 
   return (
     <>
@@ -132,11 +132,13 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
           disabled={!canEditSomeFields}
         />
 
-        <TextField
-          label="Pull Request"
-          {...makeFormikTextFieldProps(formik, "pullRequestLink")}
-          disabled={!canEdit}
-        />
+        {permissions.doesCareAboutPRs && (
+          <TextField
+            label="Pull Request"
+            {...makeFormikTextFieldProps(formik, "pullRequestLink")}
+            disabled={!canEdit}
+          />
+        )}
 
         <AttachmentsInput
           attachments={formik.values.attachments}
@@ -152,81 +154,78 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
         />
       </FormSection>
 
-      <FormSection title="More Details">
-        <Stack
-          direction="row"
-          gap={3}
-          sx={{
-            alignItems: "center",
-            flexWrap: "wrap",
-            "& > *": {flexGrow: 1, minWidth: 150}
-          }}
-        >
-          <RestAutocompleteInput
-            label="Assignee"
-            restEndpoint={session.user}
-            getOptionLabel={(user) => user.name || user.email}
-            searchProperties={["email"]}
-            disabled={!loadedInitialAsyncValues || !canEdit}
-            additionalQueryConditions={[
-              makeUserTaskCondition({
-                project: task.project,
-                organization: task.organization
-              })
-            ]}
-            {...makeFormikAutocompleteProps(formik, "user")}
-          />
-          <TextField
-            select
-            label="State"
-            {...makeFormikTextFieldProps(formik, "state")}
-            disabled={!canEdit}
+      {canEdit && (
+        <FormSection title="More Details">
+          <Stack
+            direction="row"
+            gap={3}
+            sx={{
+              alignItems: "center",
+              flexWrap: "wrap",
+              "& > *": {flexGrow: 1, minWidth: 150}
+            }}
           >
-            {Object.values(TaskState).map((option) => (
-              <MenuItem key={option} value={option}>
-                {taskStateLabels[option]}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Stack>
-
-        <RestAutocompleteInput
-          label="Project"
-          restEndpoint={session.project}
-          getOptionLabel={(project) => project.name}
-          searchProperties={["name"]}
-          disabled={!loadedInitialAsyncValues || !canEdit}
-          {...makeFormikAutocompleteProps(formik, "project")}
-        />
-
-        <TextField
-          label="Estimate (hours)"
-          {...makeFormikNumericTextFieldProps(formik, "estimate")}
-          InputProps={{
-            endAdornment: <InputAdornment position="end">hours</InputAdornment>
-          }}
-          disabled={!canEdit}
-        />
-
-        <LabeledInfo label="Created">
-          {[task.creatorName, dynamicFormatDate(dayjs(task.createdAt))]
-            .filter(Boolean)
-            .join(", ")}
-        </LabeledInfo>
-
-        <FormControlLabel
-          control={
-            <Checkbox
-              {...makeFormikCheckboxProps(formik, "emergency")}
-              disabled={!canEdit}
+            <RestAutocompleteInput
+              label="Assignee"
+              restEndpoint={session.user}
+              getOptionLabel={(user) => user.name || user.email}
+              searchProperties={["email"]}
+              disabled={!loadedInitialAsyncValues}
+              additionalQueryConditions={[
+                makeUserTaskCondition({
+                  project: task.project,
+                  organization: task.organization
+                })
+              ]}
+              {...makeFormikAutocompleteProps(formik, "user")}
             />
-          }
-          label="Emergency"
-        />
+            <TextField
+              select
+              label="State"
+              {...makeFormikTextFieldProps(formik, "state")}
+            >
+              {Object.values(TaskState).map((option) => (
+                <MenuItem key={option} value={option}>
+                  {taskStateLabels[option]}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Stack>
 
-        {error && <Alert severity="error">{error}</Alert>}
+          <RestAutocompleteInput
+            label="Project"
+            restEndpoint={session.project}
+            getOptionLabel={(project) => project.name}
+            searchProperties={["name"]}
+            disabled={!loadedInitialAsyncValues}
+            {...makeFormikAutocompleteProps(formik, "project")}
+          />
 
-        {canEdit && (
+          <TextField
+            label="Estimate (hours)"
+            {...makeFormikNumericTextFieldProps(formik, "estimate")}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">hours</InputAdornment>
+              )
+            }}
+          />
+
+          <LabeledInfo label="Created">
+            {[task.creatorName, dynamicFormatDate(dayjs(task.createdAt))]
+              .filter(Boolean)
+              .join(", ")}
+          </LabeledInfo>
+
+          <FormControlLabel
+            control={
+              <Checkbox {...makeFormikCheckboxProps(formik, "emergency")} />
+            }
+            label="Emergency"
+          />
+
+          {error && <Alert severity="error">{error}</Alert>}
+
           <LoadingButton
             onClick={() => {
               formik.submitForm()
@@ -239,8 +238,8 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
           >
             {formik.dirty ? "Save Changes" : "Saved"}
           </LoadingButton>
-        )}
-      </FormSection>
+        </FormSection>
+      )}
     </>
   )
 }

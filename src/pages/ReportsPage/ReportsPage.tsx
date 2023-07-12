@@ -60,9 +60,15 @@ const ReportsPage: FC = () => {
                   }
                   value="1"
                 />
-                <Tab label="Hours by Date" value="2" />
-                {multipleProjects && <Tab label="Hours by Project" value="3" />}
-                <Tab label="Time Entries" value="4" />
+                {permissions.canViewIndividualUsers && (
+                  <Tab label="Hours by Date" value="2" />
+                )}
+                {multipleProjects && permissions.canViewIndividualUsers && (
+                  <Tab label="Hours by Project" value="3" />
+                )}
+                {permissions.canViewIndividualTimeEntries && (
+                  <Tab label="Time Entries" value="4" />
+                )}
               </TabList>
             </Box>
             <TabPanel value="1" sx={{px: 0}}>
@@ -71,11 +77,9 @@ const ReportsPage: FC = () => {
             <TabPanel value="2" sx={{px: 0}}>
               <HoursByDateReport reportFilterValues={reportFilterValues} />
             </TabPanel>
-            {multipleProjects && (
-              <TabPanel value="3" sx={{px: 0}}>
-                <HoursByProjectReport reportFilterValues={reportFilterValues} />
-              </TabPanel>
-            )}
+            <TabPanel value="3" sx={{px: 0}}>
+              <HoursByProjectReport reportFilterValues={reportFilterValues} />
+            </TabPanel>
             <TabPanel value="4" sx={{px: 0}}>
               <TimeEntriesReport reportFilterValues={reportFilterValues} />
             </TabPanel>

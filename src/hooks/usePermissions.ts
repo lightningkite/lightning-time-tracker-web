@@ -44,6 +44,18 @@ export function usePermissions() {
       UserRole.InternalTeamMember,
       UserRole.Contractor,
       UserRole.ExternalTeamMember
+    ),
+
+    canViewIndividualUsers: isA(
+      UserRole.InternalTeamMember,
+      UserRole.Contractor,
+      UserRole.ExternalTeamMember
+    ),
+
+    doesCareAboutPRs: isA(
+      UserRole.InternalTeamMember,
+      UserRole.Contractor,
+      UserRole.ExternalTeamMember
     )
   } satisfies Record<string, boolean>
 

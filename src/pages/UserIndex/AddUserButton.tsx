@@ -10,6 +10,7 @@ import {
   Stack,
   TextField
 } from "@mui/material"
+import {User} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import {useFormik} from "formik"
 import React, {FC, useContext, useState} from "react"
@@ -23,7 +24,7 @@ const validationSchema = yup.object().shape({
 })
 
 export interface AddUserProps {
-  afterSubmit: () => void
+  afterSubmit: (newUser: User) => void
 }
 
 export const AddUserButton: FC<AddUserProps> = (props) => {
@@ -44,7 +45,7 @@ export const AddUserButton: FC<AddUserProps> = (props) => {
     },
     validationSchema,
     onSubmit: async (values) => {
-      await session.user.insert({
+      const newUser = await session.user.insert({
         ...values,
         _id: crypto.randomUUID(),
         organization: currentUser.organization,
@@ -56,7 +57,7 @@ export const AddUserButton: FC<AddUserProps> = (props) => {
         active: true
       })
 
-      props.afterSubmit()
+      props.afterSubmit(newUser)
       onClose()
     }
   })

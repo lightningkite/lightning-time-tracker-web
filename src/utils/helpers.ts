@@ -199,14 +199,18 @@ export function makeUserTaskCondition(params: {
   organization: string
 }): Condition<User> {
   return {
-    And: [
-      {organization: {Equal: params.organization}},
-      {role: {NotInside: [UserRole.Client]}},
+    Or: [
+      {isSuperUser: {Equal: true}},
       {
-        Or: [
-          {isSuperUser: {Equal: true}},
-          {role: {Inside: [UserRole.Owner, UserRole.InternalTeamMember]}},
-          {limitToProjects: {SetAnyElements: {Equal: params.project}}}
+        And: [
+          {organization: {Equal: params.organization}},
+          {role: {NotInside: [UserRole.Client]}},
+          {
+            Or: [
+              {role: {Inside: [UserRole.Owner, UserRole.InternalTeamMember]}},
+              {limitToProjects: {SetAnyElements: {Equal: params.project}}}
+            ]
+          }
         ]
       }
     ]
@@ -218,17 +222,21 @@ export function makeUserTimeCondition(params: {
   organization: string
 }): Condition<User> {
   return {
-    And: [
-      {organization: {Equal: params.organization}},
-      {role: {NotInside: [UserRole.Client, UserRole.ExternalTeamMember]}},
+    Or: [
+      {isSuperUser: {Equal: true}},
       {
-        Or: [
-          {isSuperUser: {Equal: true}},
-          {role: {Inside: [UserRole.Owner, UserRole.InternalTeamMember]}},
+        And: [
+          {organization: {Equal: params.organization}},
+          {role: {NotInside: [UserRole.Client, UserRole.ExternalTeamMember]}},
           {
-            limitToProjects: params.project
-              ? {SetAnyElements: {Equal: params.project}}
-              : {Always: true}
+            Or: [
+              {role: {Inside: [UserRole.Owner, UserRole.InternalTeamMember]}},
+              {
+                limitToProjects: params.project
+                  ? {SetAnyElements: {Equal: params.project}}
+                  : {Always: true}
+              }
+            ]
           }
         ]
       }

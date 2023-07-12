@@ -207,8 +207,18 @@ export function makeUserTaskCondition(params: {
           {role: {NotInside: [UserRole.Client]}},
           {
             Or: [
-              {role: {Inside: [UserRole.Owner, UserRole.InternalTeamMember]}},
-              {limitToProjects: {SetAnyElements: {Equal: params.project}}}
+              {
+                role: {
+                  IfNotNull: {
+                    Inside: [UserRole.Owner, UserRole.InternalTeamMember]
+                  }
+                }
+              },
+              {
+                limitToProjects: {
+                  IfNotNull: {SetAnyElements: {Equal: params.project}}
+                }
+              }
             ]
           }
         ]
@@ -230,10 +240,16 @@ export function makeUserTimeCondition(params: {
           {role: {NotInside: [UserRole.Client, UserRole.ExternalTeamMember]}},
           {
             Or: [
-              {role: {Inside: [UserRole.Owner, UserRole.InternalTeamMember]}},
+              {
+                role: {
+                  IfNotNull: {
+                    Inside: [UserRole.Owner, UserRole.InternalTeamMember]
+                  }
+                }
+              },
               {
                 limitToProjects: params.project
-                  ? {SetAnyElements: {Equal: params.project}}
+                  ? {IfNotNull: {SetAnyElements: {Equal: params.project}}}
                   : {Always: true}
               }
             ]

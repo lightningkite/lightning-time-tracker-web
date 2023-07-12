@@ -25,7 +25,11 @@ import {useFormik} from "formik"
 import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
-import {dynamicFormatDate, taskStateLabels} from "utils/helpers"
+import {
+  dynamicFormatDate,
+  makeUserTaskCondition,
+  taskStateLabels
+} from "utils/helpers"
 import * as yup from "yup"
 
 const validationSchema = yup.object().shape({
@@ -157,6 +161,12 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
             getOptionLabel={(user) => user.name || user.email}
             searchProperties={["email"]}
             disabled={!loadedInitialAsyncValues || !canEdit}
+            additionalQueryConditions={[
+              makeUserTaskCondition({
+                project: task.project,
+                organization: task.organization
+              })
+            ]}
             {...makeFormikAutocompleteProps(formik, "user")}
           />
           <TextField

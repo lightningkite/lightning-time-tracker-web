@@ -239,13 +239,13 @@ function applyTimerChanges(
   previous: Timer[],
   changes: Record<string, TimerChange>
 ): Timer[] {
-  const newTimers: Timer[] = previous.map((t) => ({...t}))
+  let newTimers: Timer[] = previous.map((t) => ({...t}))
 
-  Object.entries(changes).forEach(([id, change], index) => {
+  Object.entries(changes).forEach(([id, change]) => {
     const existingTimer = newTimers.find((t) => t._id === id)
 
     if (change.delete && existingTimer) {
-      newTimers.splice(index, 1)
+      newTimers = newTimers.filter((t) => t._id !== id)
     } else if (change.create && !existingTimer) {
       newTimers.push({...change.create, ...change.updates})
     } else if (existingTimer) {

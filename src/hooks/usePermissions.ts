@@ -47,7 +47,7 @@ export function usePermissions() {
     )
   } satisfies Record<string, boolean>
 
-  if (isSuperUser) {
+  if (isSuperUser || isA(UserRole.Owner)) {
     Object.keys(usePermissionsReturn).forEach((key) => {
       usePermissionsReturn[key as keyof typeof usePermissionsReturn] = true
     })

@@ -1,6 +1,7 @@
 import {RestDataTable} from "@lightningkite/mui-lightning-components"
-import {Container} from "@mui/material"
+import {Container, FormControlLabel, Switch} from "@mui/material"
 import PageHeader from "components/PageHeader"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useState} from "react"
 import {useNavigate} from "react-router-dom"
 import {AuthContext} from "utils/context"
@@ -9,26 +10,42 @@ import {AddUserButton} from "./AddUserButton"
 
 export const UserIndex: FC = () => {
   const navigate = useNavigate()
-  const {session, currentUser} = useContext(AuthContext)
+  const {session} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [showInactive, setShowInactive] = useState(false)
 
   return (
     <Container maxWidth="md">
       <PageHeader title="Users List">
-        {currentUser.isSuperUser && (
+        {permissions.canManageAllUsers && (
           <AddUserButton
             afterSubmit={() => setRefreshTrigger((prev) => prev + 1)}
           />
         )}
+
+        <FormControlLabel
+          control={
+            <Switch
+              checked={showInactive}
+              onChange={(e) => setShowInactive(e.target.checked)}
+            />
+          }
+          label="Show Inactive Users"
+          sx={{ml: 2}}
+        />
       </PageHeader>
 
       <RestDataTable
         restEndpoint={session.user}
         onRowClick={(user) => navigate(`/users/${user._id}`)}
         searchFields={["name", "email"]}
-        dependencies={[refreshTrigger]}
+        dependencies={[refreshTrigger, showInactive]}
         defaultSorting={[{field: "name", sort: "asc"}]}
+        additionalQueryConditions={
+          showInactive ? [] : [{active: {Equal: true}}]
+        }
         columns={[
           {
             field: "name",
@@ -53,12 +70,16 @@ export const UserIndex: FC = () => {
                 ? camelCaseToTitleCase(row.role)
                 : "None"
           },
-          {
-            field: "active",
-            headerName: "Active",
-            width: 80,
-            type: "boolean"
-          }
+          ...(showInactive
+            ? [
+                {
+                  field: "active",
+                  headerName: "Active",
+                  width: 80,
+                  type: "boolean"
+                }
+              ]
+            : [])
         ]}
       />
     </Container>

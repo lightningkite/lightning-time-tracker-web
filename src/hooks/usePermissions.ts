@@ -22,10 +22,7 @@ export function usePermissions() {
 
     canManageAllTime: false as boolean,
 
-    canManageAllTasks: isA(
-      UserRole.InternalTeamMember,
-      UserRole.ExternalTeamMember
-    ),
+    canManageAllTasks: isA(UserRole.InternalTeamMember),
 
     canReportNewTasks: true,
 
@@ -42,14 +39,12 @@ export function usePermissions() {
 
     canViewIndividualTimeEntries: isA(
       UserRole.InternalTeamMember,
-      UserRole.Contractor,
-      UserRole.ExternalTeamMember
+      UserRole.Contractor
     ),
 
     canViewIndividualUsers: isA(
       UserRole.InternalTeamMember,
-      UserRole.Contractor,
-      UserRole.ExternalTeamMember
+      UserRole.Contractor
     ),
 
     doesCareAboutPRs: isA(

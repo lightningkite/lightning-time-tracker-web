@@ -24,7 +24,7 @@ export interface TaskCardProps {
 
 export const TaskCard: FC<TaskCardProps> = (props) => {
   const {task, onClick} = props
-  const {userColors} = useContext(AuthContext)
+  const {userColors, currentUser} = useContext(AuthContext)
   const permissions = usePermissions()
 
   const [{opacity}, drag] = useDrag(
@@ -52,7 +52,12 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
   return (
     <Card
       key={task._id}
-      ref={permissions.canManageAllTasks ? drag : undefined}
+      ref={
+        permissions.canManageAllTasks ||
+        (task.user === currentUser._id && permissions.canBeAssignedTasks)
+          ? drag
+          : undefined
+      }
       sx={{
         opacity,
         ...(isEmergency && {

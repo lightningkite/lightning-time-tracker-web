@@ -20,12 +20,12 @@ import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import {useFormik} from "formik"
 import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import {useFocus} from "hooks/useFocus"
+import {usePermissions} from "hooks/usePermissions"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import * as yup from "yup"
 
 const validationSchema = yup.object().shape({
-  user: yup.object().required("Required").nullable(),
   project: yup.object().required("Required").nullable(),
   summary: yup
     .string()
@@ -54,6 +54,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
     ...rest
   } = props
   const {session, currentUser} = useContext(AuthContext)
+  const permissions = usePermissions()
 
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [inputRef, setInputFocus] = useFocus()
@@ -69,7 +70,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
 
   const formik = useFormik({
     initialValues: {
-      user: initialUser ?? currentUser,
+      user: initialUser ?? permissions.canBeAssignedTasks ? currentUser : null,
       project: initialProject ?? null,
       summary: "",
       description: "",
@@ -81,7 +82,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
       const task = await session.task.insert({
         ...values,
         _id: crypto.randomUUID(),
-        user: values.user._id,
+        user: values.user?._id,
         userName: undefined,
         project: (values.project as Project)._id,
         projectName: undefined,

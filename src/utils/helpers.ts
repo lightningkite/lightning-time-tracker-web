@@ -199,28 +199,23 @@ export function makeUserTaskCondition(params: {
   organization: string
 }): Condition<User> {
   return {
-    Or: [
-      {isSuperUser: {Equal: true}},
+    And: [
+      {active: {NotEqual: false}},
+      {organization: {Equal: params.organization}},
+      {role: {IfNotNull: {NotInside: [UserRole.Client]}}},
       {
-        And: [
-          {active: {Equal: true}},
-          {organization: {Equal: params.organization}},
-          {role: {IfNotNull: {NotInside: [UserRole.Client]}}},
+        Or: [
           {
-            Or: [
-              {
-                role: {
-                  IfNotNull: {
-                    Inside: [UserRole.Owner, UserRole.InternalTeamMember]
-                  }
-                }
-              },
-              {
-                limitToProjects: {
-                  IfNotNull: {SetAnyElements: {Equal: params.project}}
-                }
+            role: {
+              IfNotNull: {
+                Inside: [UserRole.Owner, UserRole.InternalTeamMember]
               }
-            ]
+            }
+          },
+          {
+            limitToProjects: {
+              IfNotNull: {SetAnyElements: {Equal: params.project}}
+            }
           }
         ]
       }
@@ -233,34 +228,29 @@ export function makeUserTimeCondition(params: {
   organization: string
 }): Condition<User> {
   return {
-    Or: [
-      {isSuperUser: {Equal: true}},
+    And: [
+      {active: {NotEqual: false}},
+      {organization: {Equal: params.organization}},
       {
-        And: [
-          {active: {Equal: true}},
-          {organization: {Equal: params.organization}},
+        role: {
+          IfNotNull: {
+            NotInside: [UserRole.Client, UserRole.ExternalTeamMember]
+          }
+        }
+      },
+      {
+        Or: [
           {
             role: {
               IfNotNull: {
-                NotInside: [UserRole.Client, UserRole.ExternalTeamMember]
+                Inside: [UserRole.Owner, UserRole.InternalTeamMember]
               }
             }
           },
           {
-            Or: [
-              {
-                role: {
-                  IfNotNull: {
-                    Inside: [UserRole.Owner, UserRole.InternalTeamMember]
-                  }
-                }
-              },
-              {
-                limitToProjects: params.project
-                  ? {IfNotNull: {SetAnyElements: {Equal: params.project}}}
-                  : {Always: true}
-              }
-            ]
+            limitToProjects: params.project
+              ? {IfNotNull: {SetAnyElements: {Equal: params.project}}}
+              : {Always: true}
           }
         ]
       }

@@ -6,7 +6,7 @@ import ErrorAlert from "components/ErrorAlert"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
-import {MILLISECONDS_PER_HOUR} from "utils/helpers"
+import {MILLISECONDS_PER_HOUR, makeUserTimeCondition} from "utils/helpers"
 import {CustomToolbar} from "./CustomToolbar"
 import {
   filtersToProjectCondition,
@@ -22,7 +22,7 @@ interface HoursTableRow {
 
 export const HoursByProjectReport: FC<ReportProps> = (props) => {
   const {reportFilterValues} = props
-  const {session, currentUser} = useContext(AuthContext)
+  const {session, currentUser, currentOrganization} = useContext(AuthContext)
 
   const [tableData, setTableData] = useState<HoursTableRow[]>()
   const [users, setUsers] = useState<User[]>()
@@ -39,16 +39,10 @@ export const HoursByProjectReport: FC<ReportProps> = (props) => {
         condition: {
           And: [
             filtersToUserCondition(reportFilterValues),
-            {
-              Or: [
-                {isSuperUser: {Equal: true}},
-                {
-                  role: {
-                    Inside: [UserRole.InternalTeamMember, UserRole.Contractor]
-                  }
-                }
-              ]
-            }
+            makeUserTimeCondition({
+              project: undefined,
+              organization: currentOrganization._id
+            })
           ]
         },
         limit: QUERY_LIMIT

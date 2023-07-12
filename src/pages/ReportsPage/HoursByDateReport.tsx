@@ -1,12 +1,12 @@
 import {Aggregate} from "@lightningkite/lightning-server-simplified"
 import {Alert, Card} from "@mui/material"
 import {DataGrid, GridEnrichedColDef} from "@mui/x-data-grid"
-import {User, UserRole} from "api/sdk"
+import {User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
-import {MILLISECONDS_PER_HOUR} from "utils/helpers"
+import {MILLISECONDS_PER_HOUR, makeUserTimeCondition} from "utils/helpers"
 import {CustomToolbar} from "./CustomToolbar"
 import {
   filtersToTimeEntryCondition,
@@ -22,7 +22,7 @@ interface HoursTableRow {
 export const HoursByDateReport: FC<ReportProps> = (props) => {
   const {reportFilterValues} = props
   const {dateRange} = reportFilterValues
-  const {session} = useContext(AuthContext)
+  const {session, currentOrganization} = useContext(AuthContext)
 
   const [tableData, setTableData] = useState<HoursTableRow[]>()
   const [users, setUsers] = useState<User[]>()
@@ -35,16 +35,10 @@ export const HoursByDateReport: FC<ReportProps> = (props) => {
       condition: {
         And: [
           filtersToUserCondition(reportFilterValues),
-          {
-            Or: [
-              {isSuperUser: {Equal: true}},
-              {
-                role: {
-                  Inside: [UserRole.InternalTeamMember, UserRole.Contractor]
-                }
-              }
-            ]
-          }
+          makeUserTimeCondition({
+            project: undefined,
+            organization: currentOrganization._id
+          })
         ]
       },
       limit: QUERY_LIMIT

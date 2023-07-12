@@ -132,70 +132,68 @@ export const UserForm: FC<UserFormProps> = (props) => {
       {user._id !== currentUser._id && (
         <FormSection title="Permissions">
           <Stack direction="row" spacing={2}>
-            <FormControlLabel
-              control={
-                <Checkbox {...makeFormikCheckboxProps(formik, "isSuperUser")} />
-              }
-              label="Is Super User"
-            />
-
-            {!formik.values.isSuperUser && (
+            {currentUser.isSuperUser && (
               <FormControlLabel
                 control={
-                  <Checkbox {...makeFormikCheckboxProps(formik, "active")} />
+                  <Checkbox
+                    {...makeFormikCheckboxProps(formik, "isSuperUser")}
+                  />
                 }
-                label="Active"
+                label="Is Super User"
               />
             )}
+
+            <FormControlLabel
+              control={
+                <Checkbox {...makeFormikCheckboxProps(formik, "active")} />
+              }
+              label="Active"
+            />
           </Stack>
 
-          {!formik.values.isSuperUser && (
-            <>
-              <FormControl fullWidth>
-                <InputLabel>Role</InputLabel>
-                <Select
-                  label="Role"
-                  value={formik.values.role}
-                  onChange={(e) => {
-                    formik.setFieldValue("role", e.target.value)
-                  }}
-                >
-                  {Object.values(UserRole).map((role) => (
-                    <MenuItem key={role} value={role}>
-                      {camelCaseToTitleCase(role)}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+          <FormControl fullWidth>
+            <InputLabel>Role</InputLabel>
+            <Select
+              label="Role"
+              value={formik.values.role}
+              onChange={(e) => {
+                formik.setFieldValue("role", e.target.value)
+              }}
+            >
+              {Object.values(UserRole).map((role) => (
+                <MenuItem key={role} value={role}>
+                  {camelCaseToTitleCase(role)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-              <Autocomplete
-                multiple
-                options={projectOptions ?? []}
-                getOptionLabel={(project) => project.name}
-                isOptionEqualToValue={(a, b) => a._id === b._id}
-                disableCloseOnSelect
-                disableClearable
-                value={
-                  projectOptions?.filter((project) =>
-                    formik.values.limitToProjects.includes(project._id)
-                  ) ?? []
-                }
-                onChange={(e, value) => {
-                  formik.setFieldValue(
-                    "limitToProjects",
-                    value.map((project) => project._id)
-                  )
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Limit to Projects"
-                    helperText="This user will only be able to access these projects"
-                  />
-                )}
+          <Autocomplete
+            multiple
+            options={projectOptions ?? []}
+            getOptionLabel={(project) => project.name}
+            isOptionEqualToValue={(a, b) => a._id === b._id}
+            disableCloseOnSelect
+            disableClearable
+            value={
+              projectOptions?.filter((project) =>
+                formik.values.limitToProjects.includes(project._id)
+              ) ?? []
+            }
+            onChange={(e, value) => {
+              formik.setFieldValue(
+                "limitToProjects",
+                value.map((project) => project._id)
+              )
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Limit to Projects"
+                helperText="This user will only be able to access these projects"
               />
-            </>
-          )}
+            )}
+          />
         </FormSection>
       )}
 

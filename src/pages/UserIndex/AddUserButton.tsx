@@ -88,12 +88,14 @@ export const AddUserButton: FC<AddUserProps> = (props) => {
             {...makeFormikTextFieldProps(formik, "name")}
           />
 
-          <FormControlLabel
-            control={
-              <Checkbox {...makeFormikCheckboxProps(formik, "isSuperUser")} />
-            }
-            label="Is Super User"
-          />
+          {currentUser.isSuperUser && (
+            <FormControlLabel
+              control={
+                <Checkbox {...makeFormikCheckboxProps(formik, "isSuperUser")} />
+              }
+              label="Is Super User"
+            />
+          )}
         </Stack>
       </DialogForm>
     </>

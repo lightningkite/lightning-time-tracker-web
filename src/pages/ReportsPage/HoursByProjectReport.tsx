@@ -1,7 +1,7 @@
 import {Aggregate} from "@lightningkite/lightning-server-simplified"
 import {Card} from "@mui/material"
 import {DataGrid, GridEnrichedColDef} from "@mui/x-data-grid"
-import {Project, User, UserRole} from "api/sdk"
+import {Project, User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import React, {FC, useContext, useEffect, useState} from "react"
 import {QUERY_LIMIT} from "utils/constants"

@@ -91,7 +91,6 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
         state: initialState ?? TaskState.Active,
         attachments: [],
         estimate: values.estimate ? +values.estimate : null,
-        emergency: false,
         createdAt: new Date().toISOString(),
         createdBy: currentUser._id,
         creatorName: currentUser.name,

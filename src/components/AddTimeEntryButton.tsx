@@ -31,8 +31,9 @@ const validationSchema = yup.object().shape({
     .nullable()
     .when("projectRequired", {
       is: true,
-      then: yup.object().required("Required").nullable()
+      then: () => yup.object().required("Required").nullable()
     }),
+
   user: yup.object().required("Required").nullable(),
   date: yup.date().required("Required"),
   duration: yup

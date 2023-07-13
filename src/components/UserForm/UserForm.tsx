@@ -68,8 +68,15 @@ export const UserForm: FC<UserFormProps> = (props) => {
     onSubmit: async (values, {resetForm}) => {
       setError("")
 
+      const formattedValues: Partial<User> = {
+        ...values,
+        limitToProjects: !!values.limitToProjects?.length
+          ? values.limitToProjects
+          : null
+      }
+
       // Automatically builds the Lightning Server modification given the old object and the new values
-      const modification = makeObjectModification(user, values)
+      const modification = makeObjectModification(user, formattedValues)
 
       // Handle the case where nothing changed (this shouldn't happen, but we gotta make TypeScript happy)
       if (!modification) {

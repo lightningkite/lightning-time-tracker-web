@@ -36,7 +36,7 @@ export const TaskTable: FC<TaskTableProps> = (props) => {
         {
           field: "createdAt",
           headerName: "Created",
-          type: "date",
+          type: "dateTime",
           width: 130,
           valueFormatter: ({value}) => dynamicFormatDate(dayjs(value))
         },

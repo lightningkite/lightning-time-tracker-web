@@ -1,5 +1,5 @@
 import {ListItem, ListItemButton, ListItemText} from "@mui/material"
-import type {FC, PropsWithChildren, ReactElement} from "react";
+import type {FC, PropsWithChildren, ReactElement} from "react"
 import React from "react"
 
 export interface LabeledInfoProps {

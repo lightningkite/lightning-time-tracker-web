@@ -1,4 +1,4 @@
-import type {Dayjs} from "dayjs";
+import type {Dayjs} from "dayjs"
 import dayjs from "dayjs"
 import type {DateRange} from "./ReportFilters"
 

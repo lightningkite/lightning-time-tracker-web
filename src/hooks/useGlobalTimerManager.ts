@@ -3,7 +3,7 @@ import type {Timer, UserSession} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import {useContext, useEffect, useReducer} from "react"
-import type { TimerContextType} from "../utils/context";
+import type {TimerContextType} from "../utils/context"
 import {AuthContext} from "../utils/context"
 import {dateToISO, getTimerSeconds} from "../utils/helpers"
 import {useDebounce} from "./useDebounce"

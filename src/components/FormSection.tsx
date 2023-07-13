@@ -1,6 +1,6 @@
 import {Box, Typography} from "@mui/material"
 import {Stack} from "@mui/system"
-import type {FC, PropsWithChildren} from "react";
+import type {FC, PropsWithChildren} from "react"
 import React from "react"
 
 export interface FormSectionProps {

@@ -1,7 +1,7 @@
 import {mockRestEndpointFunctions} from "@lightningkite/lightning-server-simplified"
 import {rand} from "@ngneat/falso"
 import {LocalStorageKey} from "utils/constants"
-import type { MockDatastore} from "./mockDatastore";
+import type {MockDatastore} from "./mockDatastore"
 import {generateMockDatastore} from "./mockDatastore"
 import type {
   Api,

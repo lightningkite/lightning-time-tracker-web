@@ -1,7 +1,7 @@
 import type {MockApi} from "api/mockApi"
 import type {LiveApi} from "api/sdk"
-import type {FC} from "react";
-import React, { useContext, useEffect, useState} from "react"
+import type {FC} from "react"
+import React, {useContext, useEffect, useState} from "react"
 import {UnauthContext} from "utils/context"
 import DeveloperOptions, {DEVELOPER_SECRET_CODE} from "./DeveloperOptions"
 import EnterEmail from "./EnterEmail"

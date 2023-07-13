@@ -2,8 +2,8 @@ import type {Task} from "api/sdk"
 import {AddTimeEntryButton} from "components/AddTimeEntryButton"
 import {TimeEntryTable} from "components/TimeEntryTable"
 import {usePermissions} from "hooks/usePermissions"
-import type {FC} from "react";
-import React, { useContext, useState} from "react"
+import type {FC} from "react"
+import React, {useContext, useState} from "react"
 import {AuthContext} from "utils/context"
 
 export interface TimeEntryTabProps {

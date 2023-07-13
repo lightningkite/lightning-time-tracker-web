@@ -1,6 +1,6 @@
 import {Container} from "@mui/material"
 import PageHeader from "components/PageHeader"
-import type {FC} from "react";
+import type {FC} from "react"
 import React from "react"
 import {ProjectsTasks} from "./ProjectsTasks"
 

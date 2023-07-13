@@ -1,7 +1,6 @@
 import {Close} from "@mui/icons-material"
 import {LoadingButton} from "@mui/lab"
-import type {
-  DialogProps} from "@mui/material";
+import type {DialogProps} from "@mui/material"
 import {
   Alert,
   Box,
@@ -15,8 +14,8 @@ import {
   Tooltip
 } from "@mui/material"
 import type {useFormik} from "formik"
-import type {FC} from "react";
-import React, { useState} from "react"
+import type {FC} from "react"
+import React, {useState} from "react"
 import {AutoLoadingButton} from "./AutoLoadingButton"
 
 export interface DialogFormProps extends DialogProps {

@@ -8,8 +8,8 @@ import {Alert, InputAdornment, Stack, TextField} from "@mui/material"
 import type {Project} from "api/sdk"
 import {useFormik} from "formik"
 import {usePermissions} from "hooks/usePermissions"
-import type {FC} from "react";
-import React, { useContext, useState} from "react"
+import type {FC} from "react"
+import React, {useContext, useState} from "react"
 import {AuthContext} from "utils/context"
 import * as yup from "yup"
 

@@ -1,7 +1,7 @@
 import {Typography} from "@mui/material"
 import type {Attachment} from "api/sdk"
-import type {FC} from "react";
-import React, { useContext, useState} from "react"
+import type {FC} from "react"
+import React, {useContext, useState} from "react"
 import {uploadToS3} from "utils/helpers"
 import {AuthContext} from "../../utils/context"
 

@@ -12,8 +12,8 @@ import {
 import type {Task} from "api/sdk"
 import {usePermissions} from "hooks/usePermissions"
 import {TaskForm} from "pages/TaskDetail/TaskForm"
-import type {FC} from "react";
-import React, { useState} from "react"
+import type {FC} from "react"
+import React, {useState} from "react"
 import {CommentSection} from "./CommentSection"
 import {TimeEntryTable} from "./TimeEntryTable"
 

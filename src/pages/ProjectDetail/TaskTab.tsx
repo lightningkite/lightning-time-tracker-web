@@ -2,8 +2,8 @@ import type {Project} from "api/sdk"
 import {AddTaskButton} from "components/AddTaskButton"
 import {TaskTable} from "components/TaskTable"
 import {usePermissions} from "hooks/usePermissions"
-import type {FC} from "react";
-import React, { useState} from "react"
+import type {FC} from "react"
+import React, {useState} from "react"
 import {useNavigate} from "react-router-dom"
 
 export interface TaskTabProps {

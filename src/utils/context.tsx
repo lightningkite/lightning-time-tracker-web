@@ -1,7 +1,7 @@
 import type {Api, Organization, Timer, User, UserSession} from "api/sdk"
 import {useGlobalTimerManager} from "hooks/useGlobalTimerManager"
-import type {FC, ReactElement} from "react";
-import React, { createContext} from "react"
+import type {FC, ReactElement} from "react"
+import React, {createContext} from "react"
 
 export interface AuthContextType {
   session: UserSession

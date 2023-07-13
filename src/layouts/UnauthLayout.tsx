@@ -1,5 +1,5 @@
 import {Card, CardContent, Container, Stack} from "@mui/material"
-import type {FC, ReactNode} from "react";
+import type {FC, ReactNode} from "react"
 import React from "react"
 
 const UnauthLayout: FC<{children: ReactNode}> = ({children}) => {

@@ -1,7 +1,7 @@
 import {LoadingButton} from "@mui/lab"
 import {Alert, Stack, TextField, Typography} from "@mui/material"
-import type {FC} from "react";
-import React, { useEffect, useState} from "react"
+import type {FC} from "react"
+import React, {useEffect, useState} from "react"
 
 export interface EnterEmailProps {
   email: string

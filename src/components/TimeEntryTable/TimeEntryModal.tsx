@@ -7,15 +7,15 @@ import {
 } from "@lightningkite/mui-lightning-components"
 import {Stack, TextField} from "@mui/material"
 import {DatePicker} from "@mui/x-date-pickers"
-import type {Project, Task, TimeEntry} from "api/sdk";
-import { TaskState} from "api/sdk"
+import type {Project, Task, TimeEntry} from "api/sdk"
+import {TaskState} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import Loading from "components/Loading"
 import dayjs from "dayjs"
 import duration, {Duration} from "dayjs/plugin/duration"
 import {useFormik} from "formik"
-import type {FC} from "react";
-import React, { useContext, useEffect, useState} from "react"
+import type {FC} from "react"
+import React, {useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateFromISO, dateToISO, stringToDuration} from "utils/helpers"
 import * as yup from "yup"
@@ -60,16 +60,16 @@ export const TimeEntryModal: FC<TimeEntryModalProps> = (props) => {
         ...values,
         task: values.task?._id,
         project: values.project?._id,
-        durationMilliseconds: (
-          stringToDuration(values.durationMilliseconds)!
-        ).asMilliseconds(),
+        durationMilliseconds: stringToDuration(
+          values.durationMilliseconds
+        )!.asMilliseconds(),
         date: dateToISO(values.date!)
       }
 
       const modification = makeObjectModification(timeEntry, formattedValues)
 
       if (!modification) return
-      await session.timeEntry.modify((timeEntry!)._id, modification)
+      await session.timeEntry.modify(timeEntry!._id, modification)
 
       onClose()
     }
@@ -115,7 +115,7 @@ export const TimeEntryModal: FC<TimeEntryModalProps> = (props) => {
           throw new Error("Please fix the errors above.")
         }
       }}
-      onDelete={() => session.timeEntry.delete((timeEntry!)._id)}
+      onDelete={() => session.timeEntry.delete(timeEntry!._id)}
       open={!!timeEntry}
       disableSubmitBtn={!loadedInitialAsyncValues || !formik.dirty}
     >

@@ -1,13 +1,13 @@
 import type {Condition} from "@lightningkite/lightning-server-simplified"
-import type { FilterOption} from "@lightningkite/mui-lightning-components";
+import type {FilterOption} from "@lightningkite/mui-lightning-components"
 import {FilterBar} from "@lightningkite/mui-lightning-components"
 import {Skeleton} from "@mui/material"
 import type {Project, Task, TimeEntry, User} from "api/sdk"
-import type {Dayjs} from "dayjs";
+import type {Dayjs} from "dayjs"
 import dayjs from "dayjs"
 import {usePermissions} from "hooks/usePermissions"
-import type {FC} from "react";
-import React, { useContext, useEffect, useMemo, useState} from "react"
+import type {FC} from "react"
+import React, {useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO} from "utils/helpers"
 import type {ReportFilterValues} from "./ReportsPage"

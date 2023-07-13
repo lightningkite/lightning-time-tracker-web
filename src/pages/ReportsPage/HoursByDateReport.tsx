@@ -1,11 +1,11 @@
 import {Aggregate} from "@lightningkite/lightning-server-simplified"
 import {Alert, Card} from "@mui/material"
-import type { GridEnrichedColDef} from "@mui/x-data-grid";
+import type {GridEnrichedColDef} from "@mui/x-data-grid"
 import {DataGrid} from "@mui/x-data-grid"
 import type {User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
-import type {FC} from "react";
-import React, { useContext, useEffect, useState} from "react"
+import type {FC} from "react"
+import React, {useContext, useEffect, useState} from "react"
 import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
 import {MILLISECONDS_PER_HOUR, makeUserTimeCondition} from "utils/helpers"

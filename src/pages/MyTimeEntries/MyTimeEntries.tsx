@@ -4,8 +4,8 @@ import PageHeader from "components/PageHeader"
 import {TimeEntryTable} from "components/TimeEntryTable"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
-import type {FC} from "react";
-import React, { useContext, useState} from "react"
+import type {FC} from "react"
+import React, {useContext, useState} from "react"
 import {AuthContext} from "utils/context"
 
 dayjs.extend(duration)

@@ -5,18 +5,18 @@ import {
   RestAutocompleteInput
 } from "@lightningkite/mui-lightning-components"
 import {Add} from "@mui/icons-material"
-import type { SxProps} from "@mui/material";
+import type {SxProps} from "@mui/material"
 import {Button, Stack, TextField} from "@mui/material"
 import {DatePicker} from "@mui/x-date-pickers"
-import type {Project, Task, User} from "api/sdk";
-import { TaskState} from "api/sdk"
+import type {Project, Task, User} from "api/sdk"
+import {TaskState} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import dayjs from "dayjs"
 import duration, {Duration} from "dayjs/plugin/duration"
 import {useFormik} from "formik"
 import {usePermissions} from "hooks/usePermissions"
-import type {FC} from "react";
-import React, { useContext, useEffect, useState} from "react"
+import type {FC} from "react"
+import React, {useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO, stringToDuration} from "utils/helpers"
 import * as yup from "yup"
@@ -86,11 +86,11 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
       await session.timeEntry.insert({
         _id: crypto.randomUUID(),
         task: initialTask?._id ?? values.task?._id,
-        project: initialTask?.project ?? (values.project!)._id,
+        project: initialTask?.project ?? values.project!._id,
         organization: currentUser.organization,
-        durationMilliseconds: (
-          stringToDuration(values.duration)!
-        ).asMilliseconds(),
+        durationMilliseconds: stringToDuration(
+          values.duration
+        )!.asMilliseconds(),
         date: dateToISO(values.date),
         user: values.user._id,
         taskSummary: undefined,

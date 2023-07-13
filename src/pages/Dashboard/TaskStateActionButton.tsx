@@ -9,8 +9,8 @@ import {
 } from "@mui/material"
 import {TaskState} from "api/sdk"
 import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
-import type {FC} from "react";
-import React, { useContext, useState} from "react"
+import type {FC} from "react"
+import React, {useContext, useState} from "react"
 import {AuthContext} from "utils/context"
 
 interface TaskStateAction {

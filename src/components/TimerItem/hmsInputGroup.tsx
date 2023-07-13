@@ -1,10 +1,10 @@
 import {Stack, Typography} from "@mui/material"
 import type {Timer} from "api/sdk"
 import dayjs from "dayjs"
-import type {Duration} from "dayjs/plugin/duration";
+import type {Duration} from "dayjs/plugin/duration"
 import duration from "dayjs/plugin/duration"
-import type {FC} from "react";
-import React, { useContext, useEffect, useState} from "react"
+import type {FC} from "react"
+import React, {useContext, useEffect, useState} from "react"
 import {TimerContext} from "utils/context"
 import HmsInputField from "./hmsInputField"
 

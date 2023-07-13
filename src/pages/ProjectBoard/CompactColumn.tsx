@@ -4,7 +4,7 @@ import {TaskState} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
-import type {FC} from "react";
+import type {FC} from "react"
 import React from "react"
 import {useDrop} from "react-dnd"
 import {taskStateLabels} from "utils/helpers"

@@ -8,8 +8,8 @@ import {
   randUuid,
   randVerb
 } from "@ngneat/falso"
-import type {Organization, Project, Task, User} from "api/sdk";
-import { TaskState} from "api/sdk"
+import type {Organization, Project, Task, User} from "api/sdk"
+import {TaskState} from "api/sdk"
 
 export function generateTasks(params: {
   perProjectMonth: number

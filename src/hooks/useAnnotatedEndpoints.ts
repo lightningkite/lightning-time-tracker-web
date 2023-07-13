@@ -1,7 +1,7 @@
 import type {
   ReadonlySessionRestEndpoint,
   WithAnnotations
-} from "@lightningkite/lightning-server-simplified";
+} from "@lightningkite/lightning-server-simplified"
 import {
   Aggregate,
   annotateEndpoint

@@ -13,8 +13,8 @@ import {
 } from "@mui/material"
 import type {MockApi} from "api/mockApi"
 import type {LiveApi} from "api/sdk"
-import type {FC} from "react";
-import React, { useContext} from "react"
+import type {FC} from "react"
+import React, {useContext} from "react"
 import {UnauthContext} from "utils/context"
 
 export const DEVELOPER_SECRET_CODE = "info@lightningkite.com"

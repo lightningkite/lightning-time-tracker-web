@@ -1,9 +1,9 @@
 import type {Condition} from "@lightningkite/lightning-server-simplified"
-import type {Task, TimeEntry, Timer, User} from "api/sdk";
-import { TaskState, UserRole} from "api/sdk"
-import type {Dayjs} from "dayjs";
+import type {Task, TimeEntry, Timer, User} from "api/sdk"
+import {TaskState, UserRole} from "api/sdk"
+import type {Dayjs} from "dayjs"
 import dayjs from "dayjs"
-import type {Duration} from "dayjs/plugin/duration";
+import type {Duration} from "dayjs/plugin/duration"
 import duration from "dayjs/plugin/duration"
 import type {WebPreferences} from "pages/Settings/Settings"
 

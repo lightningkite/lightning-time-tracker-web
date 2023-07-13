@@ -1,15 +1,11 @@
-import type {
-  RestDataTableProps
-} from "@lightningkite/mui-lightning-components";
-import {
-  RestDataTable
-} from "@lightningkite/mui-lightning-components"
+import type {RestDataTableProps} from "@lightningkite/mui-lightning-components"
+import {RestDataTable} from "@lightningkite/mui-lightning-components"
 import type {TaskState} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
-import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints";
-import { useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
-import type {FC} from "react";
+import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
+import {useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
+import type {FC} from "react"
 import React from "react"
 import {dynamicFormatDate, taskStateLabels} from "utils/helpers"
 

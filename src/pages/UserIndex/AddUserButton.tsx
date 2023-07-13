@@ -14,7 +14,7 @@ import type {User} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import {useFormik} from "formik"
 import type {FC} from "react"
-import React, {useContext, useState} from "react"
+import {useContext, useState} from "react"
 import {AuthContext} from "utils/context"
 import * as yup from "yup"
 

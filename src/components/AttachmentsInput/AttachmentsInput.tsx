@@ -69,7 +69,7 @@ export function AttachmentsInput(props: AttachmentsInputProps) {
       {!disabled && (
         <AttachmentUpload
           onUpload={(newAttachments) =>
-            onChange([...attachments, ...newAttachments] as any)
+            onChange([...attachments, ...newAttachments])
           }
         />
       )}

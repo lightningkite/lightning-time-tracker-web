@@ -86,7 +86,7 @@ export class MockApi implements Api {
       console.log("refreshToken")
       return "mock-refresh-token"
     },
-    getSelf: (userToken: string): Promise<User> => {
+    getSelf: (_userToken: string): Promise<User> => {
       if (!myUser) return Promise.reject()
       console.log("getSelf", myUser)
       return Promise.resolve(myUser)
@@ -95,7 +95,7 @@ export class MockApi implements Api {
       console.log("anonymousToken")
       return "mock-anonymous-token"
     },
-    emailLoginLink: async (email: string): Promise<void> => {
+    emailLoginLink: async (_email: string): Promise<void> => {
       localStorage.setItem(LocalStorageKey.USER_TOKEN, "mock-user-token")
       console.log("emailLoginLink")
       alert(

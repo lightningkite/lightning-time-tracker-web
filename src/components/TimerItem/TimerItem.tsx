@@ -268,7 +268,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
         </Button>
         <AutoLoadingButton
           onClick={() =>
-            submitTimer(timer._id).catch((e) => alert("Error submitting timer"))
+            submitTimer(timer._id).catch(() => alert("Error submitting timer"))
           }
           variant="contained"
           disabled={!timer.project || !summary}

@@ -40,12 +40,14 @@
     "@typescript-eslint/method-signature-style": "off",
     "@typescript-eslint/promise-function-async": "off",
     "@typescript-eslint/strict-boolean-expressions": "off",
-    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
     "prefer-promise-reject-errors": "off",
     "@typescript-eslint/consistent-type-assertions": "off",
     "no-extra-boolean-cast": "off",
     "@typescript-eslint/no-floating-promises": "off",
     "@typescript-eslint/array-type": "off",
-    "@typescript-eslint/restrict-template-expressions": "off"
+    "@typescript-eslint/restrict-template-expressions": "off",
+    "import/no-named-as-default": "off",
+    "react/react-in-jsx-scope": "off"
   }
 }

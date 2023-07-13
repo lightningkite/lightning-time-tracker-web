@@ -19,7 +19,6 @@ import {
 } from "@mui/material"
 import {usePermissions} from "hooks/usePermissions"
 import type {FC} from "react"
-import React from "react"
 import {useLocation, useNavigate} from "react-router-dom"
 
 export interface NavItem {
@@ -92,7 +91,7 @@ export const NavigationDrawer: FC<{
       <List>
         {navItems
           .filter((n) => n.show !== false)
-          .map(({label, to, icon: Icon, show}) => (
+          .map(({label, to, icon: Icon}) => (
             <ListItem key={to} disablePadding sx={{display: "block"}}>
               <Tooltip title={label} placement="right" arrow>
                 <ListItemButton

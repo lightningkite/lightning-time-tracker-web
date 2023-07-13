@@ -1,5 +1,6 @@
 import react from "@vitejs/plugin-react"
 import {defineConfig} from "vite"
+// eslint-disable-next-line import/default
 import checker from "vite-plugin-checker"
 import tsconfigPaths from "vite-tsconfig-paths"
 

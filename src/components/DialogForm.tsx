@@ -147,6 +147,7 @@ export const DialogForm: FC<DialogFormProps> = (props) => {
 export default DialogForm
 
 export function shouldPreventSubmission(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formik: ReturnType<typeof useFormik<any>>
 ): boolean {
   return (!formik.submitCount && !formik.dirty) || !formik.isValid

@@ -65,7 +65,7 @@ export const CommentSection: FC<CommentSectionProps> = (props) => {
         setNewComment("")
         setComments((comments) => [insertedComment, ...(comments ?? [])])
       })
-      .catch((e) => alert("Error adding comment"))
+      .catch(() => alert("Error adding comment"))
       .finally(() => setIsSubmitting(false))
   }
 

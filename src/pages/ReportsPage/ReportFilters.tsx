@@ -7,7 +7,7 @@ import type {Dayjs} from "dayjs"
 import dayjs from "dayjs"
 import {usePermissions} from "hooks/usePermissions"
 import type {FC} from "react"
-import React, {useContext, useEffect, useMemo, useState} from "react"
+import {useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dateToISO} from "utils/helpers"
 import type {ReportFilterValues} from "./ReportsPage"
@@ -105,6 +105,7 @@ export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
   const filterOptions = useMemo(() => {
     if (!users || !projects) return []
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const options: FilterOption<any>[] = [
       {
         type: "select",

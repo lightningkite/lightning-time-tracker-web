@@ -223,23 +223,25 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
             }
             label="Emergency"
           />
-
-          {error && <Alert severity="error">{error}</Alert>}
-
-          <LoadingButton
-            onClick={() => {
-              formik.submitForm()
-            }}
-            variant="contained"
-            color="primary"
-            loading={formik.isSubmitting}
-            style={{alignSelf: "end"}}
-            disabled={!formik.dirty}
-          >
-            {formik.dirty ? "Save Changes" : "Saved"}
-          </LoadingButton>
         </FormSection>
       )}
+
+      <FormSection disableTopPadding>
+        {error && <Alert severity="error">{error}</Alert>}
+
+        <LoadingButton
+          onClick={() => {
+            formik.submitForm()
+          }}
+          variant="contained"
+          color="primary"
+          loading={formik.isSubmitting}
+          style={{alignSelf: "end"}}
+          disabled={!formik.dirty}
+        >
+          {formik.dirty ? "Save Changes" : "Saved"}
+        </LoadingButton>
+      </FormSection>
     </>
   )
 }

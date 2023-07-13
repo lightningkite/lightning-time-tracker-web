@@ -33,7 +33,6 @@ import {
 import * as yup from "yup"
 
 const validationSchema = yup.object().shape({
-  user: yup.object().required("Required"),
   project: yup.object().required("Required"),
   state: yup.string().required("Required"),
   summary: yup.string().required("Required"),
@@ -55,6 +54,10 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
   const [loadedInitialAsyncValues, setLoadedInitialAsyncValues] =
     useState(false)
 
+  const canEdit = permissions.canManageAllTasks
+  const canEditSomeFields =
+    canEdit || [TaskState.Active, TaskState.Hold].includes(task.state)
+
   const formik = useFormik({
     initialValues: {
       user: null as User | null,
@@ -72,12 +75,18 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
     onSubmit: async (values, {resetForm}) => {
       setError("")
 
-      const formattedValues: Partial<Task> = {
-        ...values,
-        user: values.user?._id,
-        project: values.project?._id,
-        estimate: values.estimate ? +values.estimate : null
-      }
+      const formattedValues: Partial<Task> = !canEdit
+        ? {
+            summary: values.summary,
+            description: values.description,
+            attachments: values.attachments
+          }
+        : {
+            ...values,
+            user: values.user?._id,
+            project: values.project?._id,
+            estimate: values.estimate ? +values.estimate : null
+          }
 
       // Automatically builds the Lightning Server modification given the old object and the new values
       const modification = makeObjectModification(task, formattedValues)
@@ -93,14 +102,10 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
 
         resetForm({values})
       } catch {
-        setError("Error updating project")
+        setError("Error updating task")
       }
     }
   })
-
-  const canEdit = permissions.canManageAllTasks
-  const canEditSomeFields =
-    canEdit || [TaskState.Active, TaskState.Hold].includes(task.state)
 
   useEffect(() => {
     Promise.all([
@@ -226,7 +231,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
         </FormSection>
       )}
 
-      <FormSection disableTopPadding>
+      <Stack mt={2} spacing={2}>
         {error && <Alert severity="error">{error}</Alert>}
 
         <LoadingButton
@@ -241,7 +246,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
         >
           {formik.dirty ? "Save Changes" : "Saved"}
         </LoadingButton>
-      </FormSection>
+      </Stack>
     </>
   )
 }

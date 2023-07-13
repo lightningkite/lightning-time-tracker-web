@@ -1,12 +1,14 @@
 import {Box, Skeleton, Stack, Typography} from "@mui/material"
-import {Project, Task, TaskState} from "api/sdk"
+import type {Project, Task} from "api/sdk";
+import { TaskState} from "api/sdk"
 import {AddTaskButton} from "components/AddTaskButton"
 import {TaskModal} from "components/TaskModal"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
-import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
+import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import {usePermissions} from "hooks/usePermissions"
-import React, {FC, useState} from "react"
+import type {FC} from "react";
+import React, { useState} from "react"
 import {useDrop} from "react-dnd"
 import {taskStateLabels} from "utils/helpers"
 import {TaskCard} from "./TaskCard"

@@ -10,10 +10,12 @@ import {
   TextField,
   useTheme
 } from "@mui/material"
-import {Project, Task, TaskState, Timer} from "api/sdk"
+import type {Project, Task, Timer} from "api/sdk";
+import { TaskState} from "api/sdk"
 import {AutoLoadingButton} from "components/AutoLoadingButton"
+import type {
+  FC} from "react";
 import React, {
-  FC,
   useCallback,
   useContext,
   useEffect,

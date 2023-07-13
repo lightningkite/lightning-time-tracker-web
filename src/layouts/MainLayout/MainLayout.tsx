@@ -11,7 +11,8 @@ import {
   useMediaQuery
 } from "@mui/material"
 import {usePermissions} from "hooks/usePermissions"
-import React, {FC, ReactNode, useContext, useState} from "react"
+import type {FC, ReactNode} from "react";
+import React, { useContext, useState} from "react"
 import {theme} from "theme"
 import {AuthContext, TimerContext} from "utils/context"
 import {NAVIGATION_DRAWER_WIDTH, NavigationDrawer} from "./NavigationDrawer"

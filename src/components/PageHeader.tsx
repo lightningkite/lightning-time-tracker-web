@@ -1,5 +1,6 @@
 import {Box, Breadcrumbs, Link, Stack, Typography} from "@mui/material"
-import React, {FC, PropsWithChildren} from "react"
+import type {FC, PropsWithChildren} from "react";
+import React from "react"
 import {Link as RouterLink} from "react-router-dom"
 
 export type BreadCrumb = [label: string, path: string]

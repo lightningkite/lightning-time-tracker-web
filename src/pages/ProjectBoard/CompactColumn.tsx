@@ -3,8 +3,9 @@ import {Box, Typography} from "@mui/material"
 import {TaskState} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
-import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
-import React, {FC} from "react"
+import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
+import type {FC} from "react";
+import React from "react"
 import {useDrop} from "react-dnd"
 import {taskStateLabels} from "utils/helpers"
 

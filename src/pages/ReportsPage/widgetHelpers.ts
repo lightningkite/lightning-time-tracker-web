@@ -1,5 +1,6 @@
-import dayjs, {Dayjs} from "dayjs"
-import {DateRange} from "./ReportFilters"
+import type {Dayjs} from "dayjs";
+import dayjs from "dayjs"
+import type {DateRange} from "./ReportFilters"
 
 enum Weekday {
   Sunday = 0,

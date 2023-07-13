@@ -1,14 +1,17 @@
-import {Condition} from "@lightningkite/lightning-server-simplified"
-import {Task, TaskState, TimeEntry, Timer, User, UserRole} from "api/sdk"
-import dayjs, {Dayjs} from "dayjs"
-import duration, {Duration} from "dayjs/plugin/duration"
-import {WebPreferences} from "pages/Settings/Settings"
+import type {Condition} from "@lightningkite/lightning-server-simplified"
+import type {Task, TimeEntry, Timer, User} from "api/sdk";
+import { TaskState, UserRole} from "api/sdk"
+import type {Dayjs} from "dayjs";
+import dayjs from "dayjs"
+import type {Duration} from "dayjs/plugin/duration";
+import duration from "dayjs/plugin/duration"
+import type {WebPreferences} from "pages/Settings/Settings"
 
 dayjs.extend(duration)
 
 export const MILLISECONDS_PER_HOUR = 1000 * 60 * 60
 
-export function formatDollars(amount: number, includeCents: boolean = true) {
+export function formatDollars(amount: number, includeCents = true) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",

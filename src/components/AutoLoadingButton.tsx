@@ -1,5 +1,7 @@
-import {LoadingButton, LoadingButtonProps} from "@mui/lab"
-import React, {FC, useState} from "react"
+import type { LoadingButtonProps} from "@mui/lab";
+import {LoadingButton} from "@mui/lab"
+import type {FC} from "react";
+import React, { useState} from "react"
 
 export interface AutoLoadingButtonProps
   extends Omit<LoadingButtonProps, "onClick" | "loading"> {

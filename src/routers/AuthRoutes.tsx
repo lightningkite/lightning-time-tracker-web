@@ -1,6 +1,7 @@
 import Loading from "components/Loading"
 import {usePermissions} from "hooks/usePermissions"
-import React, {FC, Suspense} from "react"
+import type {FC} from "react";
+import React, { Suspense} from "react"
 import {Navigate, Route, Routes} from "react-router-dom"
 
 // Code Splitting: This downloads the code for each page the first time the user

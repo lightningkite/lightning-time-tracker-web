@@ -1,10 +1,11 @@
 import {TabContext, TabList, TabPanel} from "@mui/lab"
 import {Card, CardContent, Container, Paper, Tab} from "@mui/material"
-import {User} from "api/sdk"
+import type {User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import PageHeader from "components/PageHeader"
-import React, {FC, useContext, useEffect, useState} from "react"
+import type {FC} from "react";
+import React, { useContext, useEffect, useState} from "react"
 import {useParams} from "react-router-dom"
 import {AuthContext} from "utils/context"
 import {UserForm} from "../../components/UserForm"
@@ -21,7 +22,7 @@ const UserDetail: FC = () => {
 
   useEffect(() => {
     session.user
-      .detail(userId as string)
+      .detail(userId!)
       .then(setUser)
       .catch(() => setUser(null))
   }, [userId])

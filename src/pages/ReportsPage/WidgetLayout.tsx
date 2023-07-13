@@ -1,5 +1,6 @@
 import {Paper, Typography} from "@mui/material"
-import React, {FC, PropsWithChildren} from "react"
+import type {FC, PropsWithChildren} from "react";
+import React from "react"
 
 export interface WidgetLayoutProps {
   title: string

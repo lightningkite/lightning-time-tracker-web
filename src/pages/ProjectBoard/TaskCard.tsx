@@ -8,9 +8,10 @@ import {
 } from "@mui/material"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
-import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
+import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import {usePermissions} from "hooks/usePermissions"
-import React, {FC, useContext} from "react"
+import type {FC} from "react";
+import React, { useContext} from "react"
 import {useDrag} from "react-dnd"
 import {AuthContext} from "utils/context"
 import {getContrastingColor, getNameInitials} from "utils/helpers"

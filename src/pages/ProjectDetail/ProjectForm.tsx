@@ -5,10 +5,11 @@ import {
 } from "@lightningkite/mui-lightning-components"
 import {LoadingButton} from "@mui/lab"
 import {Alert, InputAdornment, Stack, TextField} from "@mui/material"
-import {Project} from "api/sdk"
+import type {Project} from "api/sdk"
 import {useFormik} from "formik"
 import {usePermissions} from "hooks/usePermissions"
-import React, {FC, useContext, useState} from "react"
+import type {FC} from "react";
+import React, { useContext, useState} from "react"
 import {AuthContext} from "utils/context"
 import * as yup from "yup"
 

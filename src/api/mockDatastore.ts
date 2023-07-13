@@ -3,7 +3,7 @@ import {generateProjects} from "./mocks/projects"
 import {generateTasks} from "./mocks/tasks"
 import {generateTimeEntries} from "./mocks/timeEntry"
 import {generateUsers} from "./mocks/users"
-import {Organization, Project, Task, TimeEntry, User} from "./sdk"
+import type {Organization, Project, Task, TimeEntry, User} from "./sdk"
 
 export interface MockDatastore {
   users: User[]

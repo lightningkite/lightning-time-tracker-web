@@ -1,10 +1,12 @@
-import {
-  Aggregate,
-  annotateEndpoint,
+import type {
   ReadonlySessionRestEndpoint,
   WithAnnotations
+} from "@lightningkite/lightning-server-simplified";
+import {
+  Aggregate,
+  annotateEndpoint
 } from "@lightningkite/lightning-server-simplified"
-import {Task} from "api/sdk"
+import type {Task} from "api/sdk"
 import {useContext} from "react"
 import {AuthContext} from "utils/context"
 

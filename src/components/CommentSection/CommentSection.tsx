@@ -8,9 +8,10 @@ import {
   TextField,
   Typography
 } from "@mui/material"
-import {Comment, Task} from "api/sdk"
+import type {Comment, Task} from "api/sdk"
 import Loading from "components/Loading"
-import React, {FC, useContext, useEffect, useState} from "react"
+import type {FC} from "react";
+import React, { useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {CommentItem} from "./CommentItem"
 

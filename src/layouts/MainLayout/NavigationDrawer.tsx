@@ -18,7 +18,8 @@ import {
   Tooltip
 } from "@mui/material"
 import {usePermissions} from "hooks/usePermissions"
-import React, {FC} from "react"
+import type {FC} from "react";
+import React from "react"
 import {useLocation, useNavigate} from "react-router-dom"
 
 export interface NavItem {

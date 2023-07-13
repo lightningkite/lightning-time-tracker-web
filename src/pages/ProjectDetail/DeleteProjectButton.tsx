@@ -7,8 +7,9 @@ import {
   DialogContentText,
   DialogTitle
 } from "@mui/material"
-import {Project} from "api/sdk"
-import React, {FC, useContext, useState} from "react"
+import type {Project} from "api/sdk"
+import type {FC} from "react";
+import React, { useContext, useState} from "react"
 import {useNavigate} from "react-router-dom"
 import {AuthContext} from "utils/context"
 import {AutoLoadingButton} from "../../components/AutoLoadingButton"

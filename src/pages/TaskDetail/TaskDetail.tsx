@@ -1,12 +1,14 @@
 import {TabContext, TabList, TabPanel} from "@mui/lab"
 import {Card, CardContent, Container, Paper, Tab} from "@mui/material"
-import {Task} from "api/sdk"
+import type {Task} from "api/sdk"
 import {CommentSection} from "components/CommentSection"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
-import PageHeader, {BreadCrumb} from "components/PageHeader"
+import type {BreadCrumb} from "components/PageHeader";
+import PageHeader from "components/PageHeader"
 import {usePermissions} from "hooks/usePermissions"
-import React, {FC, useContext, useEffect, useMemo, useState} from "react"
+import type {FC} from "react";
+import React, { useContext, useEffect, useMemo, useState} from "react"
 import {useLocation, useParams} from "react-router-dom"
 import {AuthContext} from "utils/context"
 import {DeleteTaskButton} from "./DeleteTaskButton"
@@ -26,7 +28,7 @@ const TaskDetail: FC = () => {
 
   useEffect(() => {
     session.task
-      .detail(taskId as string)
+      .detail(taskId!)
       .then(setTask)
       .catch(() => setTask(null))
   }, [taskId])

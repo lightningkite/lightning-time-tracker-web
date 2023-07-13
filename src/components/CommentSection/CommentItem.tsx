@@ -6,10 +6,11 @@ import {
   ListItemText
 } from "@mui/material"
 import {Box} from "@mui/system"
-import {Comment} from "api/sdk"
+import type {Comment} from "api/sdk"
 import dayjs, {extend} from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
-import React, {FC, useContext} from "react"
+import type {FC} from "react";
+import React, { useContext} from "react"
 import {AuthContext} from "utils/context"
 
 extend(relativeTime)

@@ -1,6 +1,7 @@
 import {Autocomplete, TextField} from "@mui/material"
-import {Project} from "api/sdk"
-import React, {FC, useContext} from "react"
+import type {Project} from "api/sdk"
+import type {FC} from "react";
+import React, { useContext} from "react"
 import {AuthContext} from "utils/context"
 
 export interface ProjectSwitcherProps {

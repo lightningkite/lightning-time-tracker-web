@@ -8,14 +8,17 @@ import {
   List,
   Typography
 } from "@mui/material"
-import {Project, TaskState} from "api/sdk"
+import type {Project} from "api/sdk";
+import { TaskState} from "api/sdk"
 import {AddTaskButton} from "components/AddTaskButton"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
-import {AnnotatedTask, useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
+import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints";
+import { useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
 import usePeriodicRefresh from "hooks/usePeriodicRefresh"
 import {usePermissions} from "hooks/usePermissions"
-import React, {FC, useContext, useEffect, useMemo, useState} from "react"
+import type {FC} from "react";
+import React, { useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
 import {booleanCompare, compareTasksByState} from "utils/helpers"
 import {TaskListItem} from "./TaskListItem"

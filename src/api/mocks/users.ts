@@ -1,5 +1,5 @@
 import {rand, randFirstName, randLastName, randUuid} from "@ngneat/falso"
-import {Organization, User} from "api/sdk"
+import type {Organization, User} from "api/sdk"
 
 export function generateUsers(
   totalPerOrganization: number,

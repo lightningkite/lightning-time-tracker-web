@@ -1,5 +1,6 @@
 import {Login} from "pages/Login"
-import React, {FC} from "react"
+import type {FC} from "react";
+import React from "react"
 import {Navigate, Route, Routes} from "react-router-dom"
 
 const UnauthRoutes: FC = () => {

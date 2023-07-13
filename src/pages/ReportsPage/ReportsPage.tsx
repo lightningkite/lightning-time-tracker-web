@@ -1,13 +1,16 @@
 import {TabContext, TabList, TabPanel} from "@mui/lab"
 import {Box, Container, Tab} from "@mui/material"
-import {Project, User, UserRole} from "api/sdk"
+import type {Project, User} from "api/sdk";
+import { UserRole} from "api/sdk"
 import PageHeader from "components/PageHeader"
 import {usePermissions} from "hooks/usePermissions"
-import React, {FC, useContext, useState} from "react"
+import type {FC} from "react";
+import React, { useContext, useState} from "react"
 import {AuthContext} from "utils/context"
 import {HoursByDateReport} from "./HoursByDateReport"
 import {HoursByProjectReport} from "./HoursByProjectReport"
-import {DateRange, DateRangeSelector} from "./ReportFilters"
+import type {DateRange} from "./ReportFilters";
+import { DateRangeSelector} from "./ReportFilters"
 import {RevenueReport} from "./RevenueReport"
 import {TimeEntriesReport} from "./TimeEntriesReport"
 

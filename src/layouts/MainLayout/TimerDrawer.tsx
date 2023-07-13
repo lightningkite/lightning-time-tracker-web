@@ -1,9 +1,10 @@
 import {MoreTime} from "@mui/icons-material"
 import {Box, Button, Drawer, Stack, Toolbar, Typography} from "@mui/material"
-import {Project} from "api/sdk"
+import type {Project} from "api/sdk"
 import Loading from "components/Loading"
 import {TimerItem} from "components/TimerItem"
-import React, {FC, useContext, useEffect, useState} from "react"
+import type {FC} from "react";
+import React, { useContext, useEffect, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
 
 export const TIMER_DRAWER_WIDTH = "25rem"

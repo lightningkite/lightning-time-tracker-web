@@ -1,11 +1,12 @@
 import {TabContext, TabList, TabPanel} from "@mui/lab"
 import {Card, CardContent, Container, Paper, Tab} from "@mui/material"
-import {Project} from "api/sdk"
+import type {Project} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import PageHeader from "components/PageHeader"
 import {usePermissions} from "hooks/usePermissions"
-import React, {FC, useContext, useEffect, useState} from "react"
+import type {FC} from "react";
+import React, { useContext, useEffect, useState} from "react"
 import {useParams} from "react-router-dom"
 import {AuthContext} from "utils/context"
 import {ProjectForm} from "./ProjectForm"
@@ -22,7 +23,7 @@ const ProjectDetail: FC = () => {
 
   useEffect(() => {
     session.project
-      .detail(projectId as string)
+      .detail(projectId!)
       .then(setProject)
       .catch(() => setProject(null))
   }, [projectId])

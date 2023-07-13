@@ -17,7 +17,7 @@ if (!import.meta.env.VITE_BACKEND_HTTP_URL)
 
 import.meta.env.DEV && console.log("Available ENV Variables", import.meta.env)
 
-const root = createRoot(document.getElementById("root") as HTMLElement)
+const root = createRoot(document.getElementById("root")!)
 
 root.render(
   <React.StrictMode>

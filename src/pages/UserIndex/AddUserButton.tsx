@@ -10,10 +10,11 @@ import {
   Stack,
   TextField
 } from "@mui/material"
-import {User} from "api/sdk"
+import type {User} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import {useFormik} from "formik"
-import React, {FC, useContext, useState} from "react"
+import type {FC} from "react";
+import React, { useContext, useState} from "react"
 import {AuthContext} from "utils/context"
 import * as yup from "yup"
 

@@ -1,12 +1,15 @@
-import {
-  RestDataTable,
+import type {
   RestDataTableProps
+} from "@lightningkite/mui-lightning-components";
+import {
+  RestDataTable
 } from "@lightningkite/mui-lightning-components"
-import {TimeEntry} from "api/sdk"
+import type {TimeEntry} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import relativeTime from "dayjs/plugin/relativeTime"
-import React, {FC, useContext, useState} from "react"
+import type {FC} from "react";
+import React, { useContext, useState} from "react"
 import {AuthContext} from "utils/context"
 import {dynamicFormatDate} from "utils/helpers"
 import {TimeEntryModal} from "./TimeEntryModal"

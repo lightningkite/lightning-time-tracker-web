@@ -12,10 +12,11 @@ import {
   Stack,
   Typography
 } from "@mui/material"
-import {Project, Task} from "api/sdk"
+import type {Project, Task} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
-import React, {FC, useContext, useEffect, useState} from "react"
+import type {FC} from "react";
+import React, { useContext, useEffect, useState} from "react"
 import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
 import {MILLISECONDS_PER_HOUR, formatDollars} from "utils/helpers"
@@ -23,7 +24,7 @@ import {
   filtersToProjectCondition,
   filtersToTimeEntryCondition
 } from "./ReportFilters"
-import {ReportProps} from "./ReportsPage"
+import type {ReportProps} from "./ReportsPage"
 import {Widgets} from "./Widgets"
 
 export type SummarizeByProject = Record<

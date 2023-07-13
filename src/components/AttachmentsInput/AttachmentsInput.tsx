@@ -11,7 +11,7 @@ import {
   ListItemText,
   Typography
 } from "@mui/material"
-import {Attachment} from "api/sdk"
+import type {Attachment} from "api/sdk"
 import React from "react"
 import {AttachmentUpload} from "./AttachmentUpload"
 

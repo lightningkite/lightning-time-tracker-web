@@ -1,5 +1,5 @@
 import {rand, randCompanyName, randPastDate, randUuid} from "@ngneat/falso"
-import {Organization, Project} from "api/sdk"
+import type {Organization, Project} from "api/sdk"
 
 export function generateProjects(
   totalPerOrganization: number,

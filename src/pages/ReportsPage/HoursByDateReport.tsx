@@ -1,9 +1,11 @@
 import {Aggregate} from "@lightningkite/lightning-server-simplified"
 import {Alert, Card} from "@mui/material"
-import {DataGrid, GridEnrichedColDef} from "@mui/x-data-grid"
-import {User} from "api/sdk"
+import type { GridEnrichedColDef} from "@mui/x-data-grid";
+import {DataGrid} from "@mui/x-data-grid"
+import type {User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
-import React, {FC, useContext, useEffect, useState} from "react"
+import type {FC} from "react";
+import React, { useContext, useEffect, useState} from "react"
 import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
 import {MILLISECONDS_PER_HOUR, makeUserTimeCondition} from "utils/helpers"
@@ -12,7 +14,7 @@ import {
   filtersToTimeEntryCondition,
   filtersToUserCondition
 } from "./ReportFilters"
-import {ReportProps} from "./ReportsPage"
+import type {ReportProps} from "./ReportsPage"
 
 interface HoursTableRow {
   user: User

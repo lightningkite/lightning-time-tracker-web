@@ -1,7 +1,8 @@
 import {useEffect, useState} from "react"
 import {LocalStorageKey} from "utils/constants"
 import {MockApi} from "./mockApi"
-import {Api, LiveApi, UserSession} from "./sdk"
+import type {Api} from "./sdk";
+import { LiveApi, UserSession} from "./sdk"
 
 interface UseSessionManagerReturn {
   api: Api

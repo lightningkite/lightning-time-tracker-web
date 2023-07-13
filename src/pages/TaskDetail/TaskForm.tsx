@@ -16,14 +16,16 @@ import {
   Stack,
   TextField
 } from "@mui/material"
-import {Project, Task, TaskState, User} from "api/sdk"
+import type {Project, Task, User} from "api/sdk";
+import { TaskState} from "api/sdk"
 import {AttachmentsInput} from "components/AttachmentsInput"
 import FormSection from "components/FormSection"
 import {LabeledInfo} from "components/LabeledInfo"
 import dayjs from "dayjs"
 import {useFormik} from "formik"
 import {usePermissions} from "hooks/usePermissions"
-import React, {FC, useContext, useEffect, useState} from "react"
+import type {FC} from "react";
+import React, { useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {
   dynamicFormatDate,

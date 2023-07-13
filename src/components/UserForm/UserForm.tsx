@@ -16,10 +16,12 @@ import {
   Stack,
   TextField
 } from "@mui/material"
-import {Project, User, UserRole} from "api/sdk"
+import type {Project, User} from "api/sdk";
+import { UserRole} from "api/sdk"
 import FormSection from "components/FormSection"
 import {useFormik} from "formik"
-import React, {FC, useContext, useEffect, useState} from "react"
+import type {FC} from "react";
+import React, { useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {camelCaseToTitleCase} from "utils/helpers"
 import * as yup from "yup"

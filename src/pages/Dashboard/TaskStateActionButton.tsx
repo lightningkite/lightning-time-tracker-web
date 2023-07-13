@@ -8,8 +8,9 @@ import {
   MenuItem
 } from "@mui/material"
 import {TaskState} from "api/sdk"
-import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
-import React, {FC, useContext, useState} from "react"
+import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
+import type {FC} from "react";
+import React, { useContext, useState} from "react"
 import {AuthContext} from "utils/context"
 
 interface TaskStateAction {

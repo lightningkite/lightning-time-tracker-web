@@ -1,5 +1,5 @@
 import {randUuid} from "@ngneat/falso"
-import {Organization} from "api/sdk"
+import type {Organization} from "api/sdk"
 
 export function generateOrganizations(total: number): Organization[] {
   return Array.from({length: total}, () => {

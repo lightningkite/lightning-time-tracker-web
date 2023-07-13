@@ -1,8 +1,9 @@
 import {ArrowDropDown} from "@mui/icons-material"
 import {Chip, Divider, Menu, MenuItem} from "@mui/material"
-import {Task, User} from "api/sdk"
+import type {Task, User} from "api/sdk"
 import dayjs from "dayjs"
-import React, {FC, useContext, useState} from "react"
+import type {FC} from "react";
+import React, { useContext, useState} from "react"
 import {AuthContext} from "utils/context"
 
 import duration from "dayjs/plugin/duration"

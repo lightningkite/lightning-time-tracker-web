@@ -1,9 +1,10 @@
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {Person, Warning} from "@mui/icons-material"
+import type {
+  LinearProgressProps} from "@mui/material";
 import {
   Box,
   LinearProgress,
-  LinearProgressProps,
   ListItem,
   ListItemButton,
   ListItemIcon,
@@ -13,13 +14,14 @@ import {
   useMediaQuery,
   useTheme
 } from "@mui/material"
-import {Task} from "api/sdk"
+import type {Task} from "api/sdk"
 import {TaskModal} from "components/TaskModal"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
-import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
+import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import {usePermissions} from "hooks/usePermissions"
-import React, {FC, useContext, useState} from "react"
+import type {FC} from "react";
+import React, { useContext, useState} from "react"
 import {AuthContext} from "utils/context"
 import {taskStateLabels} from "utils/helpers"
 import {TaskPlayActionButton} from "./TaskPlayActionButton"

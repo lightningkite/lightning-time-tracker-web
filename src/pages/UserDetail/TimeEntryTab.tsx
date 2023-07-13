@@ -1,8 +1,9 @@
-import {User} from "api/sdk"
+import type {User} from "api/sdk"
 import {AddTimeEntryButton} from "components/AddTimeEntryButton"
 import {TimeEntryTable} from "components/TimeEntryTable"
 import {usePermissions} from "hooks/usePermissions"
-import React, {FC, useState} from "react"
+import type {FC} from "react";
+import React, { useState} from "react"
 
 export interface TimeEntryTabProps {
   user: User

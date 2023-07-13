@@ -6,22 +6,25 @@ import {
   RestAutocompleteInput
 } from "@lightningkite/mui-lightning-components"
 import {Add} from "@mui/icons-material"
+import type {
+  ButtonProps,
+  SxProps} from "@mui/material";
 import {
   Button,
-  ButtonProps,
   Checkbox,
   FormControlLabel,
   Stack,
-  SxProps,
   TextField
 } from "@mui/material"
-import {Project, TaskState, User} from "api/sdk"
+import type {Project, User} from "api/sdk";
+import { TaskState} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import {useFormik} from "formik"
-import {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
+import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import {useFocus} from "hooks/useFocus"
 import {usePermissions} from "hooks/usePermissions"
-import React, {FC, useContext, useEffect, useState} from "react"
+import type {FC} from "react";
+import React, { useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import * as yup from "yup"
 
@@ -84,7 +87,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
         _id: crypto.randomUUID(),
         user: values.user?._id,
         userName: undefined,
-        project: (values.project as Project)._id,
+        project: (values.project!)._id,
         projectName: undefined,
         organization: currentUser.organization,
         organizationName: undefined,

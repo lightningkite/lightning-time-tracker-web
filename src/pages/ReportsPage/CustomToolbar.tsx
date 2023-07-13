@@ -1,6 +1,6 @@
 import {GridToolbarContainer, GridToolbarExport} from "@mui/x-data-grid"
 import React from "react"
-import {ReportFilterValues} from "./ReportsPage"
+import type {ReportFilterValues} from "./ReportsPage"
 
 export function CustomToolbar(props: {
   filters: ReportFilterValues

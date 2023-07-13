@@ -1,16 +1,17 @@
 import {Card} from "@mui/material"
 import {DataGrid} from "@mui/x-data-grid"
-import {TimeEntry} from "api/sdk"
+import type {TimeEntry} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
-import React, {FC, useContext, useEffect, useState} from "react"
+import type {FC} from "react";
+import React, { useContext, useEffect, useState} from "react"
 import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
 import {MILLISECONDS_PER_HOUR, dynamicFormatDate} from "utils/helpers"
 import {CustomToolbar} from "./CustomToolbar"
 import {filtersToTimeEntryCondition} from "./ReportFilters"
-import {ReportProps} from "./ReportsPage"
+import type {ReportProps} from "./ReportsPage"
 
 dayjs.extend(duration)
 

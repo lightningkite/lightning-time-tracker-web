@@ -1,9 +1,11 @@
-import {Aggregate, Condition} from "@lightningkite/lightning-server-simplified"
+import type { Condition} from "@lightningkite/lightning-server-simplified";
+import {Aggregate} from "@lightningkite/lightning-server-simplified"
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {Skeleton, Typography, useMediaQuery, useTheme} from "@mui/material"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
-import React, {FC, useContext, useEffect, useState} from "react"
+import type {FC} from "react";
+import React, { useContext, useEffect, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
 import {
   dateToISO,

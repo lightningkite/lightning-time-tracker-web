@@ -1,6 +1,7 @@
 import {useThrottle} from "@lightningkite/mui-lightning-components"
-import React, {FC, useEffect, useState} from "react"
-import {WebPreferences} from "./Settings"
+import type {FC} from "react";
+import React, { useEffect, useState} from "react"
+import type {WebPreferences} from "./Settings"
 
 export interface ColorPickerProps {
   preferences: WebPreferences

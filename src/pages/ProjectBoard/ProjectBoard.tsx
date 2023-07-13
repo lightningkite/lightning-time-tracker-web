@@ -1,13 +1,16 @@
 import {Container, Divider, Stack} from "@mui/material"
-import {Project, TaskState} from "api/sdk"
+import type {Project} from "api/sdk";
+import { TaskState} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
 import dayjs from "dayjs"
-import {AnnotatedTask, useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
+import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints";
+import { useAnnotatedEndpoints} from "hooks/useAnnotatedEndpoints"
 import usePeriodicRefresh from "hooks/usePeriodicRefresh"
 import {usePermissions} from "hooks/usePermissions"
+import type {
+  FC} from "react";
 import React, {
-  FC,
   useCallback,
   useContext,
   useEffect,

@@ -17,12 +17,12 @@
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@fontsource/roboto": "^5.0.4",
+    "@fontsource/roboto": "^5.0.5",
     "@lightningkite/lightning-server-simplified": "^1.0.1",
     "@lightningkite/mui-lightning-components": "^1.1.0",
-    "@mui/icons-material": "^5.13.7",
-    "@mui/lab": "^5.0.0-alpha.135",
-    "@mui/material": "^5.13.7",
+    "@mui/icons-material": "^5.14.0",
+    "@mui/lab": "^5.0.0-alpha.136",
+    "@mui/material": "^5.14.0",
     "@mui/x-data-grid": "^5.17.26",
     "@mui/x-date-pickers": "^5.0.20",
     "@ngneat/falso": "^6.4.0",
@@ -39,8 +39,8 @@
   "devDependencies": {
     "@types/node": "^18.16.19",
     "@types/react": "^18.2.14",
-    "@types/react-dom": "^18.2.6",
-    "@typescript-eslint/eslint-plugin": "^5.61.0",
+    "@types/react-dom": "^18.2.7",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@vitejs/plugin-react": "^3.1.0",
     "eslint": "^8.44.0",
     "eslint-config-prettier": "^8.8.0",
@@ -51,7 +51,7 @@
     "prettier-plugin-organize-imports": "^3.2.2",
     "tslib": "^2.6.0",
     "typescript": "^5.1.6",
-    "vite": "^4.4.2",
+    "vite": "^4.4.3",
     "vite-plugin-checker": "^0.6.1",
     "vite-tsconfig-paths": "^4.2.0"
   }

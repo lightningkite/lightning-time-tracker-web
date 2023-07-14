@@ -24,6 +24,7 @@ import {usePermissions} from "hooks/usePermissions"
 import type {FC} from "react"
 import React, {useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
+import {makeUserTaskCondition} from "utils/helpers"
 import * as yup from "yup"
 
 const validationSchema = yup.object().shape({
@@ -54,7 +55,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
     state: initialState,
     ...rest
   } = props
-  const {session, currentUser} = useContext(AuthContext)
+  const {session, currentUser, currentOrganization} = useContext(AuthContext)
   const permissions = usePermissions()
 
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -89,7 +90,9 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
         projectName: undefined,
         organization: currentUser.organization,
         organizationName: undefined,
-        state: initialState ?? TaskState.Active,
+        state:
+          initialState ??
+          (permissions.canManageAllTasks ? TaskState.Active : TaskState.Hold),
         attachments: [],
         estimate: values.estimate ? +values.estimate : null,
         createdAt: new Date().toISOString(),
@@ -133,15 +136,19 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
         }}
       >
         <Stack gap={3}>
-          {!initialUser && (
+          {!initialUser && permissions.canManageAllTasks && (
             <RestAutocompleteInput
               label="User"
               restEndpoint={session.user}
               getOptionLabel={(user) => user.name || user.email}
               searchProperties={["name", "email"]}
               additionalQueryConditions={[
-                {organization: {Equal: currentUser.organization}}
+                makeUserTaskCondition({
+                  organization: currentOrganization._id,
+                  project: formik.values.project?._id
+                })
               ]}
+              dependencies={[formik.values.project]}
               {...makeFormikAutocompleteProps(formik, "user")}
             />
           )}
@@ -171,10 +178,12 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
             {...makeFormikTextFieldProps(formik, "description")}
           />
 
-          <TextField
-            label="Estimate (hours)"
-            {...makeFormikNumericTextFieldProps(formik, "estimate")}
-          />
+          {permissions.canManageAllTasks && (
+            <TextField
+              label="Estimate (hours)"
+              {...makeFormikNumericTextFieldProps(formik, "estimate")}
+            />
+          )}
 
           <FormControlLabel
             control={

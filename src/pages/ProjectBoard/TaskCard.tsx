@@ -6,6 +6,7 @@ import {
   Stack,
   Typography
 } from "@mui/material"
+import {TaskState} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
@@ -55,7 +56,8 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
       key={task._id}
       ref={
         permissions.canManageAllTasks ||
-        (task.user === currentUser._id && permissions.canBeAssignedTasks)
+        (task.user === currentUser._id && permissions.canBeAssignedTasks) ||
+        (task.state === TaskState.Approved && permissions.canDeliverTasks)
           ? drag
           : undefined
       }

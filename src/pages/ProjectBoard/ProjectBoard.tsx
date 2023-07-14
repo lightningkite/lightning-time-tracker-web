@@ -190,7 +190,7 @@ export const ProjectBoard: FC = () => {
               />
             ))}
 
-          {permissions.canManageAllTasks && (
+          {(permissions.canManageAllTasks || permissions.canDeliverTasks) && (
             <CompactColumn
               handleDrop={handleDrop}
               taskState={TaskState.Delivered}

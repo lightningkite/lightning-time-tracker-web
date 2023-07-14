@@ -198,7 +198,7 @@ export function getContrastingColor(hex: string): "black" | "white" {
 }
 
 export function makeUserTaskCondition(params: {
-  project: string
+  project: string | undefined
   organization: string
 }): Condition<User> {
   return {
@@ -216,9 +216,9 @@ export function makeUserTaskCondition(params: {
             }
           },
           {
-            limitToProjects: {
-              IfNotNull: {SetAnyElements: {Equal: params.project}}
-            }
+            limitToProjects: params.project
+              ? {IfNotNull: {SetAnyElements: {Equal: params.project}}}
+              : {Always: true}
           }
         ]
       }

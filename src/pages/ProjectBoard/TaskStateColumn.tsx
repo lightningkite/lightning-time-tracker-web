@@ -31,7 +31,9 @@ export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
   const [selectedTask, setSelectedTask] = useState<AnnotatedTask | null>(null)
 
   const [{isOver, canDrop}, drop] = useDrop({
-    accept: Object.values(TaskState).filter((s) => s !== state),
+    accept: permissions.canManageAllTasks
+      ? Object.values(TaskState).filter((s) => s !== state)
+      : [],
     drop: (task) => handleDrop(task as AnnotatedTask, state),
     collect: (monitor) => ({
       isOver: monitor.isOver(),

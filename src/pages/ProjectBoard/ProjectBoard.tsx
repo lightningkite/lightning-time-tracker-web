@@ -145,7 +145,7 @@ export const ProjectBoard: FC = () => {
   if (state.status === "error") return <ErrorAlert>{state.message}</ErrorAlert>
 
   return (
-    <Container maxWidth="xl" disableGutters>
+    <Container sx={{maxWidth: "2500px !important"}} disableGutters>
       <ProjectSwitcher
         projects={state.projects}
         selected={state.selected}

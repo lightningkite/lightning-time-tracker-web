@@ -117,7 +117,7 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
         startIcon={<Add />}
         sx={sx}
       >
-        Add Time Entry
+        Record Time Entry
       </Button>
 
       <DialogForm

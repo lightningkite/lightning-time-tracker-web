@@ -106,6 +106,14 @@ export const ProjectsTasks: FC = () => {
     return <ErrorAlert>Error loading tasks</ErrorAlert>
   }
 
+  if (annotatedTasks.length === 0) {
+    return (
+      <Typography my={5} fontStyle="italic" textAlign="center">
+        You have no active tasks!
+      </Typography>
+    )
+  }
+
   return (
     <Box>
       {Object.entries(tasksByProject)

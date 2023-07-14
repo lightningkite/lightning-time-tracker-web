@@ -32,6 +32,7 @@ export const ProjectIndex: FC = () => {
         onRowClick={(project) => navigate(`/projects/${project._id}`)}
         searchFields={["name"]}
         dependencies={[refreshTrigger]}
+        defaultSorting={[{field: "name", sort: "asc"}]}
         columns={[
           {field: "name", headerName: "Name", flex: 1},
           {

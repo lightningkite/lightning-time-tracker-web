@@ -56,7 +56,7 @@ const EnterEmail: FC<EnterEmailProps> = (props) => {
       }}
     >
       <Typography variant="h1" textAlign="center">
-        Lightning Tracker
+        Lightning Time
       </Typography>
       <Typography variant="subtitle1" lineHeight={1.2} mt={3}>
         We&apos;ll send you a code to sign in and get started!

@@ -7,7 +7,7 @@ import type {FC} from "react"
 import React, {useContext, useEffect, useState} from "react"
 import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
-import {MILLISECONDS_PER_HOUR, dateToISO, formatDollars} from "utils/helpers"
+import {MILLISECONDS_PER_HOUR, dayjsToISO, formatDollars} from "utils/helpers"
 import {filtersToTimeEntryCondition} from "./ReportFilters"
 import type {ReportProps} from "./ReportsPage"
 import {WidgetLayout} from "./WidgetLayout"
@@ -56,15 +56,7 @@ export const Widgets: FC<ReportProps> = (props) => {
       condition: {
         And: [
           timeEntryCondition,
-          ...(dateRange
-            ? [
-                {
-                  date: {
-                    LessThan: dateToISO(dateRange.end.toDate())
-                  }
-                }
-              ]
-            : [])
+          ...(dateRange ? [{date: {LessThan: dayjsToISO(dateRange.end)}}] : [])
         ]
       },
       groupBy: "project",

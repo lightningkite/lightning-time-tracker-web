@@ -5,9 +5,11 @@ import type {Dayjs} from "dayjs"
 import dayjs from "dayjs"
 import type {Duration} from "dayjs/plugin/duration"
 import duration from "dayjs/plugin/duration"
+import utc from "dayjs/plugin/utc"
 import type {WebPreferences} from "pages/Settings/Settings"
 
 dayjs.extend(duration)
+dayjs.extend(utc)
 
 export const MILLISECONDS_PER_HOUR = 1000 * 60 * 60
 
@@ -24,6 +26,31 @@ export function camelCaseToTitleCase(str: string) {
   return str.replace(/([A-Z])/g, " $1").replace(/^./, function (str) {
     return str.toUpperCase()
   })
+}
+
+/**
+ * Converts a Dayjs to an ISO string.
+ * This function corrects for timezones. Do not use `date.toISOString()`.
+ */
+export function dayjsToISO(date: Dayjs): string {
+  const isoString = dayjs(
+    date.valueOf() - date.utcOffset() * 60000
+  ).toISOString()
+
+  return isoString.split("T")[0]
+}
+
+/**
+ * Converts an ISO string to a Dayjs.
+ * This function corrects for timezones. Do not use `new Date(dateString)`.
+ */
+export function dayjsFromISO(dateString: string): Dayjs {
+  if (dateString.includes("T")) {
+    return dayjs(dateString)
+  } else {
+    const [year, month, day] = dateString.split("-")
+    return dayjs(`${year}-${month}-${day}T00:00:00.000${dayjs().format("Z")}`)
+  }
 }
 
 /**

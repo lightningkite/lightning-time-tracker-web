@@ -9,7 +9,7 @@ import {usePermissions} from "hooks/usePermissions"
 import type {FC} from "react"
 import {useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext} from "utils/context"
-import {dateToISO} from "utils/helpers"
+import {dayjsToISO} from "utils/helpers"
 import type {ReportFilterValues} from "./ReportsPage"
 
 export interface DateRange {
@@ -224,13 +224,13 @@ export function filtersToTimeEntryCondition(
   if (dateRange) {
     conditions.push({
       date: {
-        LessThanOrEqual: dateToISO(dateRange.end.toDate())
+        LessThanOrEqual: dayjsToISO(dateRange.end)
       }
     })
 
     conditions.push({
       date: {
-        GreaterThanOrEqual: dateToISO(dateRange.start.toDate())
+        GreaterThanOrEqual: dayjsToISO(dateRange.start)
       }
     })
   }

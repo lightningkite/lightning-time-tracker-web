@@ -11,13 +11,14 @@ import type {Project, Task, TimeEntry} from "api/sdk"
 import {TaskState} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import Loading from "components/Loading"
+import type {Dayjs} from "dayjs"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import {useFormik} from "formik"
 import type {FC} from "react"
 import {useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
-import {dateFromISO, dateToISO, stringToDuration} from "utils/helpers"
+import {dayjsFromISO, dayjsToISO, stringToDuration} from "utils/helpers"
 import * as yup from "yup"
 
 dayjs.extend(duration)
@@ -52,7 +53,7 @@ export const TimeEntryModal: FC<TimeEntryModalProps> = (props) => {
       project: null as Project | null,
       summary: "",
       durationMilliseconds: "",
-      date: null as Date | null
+      date: null as Dayjs | null
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -63,7 +64,7 @@ export const TimeEntryModal: FC<TimeEntryModalProps> = (props) => {
         durationMilliseconds: stringToDuration(
           values.durationMilliseconds
         )!.asMilliseconds(),
-        date: dateToISO(values.date!)
+        date: dayjsToISO(values.date!)
       }
 
       const modification = makeObjectModification(timeEntry, formattedValues)
@@ -98,7 +99,7 @@ export const TimeEntryModal: FC<TimeEntryModalProps> = (props) => {
           durationMilliseconds: dayjs
             .duration(timeEntry.durationMilliseconds, "milliseconds")
             .format("HH:mm:ss"),
-          date: dateFromISO(timeEntry.date)
+          date: dayjsFromISO(timeEntry.date)
         })
         setLoadedInitialAsyncValues(true)
       })

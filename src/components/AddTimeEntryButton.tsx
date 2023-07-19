@@ -1,7 +1,6 @@
 import {
   makeFormikAutocompleteProps,
   makeFormikDatePickerProps,
-  makeFormikDateTimePickerProps,
   makeFormikTextFieldProps,
   RestAutocompleteInput
 } from "@lightningkite/mui-lightning-components"
@@ -19,7 +18,7 @@ import {usePermissions} from "hooks/usePermissions"
 import type {FC} from "react"
 import {useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
-import {dateToISO, stringToDuration} from "utils/helpers"
+import {dayjsToISO, stringToDuration} from "utils/helpers"
 import * as yup from "yup"
 
 dayjs.extend(duration)
@@ -81,7 +80,7 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
       project: initialProject ?? null,
       summary: "",
       duration: "",
-      date: new Date()
+      date: dayjs()
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -93,7 +92,7 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
         durationMilliseconds: stringToDuration(
           values.duration
         )!.asMilliseconds(),
-        date: dateToISO(values.date),
+        date: dayjsToISO(values.date),
         user: values.user._id,
         taskSummary: undefined,
         projectName: undefined,

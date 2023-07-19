@@ -9,6 +9,7 @@ import React, {useContext, useEffect, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
 import {
   dateToISO,
+  dayjsToISO,
   formatLongDuration,
   getTimerSeconds,
   parsePreferences
@@ -75,7 +76,7 @@ export const SummaryTime: FC = () => {
       preferences.summaryTime === "day"
         ? {Equal: dateToISO(new Date())}
         : {
-            GreaterThanOrEqual: dateToISO(dayjs().startOf("week").toDate())
+            GreaterThanOrEqual: dayjsToISO(dayjs().startOf("week"))
           }
 
     session.timeEntry

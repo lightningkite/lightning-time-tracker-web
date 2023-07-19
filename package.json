@@ -1,5 +1,5 @@
 {
-  "name": "lk-react-starter",
+  "name": "new-lk-tracker",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -19,7 +19,8 @@
     "@emotion/styled": "^11.11.0",
     "@fontsource/roboto": "^5.0.5",
     "@lightningkite/lightning-server-simplified": "^1.0.1",
-    "@lightningkite/mui-lightning-components": "^1.2.0-beta.1",
+    "@lightningkite/mui-lightning-components": "^1.2.0-beta.2",
+    "@lightningkite/react-lightning-helpers": "^1.0.0-beta.0",
     "@mui/icons-material": "^5.14.1",
     "@mui/lab": "^5.0.0-alpha.137",
     "@mui/material": "^5.14.1",

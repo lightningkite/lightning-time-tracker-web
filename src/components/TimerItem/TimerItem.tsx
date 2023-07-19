@@ -1,4 +1,4 @@
-import {HoverHelp, useThrottle} from "@lightningkite/mui-lightning-components"
+import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {DeleteOutline, Pause, PlayArrow, UnfoldLess} from "@mui/icons-material"
 import {
   Autocomplete,
@@ -24,6 +24,7 @@ import React, {
 import {AuthContext, TimerContext} from "utils/context"
 import {ContentCollapsed} from "./ContentCollapsed"
 import HmsInputGroup from "./hmsInputGroup"
+import { useThrottle } from "@lightningkite/react-lightning-helpers"
 
 export interface TimerItemProps {
   timer: Timer

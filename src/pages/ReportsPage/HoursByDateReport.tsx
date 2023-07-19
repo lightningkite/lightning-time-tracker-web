@@ -1,6 +1,6 @@
 import {Aggregate} from "@lightningkite/lightning-server-simplified"
 import {Alert, Card} from "@mui/material"
-import type {GridEnrichedColDef} from "@mui/x-data-grid"
+import type {GridColDef} from "@mui/x-data-grid"
 import {DataGrid} from "@mui/x-data-grid"
 import type {User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
@@ -94,7 +94,7 @@ export const HoursByDateReport: FC<ReportProps> = (props) => {
       <DataGrid
         autoHeight
         loading={!users || !tableData}
-        disableSelectionOnClick
+        disableRowSelectionOnClick
         disableColumnMenu
         columns={[
           {
@@ -121,7 +121,7 @@ export const HoursByDateReport: FC<ReportProps> = (props) => {
             (_, i) => {
               const date = dateRange.start.add(i, "day")
 
-              const column: GridEnrichedColDef<HoursTableRow> = {
+              const column: GridColDef<HoursTableRow> = {
                 field: date.format("YYYY-MM-DD"),
                 headerName: date.format("MMM D"),
                 minWidth: 80,

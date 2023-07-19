@@ -52,7 +52,7 @@ export const TimeEntriesReport: FC<ReportProps> = (props) => {
       <DataGrid
         autoHeight
         loading={!tableData}
-        disableSelectionOnClick
+        disableRowSelectionOnClick
         disableColumnMenu
         columns={[
           {

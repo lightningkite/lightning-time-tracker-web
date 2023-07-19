@@ -1,6 +1,6 @@
 import {Aggregate} from "@lightningkite/lightning-server-simplified"
 import {Card} from "@mui/material"
-import type {GridEnrichedColDef} from "@mui/x-data-grid"
+import type {GridColDef} from "@mui/x-data-grid"
 import {DataGrid} from "@mui/x-data-grid"
 import type {Project, User} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
@@ -107,7 +107,7 @@ export const HoursByProjectReport: FC<ReportProps> = (props) => {
       <DataGrid
         autoHeight
         loading={!users || !tableData || !projects}
-        disableSelectionOnClick
+        disableRowSelectionOnClick
         disableColumnMenu
         columns={[
           {
@@ -135,7 +135,7 @@ export const HoursByProjectReport: FC<ReportProps> = (props) => {
                 (a, b) => (msByProject[b._id] ?? 0) - (msByProject[a._id] ?? 0)
               )
           ).map((project) => {
-            const column: GridEnrichedColDef<HoursTableRow> = {
+            const column: GridColDef<HoursTableRow> = {
               field: project._id,
               headerName: project.name,
               minWidth: Math.min(200, project.name.length * 7 + 50),

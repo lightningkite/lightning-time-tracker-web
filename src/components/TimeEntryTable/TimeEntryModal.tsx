@@ -1,7 +1,7 @@
 import {makeObjectModification} from "@lightningkite/lightning-server-simplified"
 import {
   makeFormikAutocompleteProps,
-  makeFormikDateTimePickerProps,
+  makeFormikDatePickerProps,
   makeFormikTextFieldProps,
   RestAutocompleteInput
 } from "@lightningkite/mui-lightning-components"
@@ -149,7 +149,7 @@ export const TimeEntryModal: FC<TimeEntryModalProps> = (props) => {
 
           <DatePicker
             label="Date"
-            {...makeFormikDateTimePickerProps(formik, "date")}
+            {...makeFormikDatePickerProps(formik, "date")}
             maxDate={dayjs()}
           />
 

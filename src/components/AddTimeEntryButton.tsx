@@ -1,5 +1,6 @@
 import {
   makeFormikAutocompleteProps,
+  makeFormikDatePickerProps,
   makeFormikDateTimePickerProps,
   makeFormikTextFieldProps,
   RestAutocompleteInput
@@ -178,7 +179,7 @@ export const AddTimeEntryButton: FC<AddTimeEntryButtonProps> = (props) => {
 
           <DatePicker
             label="Date"
-            {...makeFormikDateTimePickerProps(formik, "date")}
+            {...makeFormikDatePickerProps(formik, "date")}
             minDate={dayjs().subtract(1, "month")}
             maxDate={dayjs()}
           />

@@ -7,11 +7,12 @@ import type {FC} from "react"
 import React, {useContext, useEffect, useState} from "react"
 import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
-import {MILLISECONDS_PER_HOUR, dayjsToISO, formatDollars} from "utils/helpers"
+import {MILLISECONDS_PER_HOUR, formatDollars} from "utils/helpers"
 import {filtersToTimeEntryCondition} from "./ReportFilters"
 import type {ReportProps} from "./ReportsPage"
 import {WidgetLayout} from "./WidgetLayout"
 import {projectedRevenue} from "./widgetHelpers"
+import {dayjsToISO} from "@lightningkite/react-lightning-helpers"
 
 export const Widgets: FC<ReportProps> = (props) => {
   const {reportFilterValues} = props

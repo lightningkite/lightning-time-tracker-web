@@ -9,8 +9,8 @@ import {usePermissions} from "hooks/usePermissions"
 import type {FC} from "react"
 import {useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext} from "utils/context"
-import {dayjsToISO} from "utils/helpers"
 import type {ReportFilterValues} from "./ReportsPage"
+import {dayjsToISO} from "@lightningkite/react-lightning-helpers"
 
 export interface DateRange {
   start: Dayjs

@@ -5,6 +5,7 @@ import {
   makeFormikTextFieldProps,
   RestAutocompleteInput
 } from "@lightningkite/mui-lightning-components"
+import {dayjsToISO, dayjsFromISO} from "@lightningkite/react-lightning-helpers"
 import {Stack, TextField} from "@mui/material"
 import {DatePicker} from "@mui/x-date-pickers"
 import type {Project, Task, TimeEntry} from "api/sdk"
@@ -18,7 +19,7 @@ import {useFormik} from "formik"
 import type {FC} from "react"
 import {useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
-import {dayjsFromISO, dayjsToISO, stringToDuration} from "utils/helpers"
+import {stringToDuration} from "utils/helpers"
 import * as yup from "yup"
 
 dayjs.extend(duration)

@@ -24,7 +24,7 @@ import React, {
 import {AuthContext, TimerContext} from "utils/context"
 import {ContentCollapsed} from "./ContentCollapsed"
 import HmsInputGroup from "./hmsInputGroup"
-import { useThrottle } from "@lightningkite/react-lightning-helpers"
+import {useThrottle} from "@lightningkite/react-lightning-helpers"
 
 export interface TimerItemProps {
   timer: Timer

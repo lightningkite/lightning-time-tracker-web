@@ -60,7 +60,8 @@ export const TimeEntriesReport: FC<ReportProps> = (props) => {
             headerName: "Date",
             type: "date",
             width: 130,
-            renderCell: ({value}) => dynamicFormatDate(dayjs(value))
+            renderCell: ({value}) => dynamicFormatDate(dayjs(value)),
+            valueGetter: ({value}) => new Date(value)
           },
           {
             field: "userName",

@@ -12,6 +12,7 @@ import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import type {FC} from "react"
 import React, {useContext, useState} from "react"
 import {AuthContext} from "utils/context"
+import { taskStateLabels } from "utils/helpers"
 
 interface TaskStateAction {
   label: string
@@ -20,27 +21,27 @@ interface TaskStateAction {
 
 const actions: Record<
   TaskState,
-  {back: TaskStateAction | null; next: TaskStateAction | null}
+  {back: TaskStateAction | null; next: TaskStateAction[] | null}
 > = {
   [TaskState.Hold]: {
     back: null,
-    next: {label: "Set Active", nextState: TaskState.Active}
+    next: [{label: "Set Active", nextState: TaskState.Active}]
   },
   [TaskState.Active]: {
     back: {label: "Hold", nextState: TaskState.Hold},
-    next: {label: "Pull Request", nextState: TaskState.PullRequest}
+    next: [{label: "Pull Request", nextState: TaskState.PullRequest}, {label: "Ready to Test", nextState: TaskState.Testing}]
   },
   [TaskState.PullRequest]: {
     back: {label: "Needs Development", nextState: TaskState.Active},
-    next: {label: "Ready to Test", nextState: TaskState.Testing}
+    next: [{label: "Ready to Test", nextState: TaskState.Testing}]
   },
   [TaskState.Testing]: {
     back: {label: "Needs Development", nextState: TaskState.Active},
-    next: {label: "Approved", nextState: TaskState.Approved}
+    next: [{label: "Approved", nextState: TaskState.Approved}]
   },
   [TaskState.Approved]: {
     back: null,
-    next: {label: "Delivered", nextState: TaskState.Delivered}
+    next: [{label: "Delivered", nextState: TaskState.Delivered}]
   },
   [TaskState.Delivered]: {
     back: null,
@@ -106,7 +107,7 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
       )}
 
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-        {next && (
+        {next?.map((next) => (
           <MenuItem
             onClick={() => {
               changeTaskStatus(next.nextState)
@@ -117,7 +118,7 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
             </ListItemIcon>
             {next.label}
           </MenuItem>
-        )}
+        ))}
 
         {back && (
           <MenuItem

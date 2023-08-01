@@ -11,13 +11,22 @@ import {
   TextField,
   Typography
 } from "@mui/material"
-import {TaskState} from "api/sdk"
-import DialogForm from "components/DialogForm"
+import {Task, TaskState} from "api/sdk"
+import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
+import {useFormik} from "formik"
 import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import type {FC} from "react"
 import React, {useContext, useState} from "react"
 import {AuthContext} from "utils/context"
-import {taskStateLabels} from "utils/helpers"
+import * as yup from "yup"
+import {
+  makeFormikNumericTextFieldProps,
+  makeFormikTextFieldProps
+} from "@lightningkite/mui-lightning-components"
+import {
+  Modification,
+  makeObjectModification
+} from "@lightningkite/lightning-server-simplified"
 
 const style = {
   position: "absolute" as "absolute",
@@ -78,6 +87,10 @@ export interface TaskStateActionButtonProps {
   refreshDashboard: () => Promise<void>
 }
 
+const validationSchema = yup.object().shape({
+  url: yup.string().required("Required")
+})
+
 export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
   props
 ) => {
@@ -87,7 +100,10 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [isChangingState, setIsChangingState] = useState(false)
   const [modalIsOpen, setModalIsOpen] = useState(false)
-  const handleModalClose = () => setModalIsOpen(false)
+  const handleModalClose = () => {
+    setModalIsOpen(false)
+    formik.resetForm()
+  }
 
   const open = !!anchorEl
 
@@ -102,6 +118,7 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
     handleClose()
     if (nextState === TaskState.PullRequest) {
       setModalIsOpen(true)
+      return
     }
     setIsChangingState(true)
     const updatedTask = await session.task
@@ -113,6 +130,22 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
     }
     setIsChangingState(false)
   }
+  const formik = useFormik({
+    initialValues: {
+      url: ""
+    },
+    validationSchema,
+    onSubmit: async (values) => {
+      const task: Partial<Task> = {
+        pullRequestLink: values.url,
+        state: TaskState.PullRequest
+      }
+      const modification = makeObjectModification(annotatedTask, task)
+      await session.task.modify(annotatedTask._id, modification)
+      await refreshDashboard()
+      handleModalClose()
+    }
+  })
 
   return (
     <>
@@ -121,14 +154,18 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
         open={modalIsOpen}
         onClose={handleModalClose}
         onSubmit={async () => {
-          console.log("submit")
-          // await formik.submitForm()
-          // if (shouldPreventSubmission(formik)) {
-          //   throw new Error("Please fix the errors above.")
-          // }
+          await formik.submitForm()
+          if (shouldPreventSubmission(formik)) {
+            throw new Error("Please fix the errors above.")
+          }
         }}
       >
-        <TextField label="URL" placeholder="Put Pull Request URL here" />
+        <TextField
+          label="URL"
+          placeholder="Put Pull Request URL here"
+          fullWidth
+          {...makeFormikTextFieldProps(formik, "url")}
+        />
       </DialogForm>
       {isChangingState ? (
         <IconButton disabled>

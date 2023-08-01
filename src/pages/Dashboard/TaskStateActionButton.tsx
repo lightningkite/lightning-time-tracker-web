@@ -1,18 +1,35 @@
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {CheckCircle, Done, Undo} from "@mui/icons-material"
 import {
+  Box,
   CircularProgress,
   IconButton,
   ListItemIcon,
   Menu,
-  MenuItem
+  MenuItem,
+  Modal,
+  TextField,
+  Typography
 } from "@mui/material"
 import {TaskState} from "api/sdk"
+import DialogForm from "components/DialogForm"
 import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import type {FC} from "react"
 import React, {useContext, useState} from "react"
 import {AuthContext} from "utils/context"
-import { taskStateLabels } from "utils/helpers"
+import {taskStateLabels} from "utils/helpers"
+
+const style = {
+  position: "absolute" as "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "background.paper",
+  border: "2px solid #000",
+  boxShadow: 24,
+  p: 4
+}
 
 interface TaskStateAction {
   label: string
@@ -29,7 +46,10 @@ const actions: Record<
   },
   [TaskState.Active]: {
     back: {label: "Hold", nextState: TaskState.Hold},
-    next: [{label: "Pull Request", nextState: TaskState.PullRequest}, {label: "Ready to Test", nextState: TaskState.Testing}]
+    next: [
+      {label: "Pull Request", nextState: TaskState.PullRequest},
+      {label: "Ready to Test", nextState: TaskState.Testing}
+    ]
   },
   [TaskState.PullRequest]: {
     back: {label: "Needs Development", nextState: TaskState.Active},
@@ -66,6 +86,8 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [isChangingState, setIsChangingState] = useState(false)
+  const [modalIsOpen, setModalIsOpen] = useState(false)
+  const handleModalClose = () => setModalIsOpen(false)
 
   const open = !!anchorEl
 
@@ -78,6 +100,9 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
 
   const changeTaskStatus = async (nextState: TaskState) => {
     handleClose()
+    if (nextState === TaskState.PullRequest) {
+      setModalIsOpen(true)
+    }
     setIsChangingState(true)
     const updatedTask = await session.task
       .modify(annotatedTask._id, {state: {Assign: nextState}})
@@ -91,6 +116,20 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
 
   return (
     <>
+      <DialogForm
+        title="Submit Pull Request URL"
+        open={modalIsOpen}
+        onClose={handleModalClose}
+        onSubmit={async () => {
+          console.log("submit")
+          // await formik.submitForm()
+          // if (shouldPreventSubmission(formik)) {
+          //   throw new Error("Please fix the errors above.")
+          // }
+        }}
+      >
+        <TextField label="URL" placeholder="Put Pull Request URL here" />
+      </DialogForm>
       {isChangingState ? (
         <IconButton disabled>
           <CircularProgress size={20} />

@@ -1,17 +1,44 @@
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {CheckCircle, Done, Undo} from "@mui/icons-material"
 import {
+  Box,
   CircularProgress,
   IconButton,
   ListItemIcon,
   Menu,
-  MenuItem
+  MenuItem,
+  Modal,
+  TextField,
+  Typography
 } from "@mui/material"
-import {TaskState} from "api/sdk"
+import {Task, TaskState} from "api/sdk"
+import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
+import {useFormik} from "formik"
 import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import type {FC} from "react"
 import React, {useContext, useState} from "react"
 import {AuthContext} from "utils/context"
+import * as yup from "yup"
+import {
+  makeFormikNumericTextFieldProps,
+  makeFormikTextFieldProps
+} from "@lightningkite/mui-lightning-components"
+import {
+  Modification,
+  makeObjectModification
+} from "@lightningkite/lightning-server-simplified"
+
+const style = {
+  position: "absolute" as "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "background.paper",
+  border: "2px solid #000",
+  boxShadow: 24,
+  p: 4
+}
 
 interface TaskStateAction {
   label: string
@@ -20,27 +47,30 @@ interface TaskStateAction {
 
 const actions: Record<
   TaskState,
-  {back: TaskStateAction | null; next: TaskStateAction | null}
+  {back: TaskStateAction | null; next: TaskStateAction[] | null}
 > = {
   [TaskState.Hold]: {
     back: null,
-    next: {label: "Set Active", nextState: TaskState.Active}
+    next: [{label: "Set Active", nextState: TaskState.Active}]
   },
   [TaskState.Active]: {
     back: {label: "Hold", nextState: TaskState.Hold},
-    next: {label: "Pull Request", nextState: TaskState.PullRequest}
+    next: [
+      {label: "Pull Request", nextState: TaskState.PullRequest},
+      {label: "Ready to Test", nextState: TaskState.Testing}
+    ]
   },
   [TaskState.PullRequest]: {
     back: {label: "Needs Development", nextState: TaskState.Active},
-    next: {label: "Ready to Test", nextState: TaskState.Testing}
+    next: [{label: "Ready to Test", nextState: TaskState.Testing}]
   },
   [TaskState.Testing]: {
     back: {label: "Needs Development", nextState: TaskState.Active},
-    next: {label: "Approved", nextState: TaskState.Approved}
+    next: [{label: "Approved", nextState: TaskState.Approved}]
   },
   [TaskState.Approved]: {
     back: null,
-    next: {label: "Delivered", nextState: TaskState.Delivered}
+    next: [{label: "Delivered", nextState: TaskState.Delivered}]
   },
   [TaskState.Delivered]: {
     back: null,
@@ -57,6 +87,10 @@ export interface TaskStateActionButtonProps {
   refreshDashboard: () => Promise<void>
 }
 
+const validationSchema = yup.object().shape({
+  url: yup.string().required("Required")
+})
+
 export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
   props
 ) => {
@@ -65,6 +99,11 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [isChangingState, setIsChangingState] = useState(false)
+  const [modalIsOpen, setModalIsOpen] = useState(false)
+  const handleModalClose = () => {
+    setModalIsOpen(false)
+    formik.resetForm()
+  }
 
   const open = !!anchorEl
 
@@ -77,6 +116,10 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
 
   const changeTaskStatus = async (nextState: TaskState) => {
     handleClose()
+    if (nextState === TaskState.PullRequest) {
+      setModalIsOpen(true)
+      return
+    }
     setIsChangingState(true)
     const updatedTask = await session.task
       .modify(annotatedTask._id, {state: {Assign: nextState}})
@@ -87,9 +130,43 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
     }
     setIsChangingState(false)
   }
+  const formik = useFormik({
+    initialValues: {
+      url: ""
+    },
+    validationSchema,
+    onSubmit: async (values) => {
+      const task: Partial<Task> = {
+        pullRequestLink: values.url,
+        state: TaskState.PullRequest
+      }
+      const modification = makeObjectModification(annotatedTask, task)
+      await session.task.modify(annotatedTask._id, modification)
+      await refreshDashboard()
+      handleModalClose()
+    }
+  })
 
   return (
     <>
+      <DialogForm
+        title="Submit Pull Request URL"
+        open={modalIsOpen}
+        onClose={handleModalClose}
+        onSubmit={async () => {
+          await formik.submitForm()
+          if (shouldPreventSubmission(formik)) {
+            throw new Error("Please fix the errors above.")
+          }
+        }}
+      >
+        <TextField
+          label="URL"
+          placeholder="Put Pull Request URL here"
+          fullWidth
+          {...makeFormikTextFieldProps(formik, "url")}
+        />
+      </DialogForm>
       {isChangingState ? (
         <IconButton disabled>
           <CircularProgress size={20} />
@@ -106,7 +183,7 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
       )}
 
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-        {next && (
+        {next?.map((next) => (
           <MenuItem
             onClick={() => {
               changeTaskStatus(next.nextState)
@@ -117,7 +194,7 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
             </ListItemIcon>
             {next.label}
           </MenuItem>
-        )}
+        ))}
 
         {back && (
           <MenuItem

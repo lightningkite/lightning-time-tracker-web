@@ -39,7 +39,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
 
   const [summary, setSummary] = useState(timer.summary)
   const [expanded, setExpanded] = useState(!timer.project || !timer.task)
-  const [sortedTaskOptions, setSortedTaskOptions] = useState<Task[]>()
+  const [sortedTaskOptions, setSortedTaskOptions] = useState<Task[]>([])
   const [isCreatingNewTask, setIsCreatingNewTask] = useState(false)
 
   const throttledSummary = useThrottle(summary, 1000)
@@ -65,8 +65,6 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
       setSortedTaskOptions([])
       return
     }
-
-    setSortedTaskOptions(undefined)
 
     session.task
       .query({
@@ -131,7 +129,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
         })
         .then((task) => {
           setSortedTaskOptions((tasks) =>
-            tasks ? [task, ...tasks] : undefined
+            tasks ? [task, ...tasks] : []
           )
           updateTimer(timer._id, {task: task._id})
         })

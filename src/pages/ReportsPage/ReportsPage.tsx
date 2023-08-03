@@ -10,7 +10,7 @@ import {AuthContext} from "utils/context"
 import {HoursByDateReport} from "./HoursByDateReport"
 import {HoursByProjectReport} from "./HoursByProjectReport"
 import type {DateRange} from "./ReportFilters"
-import {DateRangeSelector} from "./ReportFilters"
+import ReportFilters from "./ReportFilters"
 import {RevenueReport} from "./RevenueReport"
 import {TimeEntriesReport} from "./TimeEntriesReport"
 
@@ -48,7 +48,7 @@ const ReportsPage: FC = () => {
     <Container maxWidth="xl">
       <PageHeader title="Reports" />
 
-      <DateRangeSelector setReportFilterValues={setReportFilterValues} />
+      <ReportFilters setReportFilterValues={setReportFilterValues} />
 
       {reportFilterValues && (
         <>

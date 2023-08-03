@@ -1,16 +1,17 @@
 import type {Condition} from "@lightningkite/lightning-server-simplified"
 import type {FilterOption} from "@lightningkite/mui-lightning-components"
 import {FilterBar} from "@lightningkite/mui-lightning-components"
-import {Skeleton} from "@mui/material"
+import {Skeleton, Stack, Typography} from "@mui/material"
 import type {Project, Task, TimeEntry, User} from "api/sdk"
 import type {Dayjs} from "dayjs"
 import dayjs from "dayjs"
 import {usePermissions} from "hooks/usePermissions"
-import type {FC} from "react"
+import type {Dispatch, FC, SetStateAction} from "react"
 import {useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext} from "utils/context"
 import type {ReportFilterValues} from "./ReportsPage"
 import {dayjsToISO} from "@lightningkite/react-lightning-helpers"
+import {DatePicker} from "@mui/x-date-pickers"
 
 export interface DateRange {
   start: Dayjs
@@ -91,16 +92,24 @@ enum FilterNames {
 }
 
 export interface ReportFiltersProps {
-  setReportFilterValues: (reportFilterValues: ReportFilterValues) => void
+  setReportFilterValues: Dispatch<
+    SetStateAction<ReportFilterValues | undefined>
+  >
 }
 
-export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
+export const ReportFilters: FC<ReportFiltersProps> = (props) => {
   const {setReportFilterValues} = props
   const {session, currentUser} = useContext(AuthContext)
   const permissions = usePermissions()
 
   const [users, setUsers] = useState<User[]>()
   const [projects, setProjects] = useState<Project[]>()
+  const [customDate, setCustomDate] = useState<DateRange>()
+
+  const changeCustomDate = (date: DateRange) => {
+    setCustomDate(date)
+    setReportFilterValues((prev) => (prev ? {...prev, dateRange: date} : prev))
+  }
 
   const filterOptions = useMemo(() => {
     if (!users || !projects) return []
@@ -111,9 +120,12 @@ export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
         type: "select",
         name: FilterNames.DATE_RANGE,
         placeholder: "Date Range",
-        options: dateRangeOptions.filter(
-          (o) => permissions.canSubmitTime || !o.payRelated
-        ),
+        options: [
+          ...dateRangeOptions.filter(
+            (o) => permissions.canSubmitTime || !o.payRelated
+          ),
+          {label: "Custom", value: undefined}
+        ],
         optionToID: (o) => o.label,
         optionToLabel: (o) => o.label,
         defaultValue: dateRangeOptions[0],
@@ -156,28 +168,56 @@ export const DateRangeSelector: FC<ReportFiltersProps> = (props) => {
   if (!users || !projects) return <Skeleton height={70} />
 
   return (
-    <FilterBar
-      filterOptions={filterOptions}
-      onActiveFiltersChange={(activeFilters) => {
-        const dateRange: DateRange | undefined = activeFilters.find(
-          (filter) => filter.filterOption.name === FilterNames.DATE_RANGE
-        )?.value?.value
+    <>
+      <FilterBar
+        filterOptions={filterOptions}
+        onActiveFiltersChange={(activeFilters) => {
+          const customDateRange = activeFilters.find(
+            (f) => f.value?.label === "Custom"
+          )
+            ? {start: dayjs().startOf("month"), end: dayjs().endOf("month")}
+            : undefined
 
-        const users: User[] | undefined = activeFilters.find(
-          (filter) => filter.filterOption.name === FilterNames.USERS
-        )?.value
+          setCustomDate(customDateRange)
+          const dateRange: DateRange | undefined = customDateRange
+            ? customDateRange
+            : activeFilters.find(
+                (filter) => filter.filterOption.name === FilterNames.DATE_RANGE
+              )?.value?.value
 
-        const projects: Project[] | undefined = activeFilters.find(
-          (filter) => filter.filterOption.name === FilterNames.PROJECTS
-        )?.value
+          const users: User[] | undefined = activeFilters.find(
+            (filter) => filter.filterOption.name === FilterNames.USERS
+          )?.value
 
-        setReportFilterValues({
-          dateRange: dateRange ?? null,
-          users: users ?? null,
-          projects: projects ?? null
-        })
-      }}
-    />
+          const projects: Project[] | undefined = activeFilters.find(
+            (filter) => filter.filterOption.name === FilterNames.PROJECTS
+          )?.value
+
+          setReportFilterValues({
+            dateRange: dateRange ?? null,
+            users: users ?? null,
+            projects: projects ?? null
+          })
+        }}
+      />
+      {customDate && (
+        <Stack direction="row" gap="1rem" my="1rem" alignItems="center">
+          <DatePicker
+            value={customDate.start}
+            onChange={(date) =>
+              date && changeCustomDate({...customDate, start: date})
+            }
+          />
+          <Typography variant="body1">to</Typography>
+          <DatePicker
+            value={customDate.end}
+            onChange={(date) =>
+              date && changeCustomDate({...customDate, end: date})
+            }
+          />
+        </Stack>
+      )}
+    </>
   )
 }
 
@@ -245,3 +285,5 @@ export function filtersToTimeEntryCondition(
 
   return {And: conditions}
 }
+
+export default ReportFilters

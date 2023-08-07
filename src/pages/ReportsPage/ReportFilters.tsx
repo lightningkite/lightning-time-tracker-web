@@ -175,7 +175,7 @@ export const ReportFilters: FC<ReportFiltersProps> = (props) => {
           const customDateRange = activeFilters.find(
             (f) => f.value?.label === "Custom"
           )
-            ? {start: dayjs().startOf("month"), end: dayjs().endOf("month")}
+            ? {start: dayjs().subtract(1, "month"), end: dayjs()}
             : undefined
 
           setCustomDate(customDateRange)
@@ -207,6 +207,7 @@ export const ReportFilters: FC<ReportFiltersProps> = (props) => {
             onChange={(date) =>
               date && changeCustomDate({...customDate, start: date})
             }
+            maxDate={customDate.end}
           />
           <Typography variant="body1">to</Typography>
           <DatePicker
@@ -214,6 +215,7 @@ export const ReportFilters: FC<ReportFiltersProps> = (props) => {
             onChange={(date) =>
               date && changeCustomDate({...customDate, end: date})
             }
+            minDate={customDate.start}
           />
         </Stack>
       )}

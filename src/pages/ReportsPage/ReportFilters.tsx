@@ -264,9 +264,11 @@ export function filtersToTimeEntryCondition(
   const conditions: Condition<TimeEntry>[] = []
 
   if (dateRange) {
+    // Do not use dayjsToISO for the end date because it will switch to UTC time making the end date one day later
+
     conditions.push({
       date: {
-        LessThanOrEqual: dayjsToISO(dateRange.end)
+        LessThanOrEqual: dayjs(dateRange.end).format("YYYY-MM-DD")
       }
     })
 

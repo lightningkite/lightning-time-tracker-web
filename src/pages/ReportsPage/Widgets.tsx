@@ -12,7 +12,6 @@ import {filtersToTimeEntryCondition} from "./ReportFilters"
 import type {ReportProps} from "./ReportsPage"
 import {WidgetLayout} from "./WidgetLayout"
 import {projectedRevenue} from "./widgetHelpers"
-import {dayjsToISO} from "@lightningkite/react-lightning-helpers"
 
 export const Widgets: FC<ReportProps> = (props) => {
   const {reportFilterValues} = props
@@ -57,7 +56,9 @@ export const Widgets: FC<ReportProps> = (props) => {
       condition: {
         And: [
           timeEntryCondition,
-          ...(dateRange ? [{date: {LessThan: dayjsToISO(dateRange.end)}}] : [])
+          ...(dateRange
+            ? [{date: {LessThan: dayjs(dateRange.end).format("YYYY-MM-DD")}}]
+            : [])
         ]
       },
       groupBy: "project",

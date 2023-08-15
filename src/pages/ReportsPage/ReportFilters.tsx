@@ -175,7 +175,10 @@ export const ReportFilters: FC<ReportFiltersProps> = (props) => {
           const customDateRange = activeFilters.find(
             (f) => f.value?.label === "Custom"
           )
-            ? {start: dayjs().subtract(1, "month"), end: dayjs()}
+            ? customDate ?? {
+                start: dayjs().startOf("month"),
+                end: dayjs().endOf("month")
+              }
             : undefined
 
           setCustomDate(customDateRange)
@@ -274,7 +277,7 @@ export function filtersToTimeEntryCondition(
 
     conditions.push({
       date: {
-        GreaterThanOrEqual: dayjsToISO(dateRange.start)
+        GreaterThanOrEqual: dayjs(dateRange.start).format("YYYY-MM-DD")
       }
     })
   }

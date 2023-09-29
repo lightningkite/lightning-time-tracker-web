@@ -14,7 +14,8 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useReducer
+  useReducer,
+  useState
 } from "react"
 import {DndProvider} from "react-dnd"
 import {HTML5Backend} from "react-dnd-html5-backend"
@@ -23,6 +24,7 @@ import {AuthContext} from "utils/context"
 import {CompactColumn} from "./CompactColumn"
 import {ProjectSwitcher} from "./ProjectSwitcher"
 import {TaskStateColumn} from "./TaskStateColumn"
+import { RecentFavoriteProjectsSwitcher } from "./RecentFavoriteProjectsSwitcher"
 
 const hiddenTaskStates: TaskState[] = [TaskState.Cancelled, TaskState.Delivered]
 
@@ -34,6 +36,8 @@ export const ProjectBoard: FC = () => {
   const navigate = useNavigate()
 
   const [state, dispatch] = useReducer(reducer, {status: "loadingProjects"})
+  const [recentProjects, setRecentProjects] = useState<Project[]>([])
+  const [favoriteProjects, setFavoriteProjects] = useState<Project[]>([])
   const taskRefreshTrigger = usePeriodicRefresh(10 * 60)
 
   useEffect(() => {
@@ -63,12 +67,60 @@ export const ProjectBoard: FC = () => {
               ) ??
               projects[0]
           })
+          getRecentProjects(projects).then((recentProjects) => {setRecentProjects(recentProjects)
+            if(recentProjects.length > 0)  dispatch({type: "changeProject", selected: recentProjects[0]})
+          })
+          
+          setFavoriteProjects(getFavoriteProjects(projects))
         }
       })
       .catch(() =>
         dispatch({type: "error", message: "Failed to load projects"})
       )
+
+
   }, [])
+
+
+const getRecentProjects = async (allProjects:Project[]) =>  {
+  const tempRecentProject:Project[] = []
+  await session.task.query({
+    condition: {
+      And: [
+        {user: {Equal: currentUser._id}},
+      ]
+    },
+    limit: 100,
+    orderBy: ["-createdAt"]
+  }).then((result) => { 
+    const tempRecentProjects = result.map((task) => task.projectName)
+    const unique = [...new Set(tempRecentProjects)]
+    unique.forEach((projectName) => {
+      allProjects.forEach((project:Project) => {
+        if (project.name === projectName) {
+          tempRecentProject.push(project)
+        }
+      })
+    })
+    tempRecentProject.splice(3)
+  })
+  return tempRecentProject
+}
+
+const getFavoriteProjects = (allProjects:Project[]):Project[] => {
+  const tempFavoriteProjects:Project[] = []
+  currentUser.projectFavorites.forEach((projectId) => {
+    allProjects.forEach((project:Project) => {
+      if (project._id === projectId) {
+        tempFavoriteProjects.push(project)
+      }
+    })
+  })
+  tempFavoriteProjects.splice(3)
+  return tempFavoriteProjects
+}
+
+
 
   useEffect(() => {
     if (!("selected" in state)) return
@@ -146,6 +198,7 @@ export const ProjectBoard: FC = () => {
 
   return (
     <Container sx={{maxWidth: "2500px !important"}} disableGutters>
+      <Stack direction="row" sx={{mt: 1, mb: 2, mx: 2}}>
       <ProjectSwitcher
         projects={state.projects}
         selected={state.selected}
@@ -153,7 +206,10 @@ export const ProjectBoard: FC = () => {
           dispatch({type: "changeProject", selected: project})
         }
       />
-
+      <RecentFavoriteProjectsSwitcher recentProjects={recentProjects} favoritesProjects={favoriteProjects} onSelect={(project)=>{
+        dispatch({type: "changeProject", selected: project})
+      }} />
+      </Stack>
       <DndProvider backend={HTML5Backend}>
         <Stack
           direction="row"

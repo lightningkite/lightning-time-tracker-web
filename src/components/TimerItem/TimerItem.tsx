@@ -101,6 +101,14 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     return task.user === currentUser._id && task.state === TaskState.Active
   }, [])
 
+  const isDeliveredTask = useCallback((task: Task): boolean => {
+    return task.state === TaskState.Delivered
+  }, [])
+
+  const isCancelledTask = useCallback((task: Task): boolean => {
+    return task.state === TaskState.Cancelled
+  }, [])
+
   const createTask = useCallback(
     (summary: string) => {
       if (!project) return
@@ -128,9 +136,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           pullRequestLink: null
         })
         .then((task) => {
-          setSortedTaskOptions((tasks) =>
-            tasks ? [task, ...tasks] : []
-          )
+          setSortedTaskOptions((tasks) => (tasks ? [task, ...tasks] : []))
           updateTimer(timer._id, {task: task._id})
         })
         .catch(console.error)
@@ -226,7 +232,11 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
                 (option) => getOptionLabel(option) === inputValue
               )
 
-              if (inputValue !== "" && !isExistingTask) {
+              const isDeliveredTask = filtered.some(
+                (option) => getOptionLabel(option) === inputValue
+              )
+
+              if (inputValue !== "" && !isExistingTask && !isDeliveredTask) {
                 filtered.push(inputValue)
               }
 

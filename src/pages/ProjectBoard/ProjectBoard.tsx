@@ -23,6 +23,7 @@ import {AuthContext} from "utils/context"
 import {CompactColumn} from "./CompactColumn"
 import {ProjectSwitcher} from "./ProjectSwitcher"
 import {TaskStateColumn} from "./TaskStateColumn"
+import {RecentFavoriteProjectsSwitcher} from "./RecentFavoriteProjectsSwitcher"
 
 const hiddenTaskStates: TaskState[] = [TaskState.Cancelled, TaskState.Delivered]
 
@@ -146,14 +147,21 @@ export const ProjectBoard: FC = () => {
 
   return (
     <Container sx={{maxWidth: "2500px !important"}} disableGutters>
-      <ProjectSwitcher
-        projects={state.projects}
-        selected={state.selected}
-        onSelect={(project) =>
-          dispatch({type: "changeProject", selected: project})
-        }
-      />
-
+      <Stack direction="row" sx={{mt: 1, mb: 2, mx: 2}}>
+        <ProjectSwitcher
+          projects={state.projects}
+          selected={state.selected}
+          onSelect={(project) =>
+            dispatch({type: "changeProject", selected: project})
+          }
+        />
+        <RecentFavoriteProjectsSwitcher
+          projects={state.projects}
+          onSelect={(project) => {
+            dispatch({type: "changeProject", selected: project})
+          }}
+        />
+      </Stack>
       <DndProvider backend={HTML5Backend}>
         <Stack
           direction="row"

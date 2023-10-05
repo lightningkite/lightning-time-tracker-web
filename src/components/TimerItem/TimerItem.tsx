@@ -39,6 +39,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
 
   const [summary, setSummary] = useState(timer.summary)
   const [expanded, setExpanded] = useState(!timer.project || !timer.task)
+  // const [closedTaskOptions, setClosedTaskOptions] = useState<Task[]>([])
   const [sortedTaskOptions, setSortedTaskOptions] = useState<Task[]>([])
   const [isCreatingNewTask, setIsCreatingNewTask] = useState(false)
 
@@ -60,14 +61,16 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     [timer.task, sortedTaskOptions]
   )
 
+  const [text, setText] = useState("")
+
   useEffect(() => {
     if (!timer.project) {
       setSortedTaskOptions([])
       return
     }
-
-    session.task
-      .query({
+    let promise: Promise<Array<Task>>
+    if (text === "" || task?.summary === text || task?.summary === undefined) {
+      promise = session.task.query({
         limit: 1000,
         condition: {
           And: [
@@ -76,14 +79,34 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           ]
         }
       })
-      .then((tasks) =>
-        setSortedTaskOptions(
-          tasks.sort((a, b) =>
-            isMyActiveTask(a) ? -1 : isMyActiveTask(b) ? 1 : 0
-          )
-        )
-      )
-  }, [timer.project])
+    } else {
+      promise = session.task.query({
+        limit: 1000,
+        condition: {
+          And: [
+            {project: {Equal: timer.project}},
+            {summary: {StringContains: {value: text, ignoreCase: true}}}
+          ]
+        }
+      })
+    }
+    promise
+    // .then((tasks) =>
+    //   setSortedTaskOptions(
+    //     tasks.sort((a, b) =>
+    //       isMyActiveTask(a)
+    //         ? -1
+    //         : isMyActiveTask(b)
+    //         ? 1
+    //         : isOpenTask(a)
+    //         ? -1
+    //         : isOpenTask(b)
+    //         ? 1
+    //         : 0
+    //     )
+    //   )
+    // )
+  }, [timer.project, text, task])
 
   useEffect(() => {
     updateTimer(timer._id, {summary: throttledSummary})
@@ -101,12 +124,8 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     return task.user === currentUser._id && task.state === TaskState.Active
   }, [])
 
-  const isDeliveredTask = useCallback((task: Task): boolean => {
-    return task.state === TaskState.Delivered
-  }, [])
-
-  const isCancelledTask = useCallback((task: Task): boolean => {
-    return task.state === TaskState.Cancelled
+  const isOpenTask = useCallback((task: Task): boolean => {
+    return task.state !== TaskState.Delivered ?? TaskState.Cancelled
   }, [])
 
   const createTask = useCallback(
@@ -144,6 +163,8 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     },
     [project]
   )
+
+  console.log(task?.summary, text, task)
 
   return (
     <Paper sx={{p: 1}}>
@@ -199,11 +220,15 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
             disabled={!sortedTaskOptions || !timer.project || isCreatingNewTask}
             loading={!sortedTaskOptions || isCreatingNewTask}
             value={task ?? null}
-            onChange={(e, value) =>
-              typeof value === "string"
-                ? createTask(value)
-                : updateTimer(timer._id, {task: value?._id})
-            }
+            onChange={(e, value) => {
+              if (typeof value === "string") {
+                createTask(value)
+                setText(value)
+              } else {
+                updateTimer(timer._id, {task: value?._id})
+                setText(value?.summary ?? "")
+              }
+            }}
             getOptionLabel={(task) =>
               typeof task === "string" ? `Create task "${task}"` : task.summary
             }
@@ -219,7 +244,9 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
                 ? "New Task"
                 : isMyActiveTask(task)
                 ? "My Active Tasks"
-                : "All Open"
+                : isOpenTask(task)
+                ? "Open Tasks"
+                : "Closed"
             }}
             filterOptions={(options, {inputValue, getOptionLabel}) => {
               const filtered = options.filter((option) =>

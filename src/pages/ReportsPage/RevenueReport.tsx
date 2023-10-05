@@ -230,7 +230,7 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
                           <ListItemText
                             primary={task.summary}
                             secondary={`${task.state} – ${totalHours.toFixed(
-                              1
+                              2
                             )} hours`}
                           />
                         </ListItem>
@@ -240,7 +240,7 @@ export const RevenueReport: FC<ReportProps> = ({reportFilterValues}) => {
                     <ListItem>
                       <ListItemText
                         primary="Project Management"
-                        secondary={`${orphanHours.toFixed(1)} hours`}
+                        secondary={`${orphanHours.toFixed(2)} hours`}
                       />
                     </ListItem>
                   )}

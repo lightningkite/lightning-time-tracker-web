@@ -25,8 +25,8 @@ export interface DialogFormProps extends DialogProps {
   deleteLabel?: string
   instructions?: string
   onClose: () => void
-  onSubmit: () => Promise<void>
-  onDelete?: () => Promise<void>
+  onSubmit: () => Promise<unknown>
+  onDelete?: () => Promise<unknown>
   disableSubmitBtn?: boolean
 }
 

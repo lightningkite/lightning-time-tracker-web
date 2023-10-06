@@ -4,9 +4,7 @@ import {
   Autocomplete,
   Box,
   Button,
-  Dialog,
   IconButton,
-  Modal,
   Paper,
   Stack,
   TextField,
@@ -27,7 +25,6 @@ import {AuthContext, TimerContext} from "utils/context"
 import {ContentCollapsed} from "./ContentCollapsed"
 import HmsInputGroup from "./hmsInputGroup"
 import {useThrottle} from "@lightningkite/react-lightning-helpers"
-import {TaskModal} from "components/TaskModal"
 import DialogForm from "components/DialogForm"
 
 export interface TimerItemProps {
@@ -74,7 +71,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
       return
     }
     let promise: Promise<Array<Task>>
-    if (text === "" || task?.summary === text) {
+    if (text === "") {
       promise = session.task.query({
         limit: 1000,
         condition: {
@@ -249,7 +246,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
                 ) {
                   updateTimer(timer._id, {task: value?._id})
                   setText(value.summary)
-                  // SetOpenModal(true)
+                  SetOpenModal(true)
                 } else {
                   updateTimer(timer._id, {task: value?._id})
                   setText(value?.summary ?? "")
@@ -349,8 +346,12 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
         onSubmit={changeToActive}
         open={openModal}
         submitLabel="Reactivate"
-        cancelLabel="Close"
-      ></DialogForm>
+        cancelLabel="No"
+      >
+        this task is currently {""}
+        {task?.state === TaskState.Delivered ? "delivered" : "cancelled"}, would
+        you like to reactivate it?
+      </DialogForm>
     </>
   )
 }

@@ -368,7 +368,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
         submitLabel="Reactivate"
         cancelLabel="No"
       >
-        this task is currently {""}
+        {task?.summary} is currently {""}
         {task?.state === TaskState.Delivered ? "delivered" : "cancelled"}, would
         you like to reactivate it?
       </DialogForm>

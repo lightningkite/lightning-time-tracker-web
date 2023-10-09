@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   IconButton,
+  Link,
   Paper,
   Stack,
   TextField,
@@ -368,9 +369,12 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
         submitLabel="Reactivate"
         cancelLabel="No"
       >
-        {task?.summary} is currently {""}
-        {task?.state === TaskState.Delivered ? "delivered" : "cancelled"}, would
-        you like to reactivate it?
+        <Link href={`/projects/${project?._id}/tasks/${task?._id}`}>
+          {task?.summary}
+        </Link>
+        {" is currently "}
+        {task?.state === TaskState.Delivered ? "delivered" : "cancelled"}
+        {", would you like to reactivate it?"}
       </DialogForm>
     </>
   )

@@ -127,14 +127,25 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
   }, [])
 
   const isOpenTask = useCallback((task: Task): boolean => {
-    return task.state !== TaskState.Delivered ?? TaskState.Cancelled
+    return (
+      task.state !== TaskState.Delivered && task.state !== TaskState.Cancelled
+    )
   }, [])
 
   const changeToActive = () =>
     session.task.modify(task?._id ?? "", {
-      state: {
-        Assign: TaskState.Active
-      }
+      Chain: [
+        {
+          state: {
+            Assign: TaskState.Active
+          }
+        },
+        {
+          user: {
+            Assign: currentUser._id
+          }
+        }
+      ]
     })
 
   const createTask = useCallback(
@@ -173,7 +184,14 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     [project]
   )
 
-  console.log(text, task?.summary, task?.state, openModal)
+  console.log(
+    text,
+    task?.summary,
+    task?.state,
+    openModal,
+    isOpenTask,
+    task?.user
+  )
 
   return (
     <>
@@ -241,9 +259,11 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
               onChange={(e, value) => {
                 if (typeof value === "string") {
                   createTask(value)
-                } else if (
-                  value?.state === (TaskState.Delivered ?? TaskState.Cancelled)
-                ) {
+                } else if (value?.state === TaskState.Delivered) {
+                  updateTimer(timer._id, {task: value?._id})
+                  setText(value.summary)
+                  SetOpenModal(true)
+                } else if (value?.state === TaskState.Cancelled) {
                   updateTimer(timer._id, {task: value?._id})
                   setText(value.summary)
                   SetOpenModal(true)

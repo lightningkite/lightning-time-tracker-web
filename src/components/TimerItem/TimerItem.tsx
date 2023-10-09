@@ -8,6 +8,7 @@ import {
   Paper,
   Stack,
   TextField,
+  ToggleButton,
   useTheme
 } from "@mui/material"
 import type {Project, Task, Timer} from "api/sdk"
@@ -26,6 +27,8 @@ import {ContentCollapsed} from "./ContentCollapsed"
 import HmsInputGroup from "./hmsInputGroup"
 import {useThrottle} from "@lightningkite/react-lightning-helpers"
 import DialogForm from "components/DialogForm"
+import {CalendarIcon, DatePicker} from "@mui/x-date-pickers"
+import dayjs from "dayjs"
 
 export interface TimerItemProps {
   timer: Timer
@@ -40,7 +43,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
 
   const [summary, setSummary] = useState(timer.summary)
   const [expanded, setExpanded] = useState(!timer.project || !timer.task)
-  // const [closedTaskOptions, setClosedTaskOptions] = useState<Task[]>([])
+  const [openDate, setOpenDate] = useState(false)
   const [sortedTaskOptions, setSortedTaskOptions] = useState<Task[]>([])
   const [isCreatingNewTask, setIsCreatingNewTask] = useState(false)
 
@@ -64,6 +67,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
 
   const [openModal, SetOpenModal] = useState(false)
   const [text, setText] = useState("")
+  const [datevalue, setDateValue] = useState(new Date())
 
   useEffect(() => {
     if (!timer.project) {
@@ -190,7 +194,8 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     task?.state,
     openModal,
     isOpenTask,
-    task?.user
+    task?.user,
+    datevalue
   )
 
   return (
@@ -200,13 +205,14 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           <Stack spacing={2}>
             <Stack direction="row" alignItems="center">
               <HmsInputGroup timer={timer} />
-
               {timer.project && (
-                <HoverHelp description="Collapse">
-                  <IconButton onClick={() => setExpanded(false)}>
-                    <UnfoldLess />
-                  </IconButton>
-                </HoverHelp>
+                <>
+                  <HoverHelp description="Collapse">
+                    <IconButton onClick={() => setExpanded(false)}>
+                      <UnfoldLess />
+                    </IconButton>
+                  </HoverHelp>
+                </>
               )}
 
               <HoverHelp description="Delete timer">
@@ -225,7 +231,14 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
                 </IconButton>
               </HoverHelp>
             </Stack>
-
+            {openDate && (
+              <DatePicker
+                {...DatePicker}
+                onChange={(value) => setDateValue(value!.toDate())}
+                defaultValue={dayjs(datevalue)}
+                label={"Creation Date"}
+              />
+            )}
             <Autocomplete
               options={sortedProjects ?? []}
               disabled={!sortedProjects}
@@ -323,6 +336,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
               task={task ?? null}
               project={project ?? null}
               timer={timer}
+              dateValue={datevalue ?? ""}
             />
           </Box>
         )}
@@ -345,6 +359,15 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           >
             {timer.lastStarted ? <Pause /> : <PlayArrow />}
           </Button>
+          {timer.project && (
+            <ToggleButton
+              value={dayjs(datevalue)}
+              onClick={() => setOpenDate(!openDate)}
+              color="primary"
+            >
+              <CalendarIcon />
+            </ToggleButton>
+          )}
           <AutoLoadingButton
             onClick={() =>
               submitTimer(timer._id).catch(() =>

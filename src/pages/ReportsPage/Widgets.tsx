@@ -153,7 +153,7 @@ export const Widgets: FC<ReportProps> = (props) => {
 
       <WidgetLayout title="Hours Worked">
         <Typography fontSize="2.5rem">
-          {totalHours?.toFixed(1) ?? "-"}
+          {totalHours?.toFixed(2) ?? "-"}
         </Typography>
       </WidgetLayout>
     </Stack>

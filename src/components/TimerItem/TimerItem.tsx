@@ -9,7 +9,6 @@ import {
   Paper,
   Stack,
   TextField,
-  ToggleButton,
   useTheme
 } from "@mui/material"
 import type {Project, Task, Timer} from "api/sdk"
@@ -44,12 +43,12 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
 
   const [summary, setSummary] = useState(timer.summary)
   const [expanded, setExpanded] = useState(!timer.project || !timer.task)
-  const [openDate, setOpenDate] = useState(false)
   const [sortedTaskOptions, setSortedTaskOptions] = useState<Task[]>([])
   const [isCreatingNewTask, setIsCreatingNewTask] = useState(false)
   const [reactivateModal, setReactivateModal] = useState(false)
   const [taskSearch, setTaskSearch] = useState("")
   const [dateValue, setDateValue] = useState(new Date())
+  const [openDateModal, setOpenDateModal] = useState(false)
 
   const throttledSummary = useThrottle(summary, 1000)
   const throttledTaskSearch = useThrottle(taskSearch, 1000)
@@ -203,14 +202,6 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
                 </IconButton>
               </HoverHelp>
             </Stack>
-            {openDate && (
-              <DatePicker
-                {...DatePicker}
-                onChange={(value) => setDateValue(value!.toDate())}
-                defaultValue={dayjs(dateValue)}
-                label={"Creation Date"}
-              />
-            )}
             <Autocomplete
               options={sortedProjects ?? []}
               disabled={!sortedProjects}
@@ -327,13 +318,14 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
             {timer.lastStarted ? <Pause /> : <PlayArrow />}
           </Button>
           {timer.project && (
-            <ToggleButton
-              value={dayjs(dateValue)}
-              onClick={() => setOpenDate(!openDate)}
-              color="primary"
-            >
-              <CalendarIcon />
-            </ToggleButton>
+            <HoverHelp description="Submit with date">
+              <IconButton
+                disabled={!timer.project || !summary}
+                onClick={() => setOpenDateModal(!openDateModal)}
+              >
+                <CalendarIcon />
+              </IconButton>
+            </HoverHelp>
           )}
           <AutoLoadingButton
             onClick={() =>
@@ -350,6 +342,23 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           </AutoLoadingButton>
         </Stack>
       </Paper>
+      <DialogForm
+        open={openDateModal}
+        onClose={() => setOpenDateModal(false)}
+        onSubmit={() =>
+          submitTimer(timer._id).catch(() => alert("Error submitting timer"))
+        }
+        title="Set Date"
+      >
+        <Stack>
+          <DatePicker
+            {...DatePicker}
+            onChange={(value) => setDateValue(value!.toDate())}
+            defaultValue={dayjs(dateValue)}
+            label={"Creation Date"}
+          />
+        </Stack>
+      </DialogForm>
       <DialogForm
         title="Reactivate Task?"
         onClose={() => setReactivateModal(false)}

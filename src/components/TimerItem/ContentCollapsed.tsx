@@ -31,7 +31,7 @@ export const ContentCollapsed: FC<ContentCollapsedProps> = (props) => {
   }, [timer.lastStarted])
 
   const hmsString = dayjs.duration(seconds, "seconds").format("H : mm : ss")
-  const hmsDateString = dayjs(dateValue).format("MM/DD/YY")
+  const dateString = dayjs(dateValue).format("MM/DD/YY")
 
   return (
     <>
@@ -44,10 +44,14 @@ export const ContentCollapsed: FC<ContentCollapsedProps> = (props) => {
         <Typography variant="body2" color="text.disabled">
           {project?.name}
         </Typography>
+        {/* <Typography
+          variant="body2"
+          color="primary"
+          fontWeight="bold"
+        ></Typography> */}
         <Typography variant="body2" color="primary" fontWeight="bold">
-          {hmsDateString}
-        </Typography>
-        <Typography variant="body2" color="primary" fontWeight="bold">
+          {dateString}
+          &nbsp; &nbsp;
           {hmsString}
         </Typography>
       </Stack>

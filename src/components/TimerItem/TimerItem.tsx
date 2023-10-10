@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   IconButton,
+  Link,
   Paper,
   Stack,
   TextField,
@@ -46,8 +47,12 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
   const [openDate, setOpenDate] = useState(false)
   const [sortedTaskOptions, setSortedTaskOptions] = useState<Task[]>([])
   const [isCreatingNewTask, setIsCreatingNewTask] = useState(false)
+  const [reactivateModal, setReactivateModal] = useState(false)
+  const [taskSearch, setTaskSearch] = useState("")
+  const [dateValue, setDateValue] = useState(new Date())
 
   const throttledSummary = useThrottle(summary, 1000)
+  const throttledTaskSearch = useThrottle(taskSearch, 1000)
 
   const sortedProjects = useMemo(() => {
     return projectOptions?.sort((p) =>
@@ -65,54 +70,47 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     [timer.task, sortedTaskOptions]
   )
 
-  const [openModal, SetOpenModal] = useState(false)
-  const [text, setText] = useState("")
-  const [datevalue, setDateValue] = useState(new Date())
-
   useEffect(() => {
     if (!timer.project) {
       setSortedTaskOptions([])
       return
     }
-    let promise: Promise<Array<Task>>
-    if (text === "") {
-      promise = session.task.query({
-        limit: 1000,
+
+    session.task
+      .query({
+        limit: 50,
         condition: {
           And: [
             {project: {Equal: timer.project}},
-            {state: {NotInside: [TaskState.Delivered, TaskState.Cancelled]}}
+            {
+              summary: {
+                StringContains: {value: throttledTaskSearch, ignoreCase: true}
+              }
+            },
+            throttledTaskSearch === ""
+              ? {
+                  state: {NotInside: [TaskState.Delivered, TaskState.Cancelled]}
+                }
+              : {Always: true}
           ]
         }
       })
-    } else {
-      promise = session.task.query({
-        limit: 1000,
-        condition: {
-          And: [
-            {project: {Equal: timer.project}},
-            {summary: {StringContains: {value: text, ignoreCase: true}}}
-          ]
-        }
-      })
-    }
-    promise.then((tasks) =>
-      setSortedTaskOptions(
-        tasks.sort((a, b) =>
-          isMyActiveTask(a)
-            ? -1
-            : isMyActiveTask(b)
-            ? 1
-            : isOpenTask(a)
-            ? -1
-            : isOpenTask(b)
-            ? 1
-            : 0
+      .then((tasks) =>
+        setSortedTaskOptions(
+          tasks.sort((a, b) =>
+            isMyActiveTask(a)
+              ? -1
+              : isMyActiveTask(b)
+              ? 1
+              : isOpenTask(a)
+              ? -1
+              : isOpenTask(b)
+              ? 1
+              : 0
+          )
         )
       )
-    )
-    console.log(text)
-  }, [timer.project, text])
+  }, [timer.project, throttledTaskSearch])
 
   useEffect(() => {
     updateTimer(timer._id, {summary: throttledSummary})
@@ -135,22 +133,6 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
       task.state !== TaskState.Delivered && task.state !== TaskState.Cancelled
     )
   }, [])
-
-  const changeToActive = () =>
-    session.task.modify(task?._id ?? "", {
-      Chain: [
-        {
-          state: {
-            Assign: TaskState.Active
-          }
-        },
-        {
-          user: {
-            Assign: currentUser._id
-          }
-        }
-      ]
-    })
 
   const createTask = useCallback(
     (summary: string) => {
@@ -186,16 +168,6 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
         .finally(() => setIsCreatingNewTask(false))
     },
     [project]
-  )
-
-  console.log(
-    text,
-    task?.summary,
-    task?.state,
-    openModal,
-    isOpenTask,
-    task?.user,
-    datevalue
   )
 
   return (
@@ -235,7 +207,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
               <DatePicker
                 {...DatePicker}
                 onChange={(value) => setDateValue(value!.toDate())}
-                defaultValue={dayjs(datevalue)}
+                defaultValue={dayjs(dateValue)}
                 label={"Creation Date"}
               />
             )}
@@ -259,30 +231,25 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
             />
 
             <Autocomplete<Task | string, false, false, true>
-              options={sortedTaskOptions ?? []}
-              disabled={
-                !sortedTaskOptions || !timer.project || isCreatingNewTask
-              }
-              loading={!sortedTaskOptions || isCreatingNewTask}
+              options={sortedTaskOptions}
+              disabled={!timer.project || isCreatingNewTask}
+              loading={isCreatingNewTask}
               value={task ?? null}
-              inputValue={text}
+              inputValue={taskSearch}
               onInputChange={(e, value) => {
-                setText(value)
+                setTaskSearch(value)
               }}
               onChange={(e, value) => {
                 if (typeof value === "string") {
                   createTask(value)
-                } else if (value?.state === TaskState.Delivered) {
-                  updateTimer(timer._id, {task: value?._id})
-                  setText(value.summary)
-                  SetOpenModal(true)
-                } else if (value?.state === TaskState.Cancelled) {
-                  updateTimer(timer._id, {task: value?._id})
-                  setText(value.summary)
-                  SetOpenModal(true)
-                } else {
-                  updateTimer(timer._id, {task: value?._id})
-                  setText(value?.summary ?? "")
+                  return
+                }
+                updateTimer(timer._id, {task: value?._id})
+                if (
+                  value?.state === TaskState.Delivered ||
+                  value?.state === TaskState.Cancelled
+                ) {
+                  setReactivateModal(true)
                 }
               }}
               getOptionLabel={(task) =>
@@ -336,7 +303,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
               task={task ?? null}
               project={project ?? null}
               timer={timer}
-              dateValue={datevalue ?? ""}
+              dateValue={dateValue ?? ""}
             />
           </Box>
         )}
@@ -361,7 +328,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           </Button>
           {timer.project && (
             <ToggleButton
-              value={dayjs(datevalue)}
+              value={dayjs(dateValue)}
               onClick={() => setOpenDate(!openDate)}
               color="primary"
             >
@@ -385,15 +352,25 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
       </Paper>
       <DialogForm
         title="Reactivate Task?"
-        onClose={() => SetOpenModal(false)}
-        onSubmit={changeToActive}
-        open={openModal}
+        onClose={() => setReactivateModal(false)}
+        onSubmit={() =>
+          session.task.modify(task?._id ?? "", {
+            Chain: [
+              {state: {Assign: TaskState.Active}},
+              {user: {Assign: currentUser._id}}
+            ]
+          })
+        }
+        open={reactivateModal}
         submitLabel="Reactivate"
         cancelLabel="No"
       >
-        {task?.summary} is currently {""}
-        {task?.state === TaskState.Delivered ? "delivered" : "cancelled"}, would
-        you like to reactivate it?
+        <Link href={`/projects/${project?._id}/tasks/${task?._id}`}>
+          {task?.summary}
+        </Link>
+        {" is currently "}
+        {task?.state === TaskState.Delivered ? "delivered" : "cancelled"}
+        {", would you like to reactivate it?"}
       </DialogForm>
     </>
   )

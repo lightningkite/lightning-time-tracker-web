@@ -34,10 +34,11 @@ import React, {
 import {AuthContext, TimerContext} from "utils/context"
 import {ContentCollapsed} from "./ContentCollapsed"
 import HmsInputGroup from "./hmsInputGroup"
-import {useThrottle} from "@lightningkite/react-lightning-helpers"
+import {dateToISO, useThrottle} from "@lightningkite/react-lightning-helpers"
 import DialogForm from "components/DialogForm"
 import {CalendarIcon, DatePicker} from "@mui/x-date-pickers"
 import dayjs from "dayjs"
+import {date} from "yup"
 
 export interface TimerItemProps {
   timer: Timer
@@ -148,7 +149,10 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
   const open = !!anchorEl
 
   const today = dayjs().format("MM/DD/YY").toString()
-  const yesterday = dayjs().add(-1, "day").format("MM/DD/YY").toString()
+  const yesterday = dayjs(today)
+    .subtract(1, "day")
+    .format("MM/DD/YY")
+    .toString()
 
   const findDate =
     dateValue === today
@@ -156,6 +160,8 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
       : dateValue === yesterday
       ? "Yesterday"
       : dayjs(dateValue).format("MM/DD/YY").toString()
+
+  const dateIsoString = dayjs(dateValue).toDate()
 
   const createTask = useCallback(
     (summary: string) => {
@@ -193,7 +199,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     [project]
   )
 
-  console.log(timer.createdAt, today, yesterday, findDate, dateValue)
+  console.log(timer.createdAt, findDate, dateValue, timer.date, dateIsoString)
 
   return (
     <>
@@ -374,12 +380,16 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
         open={openDateModal}
         onClose={() => setOpenDateModal(false)}
         onSubmit={() =>
-          session.timer.modify(timer._id, {
-            date: {Assign: dayjs(dateValue).toISOString()}
-          })
+          session.timer
+            .modify(timer._id, {
+              date: {Assign: dateToISO(dateIsoString)}
+            })
+            .then((result) => {
+              updateTimer(timer._id, result)
+            })
         }
         title="Set Date"
-        submitLabel="Save Date"
+        submitLabel="Submit Date"
       >
         <Stack>
           <DatePicker
@@ -387,6 +397,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
             onChange={(value) => setDateValue(value!.toString())}
             defaultValue={dayjs(dateValue)}
             label={"Creation Date"}
+            maxDate={dayjs()}
           />
         </Stack>
       </DialogForm>

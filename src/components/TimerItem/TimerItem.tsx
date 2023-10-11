@@ -1,11 +1,20 @@
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
-import {DeleteOutline, Pause, PlayArrow, UnfoldLess} from "@mui/icons-material"
+import {
+  DeleteOutline,
+  MoreVert,
+  Pause,
+  PlayArrow,
+  UnfoldLess
+} from "@mui/icons-material"
 import {
   Autocomplete,
   Box,
   Button,
   IconButton,
   Link,
+  ListItemIcon,
+  Menu,
+  MenuItem,
   Paper,
   Stack,
   TextField,
@@ -47,8 +56,11 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
   const [isCreatingNewTask, setIsCreatingNewTask] = useState(false)
   const [reactivateModal, setReactivateModal] = useState(false)
   const [taskSearch, setTaskSearch] = useState("")
-  const [dateValue, setDateValue] = useState(new Date())
+  const [dateValue, setDateValue] = useState(
+    dayjs(timer.createdAt).format("MM/DD/YY").toString()
+  )
   const [openDateModal, setOpenDateModal] = useState(false)
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   const throttledSummary = useThrottle(summary, 1000)
   const throttledTaskSearch = useThrottle(taskSearch, 1000)
@@ -133,6 +145,18 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     )
   }, [])
 
+  const open = !!anchorEl
+
+  const today = dayjs().format("MM/DD/YY").toString()
+  const yesterday = dayjs().add(-1, "day").format("MM/DD/YY").toString()
+
+  const findDate =
+    dateValue === today
+      ? "Today"
+      : dateValue === yesterday
+      ? "Yesterday"
+      : dayjs(dateValue).format("MM/DD/YY").toString()
+
   const createTask = useCallback(
     (summary: string) => {
       if (!project) return
@@ -169,6 +193,8 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     [project]
   )
 
+  console.log(timer.createdAt, today, yesterday, findDate, dateValue)
+
   return (
     <>
       <Paper sx={{p: 1}}>
@@ -177,28 +203,15 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
             <Stack direction="row" alignItems="center">
               <HmsInputGroup timer={timer} />
               {timer.project && (
-                <>
-                  <HoverHelp description="Collapse">
-                    <IconButton onClick={() => setExpanded(false)}>
-                      <UnfoldLess />
-                    </IconButton>
-                  </HoverHelp>
-                </>
+                <HoverHelp description="Collapse">
+                  <IconButton onClick={() => setExpanded(false)}>
+                    <UnfoldLess />
+                  </IconButton>
+                </HoverHelp>
               )}
-
-              <HoverHelp description="Delete timer">
-                <IconButton
-                  onClick={() =>
-                    confirm("Are you sure you want to delete this timer?") &&
-                    removeTimer(timer._id)
-                  }
-                  sx={{
-                    "&:hover": {
-                      color: theme.palette.error.main
-                    }
-                  }}
-                >
-                  <DeleteOutline />
+              <HoverHelp description="more">
+                <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
+                  <MoreVert />
                 </IconButton>
               </HoverHelp>
             </Stack>
@@ -294,7 +307,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
               task={task ?? null}
               project={project ?? null}
               timer={timer}
-              dateValue={dateValue ?? ""}
+              dateValue={findDate ?? ""}
             />
           </Box>
         )}
@@ -317,16 +330,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           >
             {timer.lastStarted ? <Pause /> : <PlayArrow />}
           </Button>
-          {timer.project && (
-            <HoverHelp description="Submit with date">
-              <IconButton
-                disabled={!timer.project || !summary}
-                onClick={() => setOpenDateModal(!openDateModal)}
-              >
-                <CalendarIcon />
-              </IconButton>
-            </HoverHelp>
-          )}
+
           <AutoLoadingButton
             onClick={() =>
               submitTimer(timer._id).catch(() =>
@@ -342,18 +346,45 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           </AutoLoadingButton>
         </Stack>
       </Paper>
+      <Menu anchorEl={anchorEl} open={open} onClick={() => setAnchorEl(null)}>
+        <MenuItem onClick={() => setOpenDateModal(!openDateModal)}>
+          <ListItemIcon>
+            <CalendarIcon />
+          </ListItemIcon>
+          {"Select Date"}
+        </MenuItem>
+        <MenuItem
+          onClick={() =>
+            confirm("Are you sure you want to delete this timer?") &&
+            removeTimer(timer._id)
+          }
+          sx={{
+            "&:hover": {
+              color: theme.palette.error.main
+            }
+          }}
+        >
+          <ListItemIcon>
+            <DeleteOutline />
+          </ListItemIcon>
+          {"Delete Timer"}
+        </MenuItem>
+      </Menu>
       <DialogForm
         open={openDateModal}
         onClose={() => setOpenDateModal(false)}
         onSubmit={() =>
-          submitTimer(timer._id).catch(() => alert("Error submitting timer"))
+          session.timer.modify(timer._id, {
+            date: {Assign: dayjs(dateValue).toISOString()}
+          })
         }
         title="Set Date"
+        submitLabel="Save Date"
       >
         <Stack>
           <DatePicker
             {...DatePicker}
-            onChange={(value) => setDateValue(value!.toDate())}
+            onChange={(value) => setDateValue(value!.toString())}
             defaultValue={dayjs(dateValue)}
             label={"Creation Date"}
           />

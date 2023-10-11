@@ -128,7 +128,9 @@ export const useGlobalTimerManager = (): TimerContextType => {
       accumulatedSeconds: 0,
       task: initialValues?.task ?? null,
       project: initialValues?.project ?? null,
-      summary: ""
+      summary: "",
+      createdAt: new Date().toISOString(),
+      date: dateToISO(new Date()),
     }
 
     dispatch({type: "modifyChange", id: newTimerId, change: {create: newTimer}})
@@ -162,7 +164,7 @@ export const useGlobalTimerManager = (): TimerContextType => {
       durationMilliseconds: dayjs
         .duration(getTimerSeconds(timer), "second")
         .asMilliseconds(),
-      date: dateToISO(new Date()),
+      date: timer.date,
       taskSummary: undefined,
       projectName: undefined,
       organizationName: undefined,

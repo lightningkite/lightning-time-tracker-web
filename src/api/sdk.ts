@@ -133,9 +133,7 @@ export interface Timer {
     project: UUID | null | undefined
     summary: string
     createdAt: Instant
-}
-
-export interface Triple {
+    date: LocalDate
 }
 
 type UUID = string  // java.util.UUID
@@ -175,11 +173,6 @@ export interface Api {
      * Gets the current status of the server
      **/
     getServerHealth(userToken?: string): Promise<ServerHealth>
-    
-     /**
-     * Lists the most recent 100 exceptions to have occurred on this server
-     **/
-    listRecentExceptions(): Promise<Array<Triple>>
     
      /**
      * Upload a file to make a request later.  Times out in around 10 minutes.
@@ -867,11 +860,6 @@ export class UserSession {
     * Gets the current status of the server
     **/
     getServerHealth(): Promise<ServerHealth> { return this.api.getServerHealth(this.userToken) } 
-    
-    /**
-    * Lists the most recent 100 exceptions to have occurred on this server
-    **/
-    listRecentExceptions(): Promise<Array<Triple>> { return this.api.listRecentExceptions() } 
     
     /**
     * Upload a file to make a request later.  Times out in around 10 minutes.
@@ -1566,21 +1554,6 @@ export class LiveApi implements Api {
             {
                 method: "GET",
                 headers: userToken ? { ...this.extraHeaders, "Authorization": `Bearer ${userToken}` } : this.extraHeaders,
-            }, 
-            undefined,
-            this.responseInterceptors, 
-        ).then(x => x.json())
-    }
-    
-    /**
-    * Lists the most recent 100 exceptions to have occurred on this server
-    **/
-    listRecentExceptions(): Promise<Array<Triple>> {
-        return apiCall<void>(
-            `${this.httpUrl}/exceptions`,
-            undefined,
-            {
-                method: "GET",
             }, 
             undefined,
             this.responseInterceptors, 

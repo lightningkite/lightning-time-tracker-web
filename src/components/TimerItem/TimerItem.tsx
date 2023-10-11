@@ -18,6 +18,7 @@ import {
   Paper,
   Stack,
   TextField,
+  Typography,
   useTheme
 } from "@mui/material"
 import type {Project, Task, Timer} from "api/sdk"
@@ -146,12 +147,10 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
   const open = !!anchorEl
 
   const today = dayjs()
-  const yesterday = today.subtract(1, "day")
-
   const findDate =
     dateValue.format("MM/DD/YY") === today.format("MM/DD/YY")
       ? "Today"
-      : dateValue.format("MM/DD/YY") === yesterday.format("MM/DD/YY")
+      : dateValue.format("MM/DD/YY") === (today.subtract(1, "day")).format("MM/DD/YY")
       ? "Yesterday"
       : dayjs(dateValue).format("MM/DD/YY")
 
@@ -196,6 +195,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
       <Paper sx={{p: 1}}>
         {expanded ? (
           <Stack spacing={2}>
+            <Typography variant="body2" color="text.disabled">{findDate}</Typography>
             <Stack direction="row" alignItems="center">
               <HmsInputGroup timer={timer} />
               {timer.project && (

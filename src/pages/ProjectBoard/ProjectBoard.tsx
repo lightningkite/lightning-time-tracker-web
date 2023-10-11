@@ -155,14 +155,12 @@ export const ProjectBoard: FC = () => {
             dispatch({type: "changeProject", selected: project})
           }
         />
-        {
-          <RecentFavoriteProjectsSwitcher
-            projects={state.projects}
-            onSelect={(project) => {
-              dispatch({type: "changeProject", selected: project})
-            }}
-          />
-        }
+        <RecentFavoriteProjectsSwitcher
+          projects={state.projects}
+          onSelect={(project) => {
+            dispatch({type: "changeProject", selected: project})
+          }}
+        />
       </Stack>
       <DndProvider backend={HTML5Backend}>
         <Stack

@@ -40,15 +40,15 @@ export const ContentCollapsed: FC<ContentCollapsedProps> = (props) => {
         justifyContent="space-between"
         mb={0.5}
       >
-        <Stack direction="row" width="100%">
+        <Stack direction="row" width="100%" gap="10px">
+          <Typography variant="body2" color="primary" fontWeight="bold">
+            {hmsString}
+          </Typography>
           <Typography variant="body2" color="text.disabled" flex={3}>
             {project?.name}
           </Typography>
           <Typography variant="body2" color="text.disabled" flex={1}>
             {dateValue}
-          </Typography>
-          <Typography variant="body2" color="primary" fontWeight="bold">
-            {hmsString}
           </Typography>
         </Stack>
       </Stack>

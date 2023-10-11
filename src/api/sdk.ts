@@ -132,7 +132,6 @@ export interface Timer {
     task: UUID | null | undefined
     project: UUID | null | undefined
     summary: string
-    createdAt: Instant
     date: LocalDate
 }
 

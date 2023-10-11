@@ -129,7 +129,6 @@ export const useGlobalTimerManager = (): TimerContextType => {
       task: initialValues?.task ?? null,
       project: initialValues?.project ?? null,
       summary: "",
-      createdAt: new Date().toISOString(),
       date: dateToISO(new Date()),
     }
 

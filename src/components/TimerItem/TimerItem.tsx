@@ -150,7 +150,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
   const today = dayjs()
   const findDate =
     shownDate.format("MM/DD/YY") === today.format("MM/DD/YY")
-      ? "today"
+      ? "Today"
       : shownDate.format("MM/DD/YY") ===
         today.subtract(1, "day").format("MM/DD/YY")
       ? "Yesterday"
@@ -387,7 +387,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
         submitLabel="Save Date"
       >
         <Typography mb={3}>
-          This timer will be submitted for the following day
+          This timer will be submitted for the selected date
         </Typography>
         <Stack>
           <DatePicker

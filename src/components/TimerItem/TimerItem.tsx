@@ -57,7 +57,8 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
   const [isCreatingNewTask, setIsCreatingNewTask] = useState(false)
   const [reactivateModal, setReactivateModal] = useState(false)
   const [taskSearch, setTaskSearch] = useState("")
-  const [dateValue, setDateValue] = useState(dayjs(timer.date))
+  const [selectedDate, setSelectedDate] = useState(dayjs(timer.date))
+  const [shownDate, setShownDate] = useState(dayjs(timer.date))
   const [openDateModal, setOpenDateModal] = useState(false)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -148,12 +149,12 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
 
   const today = dayjs()
   const findDate =
-    dateValue.format("MM/DD/YY") === today.format("MM/DD/YY")
+    shownDate.format("MM/DD/YY") === today.format("MM/DD/YY")
       ? "Today"
-      : dateValue.format("MM/DD/YY") ===
+      : shownDate.format("MM/DD/YY") ===
         today.subtract(1, "day").format("MM/DD/YY")
       ? "Yesterday"
-      : dayjs(dateValue).format("MM/DD/YY")
+      : dayjs(shownDate).format("MM/DD/YY")
 
   const createTask = useCallback(
     (summary: string) => {
@@ -375,21 +376,25 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
         onSubmit={() =>
           session.timer
             .modify(timer._id, {
-              date: {Assign: dateValue.format("YYYY-MM-DD").toString()}
+              date: {Assign: selectedDate.format("YYYY-MM-DD").toString()}
             })
             .then((result) => {
               updateTimer(timer._id, result)
             })
+            .then(setShownDate(selectedDate)!)
         }
         title="Set Date"
-        submitLabel="Submit Date"
+        submitLabel="Save Date"
       >
+        <Typography mb={3}>
+          This timer will be submitted for the following day
+        </Typography>
         <Stack>
           <DatePicker
             {...DatePicker}
-            onChange={(value) => setDateValue(value!)}
-            defaultValue={dateValue}
-            label={"Creation Date"}
+            onChange={(value) => setSelectedDate(value!)}
+            defaultValue={selectedDate}
+            label={"Timer Date"}
             maxDate={dayjs()}
           />
         </Stack>

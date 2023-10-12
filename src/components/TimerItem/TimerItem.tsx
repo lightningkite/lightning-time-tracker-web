@@ -150,7 +150,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
   const today = dayjs()
   const findDate =
     shownDate.format("MM/DD/YY") === today.format("MM/DD/YY")
-      ? "Today"
+      ? "today"
       : shownDate.format("MM/DD/YY") ===
         today.subtract(1, "day").format("MM/DD/YY")
       ? "Yesterday"

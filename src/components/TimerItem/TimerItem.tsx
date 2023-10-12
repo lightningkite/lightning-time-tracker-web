@@ -1,14 +1,24 @@
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
-import {DeleteOutline, Pause, PlayArrow, UnfoldLess} from "@mui/icons-material"
+import {
+  DeleteOutline,
+  MoreVert,
+  Pause,
+  PlayArrow,
+  UnfoldLess
+} from "@mui/icons-material"
 import {
   Autocomplete,
   Box,
   Button,
   IconButton,
   Link,
+  ListItemIcon,
+  Menu,
+  MenuItem,
   Paper,
   Stack,
   TextField,
+  Typography,
   useTheme
 } from "@mui/material"
 import type {Project, Task, Timer} from "api/sdk"
@@ -27,6 +37,8 @@ import {ContentCollapsed} from "./ContentCollapsed"
 import HmsInputGroup from "./hmsInputGroup"
 import {useThrottle} from "@lightningkite/react-lightning-helpers"
 import DialogForm from "components/DialogForm"
+import {CalendarIcon, DatePicker} from "@mui/x-date-pickers"
+import dayjs from "dayjs"
 
 export interface TimerItemProps {
   timer: Timer
@@ -41,11 +53,14 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
 
   const [summary, setSummary] = useState(timer.summary)
   const [expanded, setExpanded] = useState(!timer.project || !timer.task)
-  // const [closedTaskOptions, setClosedTaskOptions] = useState<Task[]>([])
   const [sortedTaskOptions, setSortedTaskOptions] = useState<Task[]>([])
   const [isCreatingNewTask, setIsCreatingNewTask] = useState(false)
   const [reactivateModal, setReactivateModal] = useState(false)
   const [taskSearch, setTaskSearch] = useState("")
+  const [selectedDate, setSelectedDate] = useState(dayjs(timer.date))
+  const [shownDate, setShownDate] = useState(dayjs(timer.date))
+  const [openDateModal, setOpenDateModal] = useState(false)
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   const throttledSummary = useThrottle(summary, 1000)
   const throttledTaskSearch = useThrottle(taskSearch, 1000)
@@ -130,6 +145,17 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     )
   }, [])
 
+  const open = !!anchorEl
+
+  const today = dayjs()
+  const findDate =
+    shownDate.format("MM/DD/YY") === today.format("MM/DD/YY")
+      ? "Today"
+      : shownDate.format("MM/DD/YY") ===
+        today.subtract(1, "day").format("MM/DD/YY")
+      ? "Yesterday"
+      : dayjs(shownDate).format("MM/DD/YY")
+
   const createTask = useCallback(
     (summary: string) => {
       if (!project) return
@@ -173,7 +199,6 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           <Stack spacing={2}>
             <Stack direction="row" alignItems="center">
               <HmsInputGroup timer={timer} />
-
               {timer.project && (
                 <HoverHelp description="Collapse">
                   <IconButton onClick={() => setExpanded(false)}>
@@ -181,24 +206,15 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
                   </IconButton>
                 </HoverHelp>
               )}
-
-              <HoverHelp description="Delete timer">
-                <IconButton
-                  onClick={() =>
-                    confirm("Are you sure you want to delete this timer?") &&
-                    removeTimer(timer._id)
-                  }
-                  sx={{
-                    "&:hover": {
-                      color: theme.palette.error.main
-                    }
-                  }}
-                >
-                  <DeleteOutline />
+              <HoverHelp description="more">
+                <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
+                  <MoreVert />
                 </IconButton>
               </HoverHelp>
             </Stack>
-
+            <Typography variant="body2" color="text.disabled">
+              {findDate}
+            </Typography>
             <Autocomplete
               options={sortedProjects ?? []}
               disabled={!sortedProjects}
@@ -291,6 +307,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
               task={task ?? null}
               project={project ?? null}
               timer={timer}
+              dateValue={findDate ?? ""}
             />
           </Box>
         )}
@@ -313,6 +330,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           >
             {timer.lastStarted ? <Pause /> : <PlayArrow />}
           </Button>
+
           <AutoLoadingButton
             onClick={() =>
               submitTimer(timer._id).catch(() =>
@@ -328,6 +346,59 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           </AutoLoadingButton>
         </Stack>
       </Paper>
+      <Menu anchorEl={anchorEl} open={open} onClick={() => setAnchorEl(null)}>
+        <MenuItem onClick={() => setOpenDateModal(!openDateModal)}>
+          <ListItemIcon>
+            <CalendarIcon />
+          </ListItemIcon>
+          {"Select Date"}
+        </MenuItem>
+        <MenuItem
+          onClick={() =>
+            confirm("Are you sure you want to delete this timer?") &&
+            removeTimer(timer._id)
+          }
+          sx={{
+            "&:hover": {
+              color: theme.palette.error.main
+            }
+          }}
+        >
+          <ListItemIcon>
+            <DeleteOutline />
+          </ListItemIcon>
+          {"Delete Timer"}
+        </MenuItem>
+      </Menu>
+      <DialogForm
+        open={openDateModal}
+        onClose={() => setOpenDateModal(false)}
+        onSubmit={() =>
+          session.timer
+            .modify(timer._id, {
+              date: {Assign: selectedDate.format("YYYY-MM-DD").toString()}
+            })
+            .then((result) => {
+              updateTimer(timer._id, result)
+            })
+            .then(setShownDate(selectedDate)!)
+        }
+        title="Set Date"
+        submitLabel="Save Date"
+      >
+        <Typography mb={3}>
+          This timer will be submitted for the selected date
+        </Typography>
+        <Stack>
+          <DatePicker
+            {...DatePicker}
+            onChange={(value) => setSelectedDate(value!)}
+            defaultValue={selectedDate}
+            label={"Timer Date"}
+            maxDate={dayjs()}
+          />
+        </Stack>
+      </DialogForm>
       <DialogForm
         title="Reactivate Task?"
         onClose={() => setReactivateModal(false)}

@@ -12,10 +12,11 @@ export interface ContentCollapsedProps {
   project: Project | null
   task: Task | null
   timer: Timer
+  dateValue: string
 }
 
 export const ContentCollapsed: FC<ContentCollapsedProps> = (props) => {
-  const {project, task, timer} = props
+  const {project, task, timer, dateValue} = props
 
   const [seconds, setSeconds] = useState(getTimerSeconds(timer))
 
@@ -39,25 +40,36 @@ export const ContentCollapsed: FC<ContentCollapsedProps> = (props) => {
         justifyContent="space-between"
         mb={0.5}
       >
-        <Typography variant="body2" color="text.disabled">
-          {project?.name}
-        </Typography>
-        <Typography variant="body2" color="primary" fontWeight="bold">
-          {hmsString}
-        </Typography>
+        <Stack>
+          <Typography variant="body2" color="text.disabled">
+            {project?.name}
+          </Typography>
+          <Typography
+            fontWeight="bold"
+            fontSize="1.2rem"
+            sx={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              width: "100%"
+            }}
+          >
+            {task?.summary}
+          </Typography>
+        </Stack>
+        <Stack>
+          <Typography variant="body2" color="primary" fontWeight="bold">
+            {hmsString}
+          </Typography>
+          <Typography
+            variant="body2"
+            color="text.disabled"
+            alignSelf="self-end"
+          >
+            {dateValue}
+          </Typography>
+        </Stack>
       </Stack>
-      <Typography
-        fontWeight="bold"
-        fontSize="1.2rem"
-        sx={{
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          width: "100%"
-        }}
-      >
-        {task?.summary}
-      </Typography>
     </>
   )
 }

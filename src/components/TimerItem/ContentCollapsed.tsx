@@ -48,7 +48,7 @@ export const ContentCollapsed: FC<ContentCollapsedProps> = (props) => {
             fontWeight="bold"
             fontSize="1.2rem"
             sx={{
-              whiteSpace: "nowrap",
+              // whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
               width: "100%"
@@ -58,13 +58,29 @@ export const ContentCollapsed: FC<ContentCollapsedProps> = (props) => {
           </Typography>
         </Stack>
         <Stack>
-          <Typography variant="body2" color="primary" fontWeight="bold">
+          <Typography
+            variant="body2"
+            color="primary"
+            fontWeight="bold"
+            sx={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              width: "100%"
+            }}
+          >
             {hmsString}
           </Typography>
           <Typography
             variant="body2"
             color="text.disabled"
             alignSelf="self-end"
+            sx={{
+              whiteSpace: "nowrap",
+              // overflow: "hidden",
+              // textOverflow: "ellipsis",
+              width: "100%"
+            }}
           >
             {dateValue}
           </Typography>

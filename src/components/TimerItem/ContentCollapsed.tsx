@@ -44,9 +44,15 @@ export const ContentCollapsed: FC<ContentCollapsedProps> = (props) => {
           <Typography variant="body2" color="text.disabled">
             {project?.name}
           </Typography>
+          <Typography fontWeight="bold" fontSize="1.2rem">
+            {task?.summary}
+          </Typography>
+        </Stack>
+        <Stack>
           <Typography
+            variant="body2"
+            color="primary"
             fontWeight="bold"
-            fontSize="1.2rem"
             sx={{
               whiteSpace: "nowrap",
               overflow: "hidden",
@@ -54,11 +60,6 @@ export const ContentCollapsed: FC<ContentCollapsedProps> = (props) => {
               width: "100%"
             }}
           >
-            {task?.summary}
-          </Typography>
-        </Stack>
-        <Stack>
-          <Typography variant="body2" color="primary" fontWeight="bold">
             {hmsString}
           </Typography>
           <Typography

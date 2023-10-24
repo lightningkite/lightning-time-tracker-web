@@ -27,7 +27,7 @@ export const ProjectSwitcher: FC<ProjectSwitcherProps> = (props) => {
       options={projects.sort((a, _) => (isMyProject(a) ? -1 : 1))}
       onChange={(_, newValue) => onSelect(newValue)}
       value={selected}
-      sx={{width: 300, mt: 1, mb: 2, mx: 2}}
+      sx={{width: 300, minWidth: 200, mt: 1, mb: 2, ml: 2}}
       renderInput={(params) => <TextField {...params} />}
       getOptionLabel={(option) => option.name}
       isOptionEqualToValue={(option, value) => option._id === value._id}

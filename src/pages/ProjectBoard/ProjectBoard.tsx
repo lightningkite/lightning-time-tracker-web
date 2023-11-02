@@ -1,4 +1,4 @@
-import {Container, Divider, Stack} from "@mui/material"
+import {Container, Divider, Stack, useMediaQuery} from "@mui/material"
 import type {Project} from "api/sdk"
 import {TaskState} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
@@ -36,6 +36,7 @@ export const ProjectBoard: FC = () => {
 
   const [state, dispatch] = useReducer(reducer, {status: "loadingProjects"})
   const taskRefreshTrigger = usePeriodicRefresh(10 * 60)
+  const smallScreen = useMediaQuery("(max-width: 1400px)")
 
   useEffect(() => {
     session.project
@@ -147,7 +148,11 @@ export const ProjectBoard: FC = () => {
 
   return (
     <Container sx={{maxWidth: "2500px !important"}} disableGutters>
-      <Stack direction="row" sx={{mt: 1, mb: 2, mx: 2}}>
+      <Stack
+        direction={smallScreen ? "column-reverse" : "row"}
+        sx={{mt: 1, mb: 2, mx: 2}}
+        spacing={2}
+      >
         <ProjectSwitcher
           projects={state.projects}
           selected={state.selected}

@@ -3,7 +3,8 @@ import {
   CardActionArea,
   CardContent,
   Stack,
-  Typography
+  Typography,
+  useMediaQuery
 } from "@mui/material"
 import {type Project} from "api/sdk"
 import {type FC, useContext, useEffect, useState} from "react"
@@ -21,6 +22,7 @@ export const RecentFavoriteProjectsSwitcher: FC<
   const {currentUser, session} = useContext(AuthContext)
   const [recentProjects, setRecentProjects] = useState<Project[]>([])
   const [favoritesProjects, setFavoritesProjects] = useState<Project[]>([])
+  const smallScreen = useMediaQuery("(max-width: 400px)")
 
   const fetchRecentProjects = () => {
     session.task
@@ -60,6 +62,8 @@ export const RecentFavoriteProjectsSwitcher: FC<
     fetchFavoriteProjects()
   }, [projects])
 
+  if (smallScreen) return null
+
   return [
     {projects: recentProjects, title: "Recent"},
     {projects: favoritesProjects, title: "Favorites"}
@@ -78,8 +82,16 @@ export const RecentFavoriteProjectsSwitcher: FC<
         {projects.map((project) => (
           <Card key={project._id}>
             <CardActionArea onClick={() => onSelect(project)}>
-              <CardContent sx={{width: "100%"}}>
-                <Typography>{project.name}</Typography>
+              <CardContent sx={{width: "100%", maxWidth: "200px"}}>
+                <Typography
+                  sx={{
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis"
+                  }}
+                >
+                  {project.name}
+                </Typography>
               </CardContent>
             </CardActionArea>
           </Card>

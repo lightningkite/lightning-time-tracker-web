@@ -92,6 +92,7 @@ export interface Task {
     attachments: Array<Attachment>
     estimate: number | null | undefined
     emergency: boolean
+    priority: number
     createdAt: Instant
     createdBy: UUID
     creatorName: string | null | undefined
@@ -161,6 +162,7 @@ export enum UserRole {
     InternalTeamMember = "InternalTeamMember",
     Contractor = "Contractor",
     Client = "Client",
+    ClientNoBilling = "ClientNoBilling",
     ExternalTeamMember = "ExternalTeamMember",
 }
 

@@ -70,6 +70,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       description: task.description,
       estimate: task.estimate?.toString() ?? "",
       emergency: task.emergency,
+      priority: task.priority,
       pullRequestLink: task.pullRequestLink
     },
     validationSchema,
@@ -229,6 +230,12 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
               <Checkbox {...makeFormikCheckboxProps(formik, "emergency")} />
             }
             label="Emergency"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox {...makeFormikCheckboxProps(formik, "priority")} />
+            }
+            label="Priority"
           />
         </FormSection>
       )}

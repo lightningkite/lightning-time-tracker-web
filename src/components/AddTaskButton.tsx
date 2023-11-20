@@ -77,7 +77,8 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
       summary: "",
       description: "",
       estimate: "",
-      emergency: false
+      emergency: false,
+      priority: 0.0
     },
     validationSchema,
     onSubmit: async (values) => {

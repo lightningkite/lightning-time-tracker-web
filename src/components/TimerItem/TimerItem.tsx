@@ -177,6 +177,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           attachments: [],
           estimate: undefined,
           emergency: false,
+          priority: 0.0,
           createdAt: new Date().toISOString(),
           createdBy: currentUser._id,
           creatorName: currentUser.name,

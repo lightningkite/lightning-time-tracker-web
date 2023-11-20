@@ -20,11 +20,12 @@ import duration from "dayjs/plugin/duration"
 import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import {usePermissions} from "hooks/usePermissions"
 import type {FC} from "react"
-import React, {useContext, useState} from "react"
+import {useContext} from "react"
 import {AuthContext} from "utils/context"
 import {taskStateLabels} from "utils/helpers"
 import {TaskPlayActionButton} from "./TaskPlayActionButton"
 import {TaskStateActionButton} from "./TaskStateActionButton"
+import {useSearchParams} from "react-router-dom"
 
 dayjs.extend(duration)
 
@@ -42,10 +43,16 @@ export const TaskListItem: FC<TaskListItemProps> = ({
   const {currentUser} = useContext(AuthContext)
   const theme = useTheme()
   const permissions = usePermissions()
+  const [urlParams, setUrlParams] = useSearchParams()
 
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
   const isMine = currentUser._id === annotatedTask.user
-  const [showModal, setShowModal] = useState(false)
+
+  const showModal = urlParams.get("task") === annotatedTask._id
+
+  const changeShowModal = (show: boolean) => {
+    setUrlParams(show ? {task: annotatedTask._id} : {})
+  }
 
   const taskPercentBudget = annotatedTask.estimate
     ? (annotatedTask._annotations.totalTaskHours / annotatedTask.estimate) * 100
@@ -83,7 +90,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({
           }
         }
       >
-        <ListItemButton onClick={() => setShowModal(true)} sx={{py: 1}}>
+        <ListItemButton onClick={() => changeShowModal(true)} sx={{py: 1}}>
           {isMine && (
             <HoverHelp description="Assigned to me">
               <ListItemIcon
@@ -154,7 +161,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({
 
       <TaskModal
         task={showModal ? annotatedTask : null}
-        handleClose={() => setShowModal(false)}
+        handleClose={() => changeShowModal(false)}
         setTask={updateTask}
       />
     </>

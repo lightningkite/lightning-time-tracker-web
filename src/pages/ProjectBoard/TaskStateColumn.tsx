@@ -8,10 +8,10 @@ import duration from "dayjs/plugin/duration"
 import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import {usePermissions} from "hooks/usePermissions"
 import type {FC} from "react"
-import React, {useState} from "react"
 import {useDrop} from "react-dnd"
 import {taskStateLabels} from "utils/helpers"
 import {TaskCard} from "./TaskCard"
+import {useSearchParams} from "react-router-dom"
 
 dayjs.extend(duration)
 
@@ -28,7 +28,15 @@ export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
   const {state, tasks, handleDrop, project, onAddedTask, updateTask} = props
   const permissions = usePermissions()
 
-  const [selectedTask, setSelectedTask] = useState<AnnotatedTask | null>(null)
+  const [urlParams, setUrlParams] = useSearchParams()
+
+  const selectedTask =
+    tasks?.find((t) => t._id === urlParams.get("task")) ?? null
+
+  const changeSelectedTask = (task: AnnotatedTask | null) => {
+    task ? urlParams.set("task", task?._id ?? "") : urlParams.delete("task")
+    setUrlParams(urlParams)
+  }
 
   const [{isOver, canDrop}, drop] = useDrop({
     accept: permissions.canManageAllTasks
@@ -115,7 +123,7 @@ export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
                     <TaskCard
                       key={task._id}
                       task={task}
-                      onClick={() => setSelectedTask(task)}
+                      onClick={() => changeSelectedTask(task)}
                     />
                   ))}
               </Stack>
@@ -126,7 +134,7 @@ export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
 
       <TaskModal
         task={selectedTask}
-        handleClose={() => setSelectedTask(null)}
+        handleClose={() => changeSelectedTask(null)}
         setTask={updateTask}
       />
     </>

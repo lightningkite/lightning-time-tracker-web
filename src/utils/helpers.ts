@@ -11,6 +11,7 @@ import type {WebPreferences} from "pages/Settings/Settings"
 dayjs.extend(duration)
 dayjs.extend(utc)
 
+
 export const MILLISECONDS_PER_HOUR = 1000 * 60 * 60
 
 export function formatDollars(amount: number, includeCents = true) {

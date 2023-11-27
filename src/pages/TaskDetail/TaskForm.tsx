@@ -13,6 +13,7 @@ import {
   FormControlLabel,
   InputAdornment,
   MenuItem,
+  Slider,
   Stack,
   TextField
 } from "@mui/material"
@@ -77,7 +78,6 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
 
     onSubmit: async (values, {resetForm}) => {
       setError("")
-
       const formattedValues: Partial<Task> = !canEdit
         ? {
             summary: values.summary,
@@ -121,6 +121,8 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       })
       .catch(() => alert("Error loading initial values"))
   }, [])
+
+  // console.log(priorityValue)
 
   return (
     <>
@@ -231,11 +233,19 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
             }
             label="Emergency"
           />
-          <FormControlLabel
-            control={
-              <Checkbox {...makeFormikCheckboxProps(formik, "priority")} />
-            }
-            label="Priority"
+          <Slider
+            sx={{width: "85%", alignSelf: "center", mb: 4}}
+            onChange={(_e, v) => formik.setFieldValue("priority", v)}
+            value={formik.values.priority}
+            marks={[
+              {value: 0.0, label: "Low Priority"},
+              {value: 1.0, label: "High Priority"}
+            ]}
+            min={0.0}
+            max={1.0}
+            step={0.1}
+            aria-labelledby="score-slider"
+            valueLabelDisplay="auto"
           />
         </FormSection>
       )}
@@ -250,7 +260,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
           variant="contained"
           color="primary"
           loading={formik.isSubmitting}
-          style={{alignSelf: "end"}}
+          style={{alignSelf: "end", marginTop: 30}}
           disabled={!formik.dirty}
         >
           {formik.dirty ? "Save Changes" : "Saved"}

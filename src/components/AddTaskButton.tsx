@@ -11,6 +11,7 @@ import {
   Button,
   Checkbox,
   FormControlLabel,
+  Slider,
   Stack,
   TextField
 } from "@mui/material"
@@ -59,6 +60,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
   const permissions = usePermissions()
 
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [priorityValue, setPriorityValue] = useState(0.0)
   const [inputRef, setInputFocus] = useFocus()
 
   function onClose() {
@@ -69,6 +71,10 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
   useEffect(() => {
     setTimeout(setInputFocus, 100)
   }, [showCreateForm])
+
+  const handleChange = (event: Event, newValue: number | number[]) => {
+    setPriorityValue(newValue as number)
+  }
 
   const formik = useFormik({
     initialValues: {
@@ -99,7 +105,8 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
         createdAt: new Date().toISOString(),
         createdBy: currentUser._id,
         creatorName: currentUser.name,
-        pullRequestLink: null
+        pullRequestLink: null,
+        priority: priorityValue
       })
 
       afterSubmit({
@@ -185,7 +192,20 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
               {...makeFormikNumericTextFieldProps(formik, "estimate")}
             />
           )}
-
+          <Slider
+            sx={{width: "85%", alignSelf: "center", mb: 2}}
+            onChange={handleChange}
+            value={priorityValue}
+            marks={[
+              {value: 0.0, label: "Low Priority"},
+              {value: 1.0, label: "High Priority"}
+            ]}
+            min={0.0}
+            max={1.0}
+            step={0.1}
+            aria-labelledby="score-slider"
+            valueLabelDisplay="auto"
+          />
           <FormControlLabel
             control={
               <Checkbox {...makeFormikCheckboxProps(formik, "emergency")} />

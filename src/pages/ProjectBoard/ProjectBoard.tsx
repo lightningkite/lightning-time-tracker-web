@@ -112,10 +112,9 @@ export const ProjectBoard: FC = () => {
           if (a.user === currentUser._id && b.user !== currentUser._id)
             return -1
           if (a.user !== currentUser._id && b.user === currentUser._id) return 1
-          return (
-            dayjs(a.createdAt).diff(dayjs(b.createdAt)) &&
-            b.priority - a.priority
-          )
+          const priorityDiff = b.priority - a.priority
+          if (priorityDiff !== 0) return priorityDiff
+          return dayjs(a.createdAt).diff(dayjs(b.createdAt))
         })
         .forEach((task) => map[task.state].push(task))
     }

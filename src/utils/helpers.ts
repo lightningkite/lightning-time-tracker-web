@@ -51,6 +51,10 @@ export function compareTasksByState(a: Task, b: Task): number {
   return taskStateOrder[a.state] - taskStateOrder[b.state]
 }
 
+export function compareTasksByPriority(a: Task, b: Task): number {
+  return b.priority - a.priority
+}
+
 export function stringToDuration(durationString: string): Duration | null {
   if (!durationString) return null
 

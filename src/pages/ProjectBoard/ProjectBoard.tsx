@@ -18,7 +18,7 @@ import React, {
 } from "react"
 import {DndProvider} from "react-dnd"
 import {HTML5Backend} from "react-dnd-html5-backend"
-import {useLocation, useNavigate} from "react-router-dom"
+import {useSearchParams} from "react-router-dom"
 import {AuthContext} from "utils/context"
 import {CompactColumn} from "./CompactColumn"
 import {ProjectSwitcher} from "./ProjectSwitcher"
@@ -31,12 +31,20 @@ export const ProjectBoard: FC = () => {
   const {session, currentUser} = useContext(AuthContext)
   const {annotatedTaskEndpoint} = useAnnotatedEndpoints()
   const permissions = usePermissions()
-  const location = useLocation()
-  const navigate = useNavigate()
+  const [urlParams, setUrlParams] = useSearchParams()
 
   const [state, dispatch] = useReducer(reducer, {status: "loadingProjects"})
   const taskRefreshTrigger = usePeriodicRefresh(10 * 60)
   const smallScreen = useMediaQuery("(max-width: 1400px)")
+
+  const projectUrl = urlParams.get("project")
+
+  const onChangeProject = (project: Project) => {
+    if ("selected" in state && state.selected._id === project._id) return
+    urlParams.set("project", project._id)
+    setUrlParams(urlParams)
+    dispatch({type: "changeProject", selected: project})
+  }
 
   useEffect(() => {
     session.project
@@ -45,12 +53,13 @@ export const ProjectBoard: FC = () => {
         orderBy: ["name"]
       })
       .then((projects) => {
-        const projectIdInQuery = new URLSearchParams(location.search).get(
-          "project"
-        )
-        const projectFromQuery = projects.find(
-          (p) => p._id === projectIdInQuery
-        )
+        const projectFromQuery = projects.find((p) => p._id === projectUrl)
+        const initialProject =
+          projectFromQuery ??
+          projects.find((p) => currentUser.projectFavorites.includes(p._id)) ??
+          projects[0]
+        urlParams.set("project", initialProject._id)
+        setUrlParams(urlParams)
 
         if (projects.length === 0) {
           dispatch({type: "error", message: "No projects found"})
@@ -58,12 +67,7 @@ export const ProjectBoard: FC = () => {
           dispatch({
             type: "setProjects",
             projects,
-            selected:
-              projectFromQuery ??
-              projects.find((p) =>
-                currentUser.projectFavorites.includes(p._id)
-              ) ??
-              projects[0]
+            selected: initialProject
           })
         }
       })
@@ -74,11 +78,6 @@ export const ProjectBoard: FC = () => {
 
   useEffect(() => {
     if (!("selected" in state)) return
-
-    // Update selected project in query
-    const searchParams = new URLSearchParams(location.search)
-    searchParams.set("project", state.selected._id)
-    navigate({search: searchParams.toString()})
 
     annotatedTaskEndpoint
       .query({
@@ -156,15 +155,11 @@ export const ProjectBoard: FC = () => {
         <ProjectSwitcher
           projects={state.projects}
           selected={state.selected}
-          onSelect={(project) =>
-            dispatch({type: "changeProject", selected: project})
-          }
+          onSelect={onChangeProject}
         />
         <RecentFavoriteProjectsSwitcher
           projects={state.projects}
-          onSelect={(project) => {
-            dispatch({type: "changeProject", selected: project})
-          }}
+          onSelect={onChangeProject}
         />
       </Stack>
       <DndProvider backend={HTML5Backend}>

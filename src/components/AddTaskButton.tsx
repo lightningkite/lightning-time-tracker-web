@@ -61,6 +61,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
 
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [priorityValue, setPriorityValue] = useState(0.0)
+  const [tagValue, setTagValue] = useState([])
   const [inputRef, setInputFocus] = useFocus()
 
   function onClose() {
@@ -106,7 +107,8 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
         createdBy: currentUser._id,
         creatorName: currentUser.name,
         pullRequestLink: null,
-        priority: priorityValue
+        priority: priorityValue,
+        tags: tagValue
       })
 
       afterSubmit({

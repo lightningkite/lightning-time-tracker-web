@@ -181,7 +181,8 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           createdAt: new Date().toISOString(),
           createdBy: currentUser._id,
           creatorName: currentUser.name,
-          pullRequestLink: null
+          pullRequestLink: null,
+          tags: []
         })
         .then((task) => {
           setSortedTaskOptions((tasks) => (tasks ? [task, ...tasks] : []))

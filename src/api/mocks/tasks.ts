@@ -48,7 +48,8 @@ export function generateTasks(params: {
         createdAt: randRecentDate({days: months * 30}).toISOString(),
         createdBy: user._id,
         creatorName: user.name,
-        pullRequestLink: null
+        pullRequestLink: null,
+        tags: []
       }
     }
   )

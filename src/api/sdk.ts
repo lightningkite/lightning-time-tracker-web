@@ -63,6 +63,7 @@ export interface Project {
     rate: number | null | undefined
     notes: string
     createdAt: Instant
+    projectTags: Array<string>
 }
 
 /**
@@ -93,6 +94,7 @@ export interface Task {
     estimate: number | null | undefined
     emergency: boolean
     priority: number
+    tags: Array<string>
     createdAt: Instant
     createdBy: UUID
     creatorName: string | null | undefined

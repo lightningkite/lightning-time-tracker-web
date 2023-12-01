@@ -239,7 +239,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       )}
 
       <Stack mt={4} spacing={2}>
-        <Alert severity="error">{error}</Alert>
+        {error && <Alert severity="error">{error}</Alert>}
 
         <LoadingButton
           onClick={() => {

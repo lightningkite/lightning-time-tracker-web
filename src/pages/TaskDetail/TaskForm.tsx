@@ -13,7 +13,6 @@ import {
   FormControlLabel,
   InputAdornment,
   MenuItem,
-  Slider,
   Stack,
   TextField
 } from "@mui/material"
@@ -22,6 +21,7 @@ import {TaskState} from "api/sdk"
 import {AttachmentsInput} from "components/AttachmentsInput"
 import FormSection from "components/FormSection"
 import {LabeledInfo} from "components/LabeledInfo"
+import {PrioritySlider} from "components/PrioritySlider"
 import dayjs from "dayjs"
 import {useFormik} from "formik"
 import {usePermissions} from "hooks/usePermissions"
@@ -78,17 +78,17 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
 
     onSubmit: async (values, {resetForm}) => {
       setError("")
-      const formattedValues: Partial<Task> = !canEdit
+      const formattedValues: Partial<Task> = canEdit
         ? {
-            summary: values.summary,
-            description: values.description,
-            attachments: values.attachments
-          }
-        : {
             ...values,
             user: values.user?._id,
             project: values.project?._id,
             estimate: values.estimate ? +values.estimate : null
+          }
+        : {
+            summary: values.summary,
+            description: values.description,
+            attachments: values.attachments
           }
 
       // Automatically builds the Lightning Server modification given the old object and the new values
@@ -121,8 +121,6 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       })
       .catch(() => alert("Error loading initial values"))
   }, [])
-
-  // console.log(priorityValue)
 
   return (
     <>
@@ -233,25 +231,15 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
             }
             label="Emergency"
           />
-          <Slider
-            sx={{width: "85%", alignSelf: "center", mb: 4}}
-            onChange={(_e, v) => formik.setFieldValue("priority", v)}
+          <PrioritySlider
+            onChange={(v) => formik.setFieldValue("priority", v)}
             value={formik.values.priority}
-            marks={[
-              {value: 0.0, label: "Low Priority"},
-              {value: 1.0, label: "High Priority"}
-            ]}
-            min={0.0}
-            max={1.0}
-            step={0.1}
-            aria-labelledby="score-slider"
-            valueLabelDisplay="auto"
           />
         </FormSection>
       )}
 
-      <Stack mt={2} spacing={2}>
-        {error && <Alert severity="error">{error}</Alert>}
+      <Stack mt={4} spacing={2}>
+        <Alert severity="error">{error}</Alert>
 
         <LoadingButton
           onClick={() => {

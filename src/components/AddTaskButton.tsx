@@ -11,7 +11,6 @@ import {
   Button,
   Checkbox,
   FormControlLabel,
-  Slider,
   Stack,
   TextField
 } from "@mui/material"
@@ -27,6 +26,7 @@ import React, {useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {makeUserTaskCondition} from "utils/helpers"
 import * as yup from "yup"
+import {PrioritySlider} from "./PrioritySlider"
 
 const validationSchema = yup.object().shape({
   project: yup.object().required("Required").nullable(),
@@ -72,10 +72,6 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
   useEffect(() => {
     setTimeout(setInputFocus, 100)
   }, [showCreateForm])
-
-  const handleChange = (event: Event, newValue: number | number[]) => {
-    setPriorityValue(newValue as number)
-  }
 
   const formik = useFormik({
     initialValues: {
@@ -194,19 +190,9 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
               {...makeFormikNumericTextFieldProps(formik, "estimate")}
             />
           )}
-          <Slider
-            sx={{width: "85%", alignSelf: "center", mb: 2}}
-            onChange={handleChange}
-            value={priorityValue}
-            marks={[
-              {value: 0.0, label: "Low Priority"},
-              {value: 1.0, label: "High Priority"}
-            ]}
-            min={0.0}
-            max={1.0}
-            step={0.1}
-            aria-labelledby="score-slider"
-            valueLabelDisplay="auto"
+          <PrioritySlider
+            onChange={(value) => formik.setFieldValue("priority", value)}
+            value={formik.values.priority}
           />
           <FormControlLabel
             control={

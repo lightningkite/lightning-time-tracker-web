@@ -4,8 +4,10 @@ import {DataGrid} from "@mui/x-data-grid"
 import {Project} from "api/sdk"
 import dayjs from "dayjs"
 import {CustomToolbar} from "pages/ReportsPage/CustomToolbar"
+import {filtersToTimeEntryCondition} from "pages/ReportsPage/ReportFilters"
 
 import {type FC, useContext, useState, useEffect} from "react"
+import {QUERY_LIMIT} from "utils/constants"
 import {AuthContext} from "utils/context"
 import {dynamicFormatDate, MILLISECONDS_PER_HOUR} from "utils/helpers"
 
@@ -19,12 +21,30 @@ export const TagTable: FC<TagTableProps> = (props) => {
 
   const [tagTableData, setTagTableData] = useState<Project[]>()
 
+  async function fetchReportData() {
+    setTagTableData(undefined)
+
+    const timeEntries = await session.project.query({
+      condition: {
+        And: [{Equal: project}]
+      },
+      limit: QUERY_LIMIT
+    })
+
+    setTagTableData(timeEntries)
+  }
+
+  useEffect(() => {
+    fetchReportData()
+  }, [project])
+
   // useEffect(() => {
   //   setTagTableData(project.projectTags)
   // }, [project.projectTags])
 
   console.log(project.projectTags)
   console.log(session.project)
+  console.log(tagTableData)
   return (
     <>
       <Card>
@@ -36,7 +56,8 @@ export const TagTable: FC<TagTableProps> = (props) => {
           columns={[
             {
               field: "projectTags",
-              headerName: "Tags"
+              headerName: "tags",
+              width: 1000
             }
           ]}
           // initialState={{

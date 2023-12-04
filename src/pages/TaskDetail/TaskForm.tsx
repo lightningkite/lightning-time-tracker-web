@@ -82,7 +82,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       emergency: task.emergency,
       priority: task.priority,
       pullRequestLink: task.pullRequestLink,
-      tag: task.tags
+      tags: task.tags
     },
     validationSchema,
 
@@ -133,6 +133,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       .catch(() => alert("Error loading initial values"))
   }, [])
 
+  console.log(task.tags)
   return (
     <>
       <FormSection disableTopPadding>
@@ -160,13 +161,12 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
         )}
 
         <Autocomplete
-          renderInput={(params) => {
-            return <TextField {...params} label={"Tags"} />
-          }}
+          renderInput={(params) => <TextField {...params} label={"Tags"} />}
           options={possibleTags ?? []}
           multiple
-          onChange={(v) => formik.setFieldValue("tag", v)}
-          value={formik.values.tag}
+          onChange={(v) => formik.setFieldValue("tags", v)}
+          // onClick={(v) => formik.setFieldValue("tags", v)}
+          value={formik.values.tags}
         />
 
         <AttachmentsInput

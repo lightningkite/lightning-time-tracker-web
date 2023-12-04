@@ -1,4 +1,7 @@
-import {makeObjectModification} from "@lightningkite/lightning-server-simplified"
+import {
+  HasId,
+  makeObjectModification
+} from "@lightningkite/lightning-server-simplified"
 import {
   makeFormikAutocompleteProps,
   makeFormikCheckboxProps,
@@ -6,16 +9,20 @@ import {
   makeFormikTextFieldProps,
   RestAutocompleteInput
 } from "@lightningkite/mui-lightning-components"
+import {Tag} from "@mui/icons-material"
 import {LoadingButton} from "@mui/lab"
 import {
   Alert,
+  Autocomplete,
   Checkbox,
   FormControlLabel,
   InputAdornment,
   MenuItem,
   Stack,
-  TextField
+  TextField,
+  Typography
 } from "@mui/material"
+import {randUuid} from "@ngneat/falso"
 import type {Project, Task, User} from "api/sdk"
 import {TaskState} from "api/sdk"
 import {AttachmentsInput} from "components/AttachmentsInput"
@@ -57,6 +64,8 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
   const [loadedInitialAsyncValues, setLoadedInitialAsyncValues] =
     useState(false)
 
+  const [possibleTags, setPossibleTags] = useState<string[]>([])
+
   const canEdit = permissions.canManageAllTasks
   const canEditSomeFields =
     canEdit || [TaskState.Active, TaskState.Hold].includes(task.state)
@@ -72,7 +81,8 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       estimate: task.estimate?.toString() ?? "",
       emergency: task.emergency,
       priority: task.priority,
-      pullRequestLink: task.pullRequestLink
+      pullRequestLink: task.pullRequestLink,
+      tag: task.tags
     },
     validationSchema,
 
@@ -116,6 +126,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       task.user && canEdit ? session.user.detail(task.user) : null
     ])
       .then(([project, user]) => {
+        setPossibleTags(project.projectTags)
         formik.resetForm({values: {...formik.values, user, project}})
         setLoadedInitialAsyncValues(true)
       })
@@ -147,6 +158,16 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
             disabled={!canEdit}
           />
         )}
+
+        <Autocomplete
+          renderInput={(params) => {
+            return <TextField {...params} label={"Tags"} />
+          }}
+          options={possibleTags ?? []}
+          multiple
+          onChange={(v) => formik.setFieldValue("tag", v)}
+          value={formik.values.tag}
+        />
 
         <AttachmentsInput
           attachments={formik.values.attachments}

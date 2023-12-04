@@ -1,15 +1,10 @@
-import {RestDataTable} from "@lightningkite/mui-lightning-components"
-import {Card, Table} from "@mui/material"
+import {Card, Typography} from "@mui/material"
 import {DataGrid} from "@mui/x-data-grid"
-import {Project} from "api/sdk"
-import dayjs from "dayjs"
-import {CustomToolbar} from "pages/ReportsPage/CustomToolbar"
-import {filtersToTimeEntryCondition} from "pages/ReportsPage/ReportFilters"
+import {randUuid} from "@ngneat/falso"
+import {type Project} from "api/sdk"
+import DialogForm from "components/DialogForm"
 
-import {type FC, useContext, useState, useEffect} from "react"
-import {QUERY_LIMIT} from "utils/constants"
-import {AuthContext} from "utils/context"
-import {dynamicFormatDate, MILLISECONDS_PER_HOUR} from "utils/helpers"
+import {type FC, useState} from "react"
 
 export interface TagTableProps {
   project: Project
@@ -17,63 +12,34 @@ export interface TagTableProps {
 
 export const TagTable: FC<TagTableProps> = (props) => {
   const {project} = props
-  const {session} = useContext(AuthContext)
 
-  const [tagTableData, setTagTableData] = useState<Project[]>()
+  const [openModal, setOpenModal] = useState(false)
 
-  async function fetchReportData() {
-    setTagTableData(undefined)
+  const mappedProjectTages = project.projectTags.map((tag) => ({
+    id: randUuid(),
+    name: tag
+  }))
 
-    const timeEntries = await session.project.query({
-      condition: {
-        And: [{Equal: project}]
-      },
-      limit: QUERY_LIMIT
-    })
-
-    setTagTableData(timeEntries)
+  function TODO(): Promise<unknown> {
+    throw new Error("Function not implemented.")
   }
 
-  useEffect(() => {
-    fetchReportData()
-  }, [project])
-
-  // useEffect(() => {
-  //   setTagTableData(project.projectTags)
-  // }, [project.projectTags])
-
-  console.log(project.projectTags)
-  console.log(session.project)
-  console.log(tagTableData)
   return (
     <>
       <Card>
         <DataGrid
           autoHeight
-          // loading={!project.projectTags}
           disableRowSelectionOnClick
           disableColumnMenu
           columns={[
             {
-              field: "projectTags",
+              field: "name",
               headerName: "tags",
               width: 1000
             }
           ]}
-          // initialState={{
-          //   sorting: {
-          //     sortModel: [{field: "date", sort: "desc"}]
-          //   }
-          // }}
-          rows={tagTableData ?? []}
-          getRowId={(r) => r._id}
-          // components={{Toolbar: CustomToolbar}}
-          // componentsProps={{
-          //   toolbar: {
-          //     filters: reportFilterValues,
-          //     filePrefix: "Time Entries"
-          //   }
-          // }}
+          rows={mappedProjectTages}
+          onRowClick={() => setOpenModal(true)}
           sx={{
             "& .MuiDataGrid-cell, .MuiDataGrid-columnHeader": {
               outline: "none !important"
@@ -81,6 +47,15 @@ export const TagTable: FC<TagTableProps> = (props) => {
           }}
         />
       </Card>
+      <DialogForm
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        title="Delete Tag?"
+        onSubmit={() => TODO()}
+        submitLabel="Delete Tag"
+      >
+        <Typography>Are you sure you want to delete this tag?</Typography>
+      </DialogForm>
     </>
   )
 }

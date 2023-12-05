@@ -133,7 +133,8 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       .catch(() => alert("Error loading initial values"))
   }, [])
 
-  console.log(task.tags)
+  // console.log(task.tags)
+  // console.log(formik.values)
   return (
     <>
       <FormSection disableTopPadding>
@@ -164,8 +165,9 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
           renderInput={(params) => <TextField {...params} label={"Tags"} />}
           options={possibleTags ?? []}
           multiple
-          onChange={(v) => formik.setFieldValue("tags", v)}
-          // onClick={(v) => formik.setFieldValue("tags", v)}
+          onChange={(_, v) => {
+            formik.setFieldValue("tags", v)
+          }}
           value={formik.values.tags}
         />
 

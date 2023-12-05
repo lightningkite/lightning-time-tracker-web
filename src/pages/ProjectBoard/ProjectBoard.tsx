@@ -1,4 +1,11 @@
-import {Container, Divider, Stack, useMediaQuery} from "@mui/material"
+import {
+  Autocomplete,
+  Container,
+  Divider,
+  IconButton,
+  Stack,
+  useMediaQuery
+} from "@mui/material"
 import type {Project} from "api/sdk"
 import {TaskState} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
@@ -14,8 +21,11 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useReducer
+  useReducer,
+  useState
 } from "react"
+import FilterAltIcon from "@mui/icons-material/FilterAlt"
+import FilterAltOffIcon from "@mui/icons-material/FilterAltOff"
 import {DndProvider} from "react-dnd"
 import {HTML5Backend} from "react-dnd-html5-backend"
 import {useLocation, useNavigate} from "react-router-dom"
@@ -24,6 +34,10 @@ import {CompactColumn} from "./CompactColumn"
 import {ProjectSwitcher} from "./ProjectSwitcher"
 import {TaskStateColumn} from "./TaskStateColumn"
 import {RecentFavoriteProjectsSwitcher} from "./RecentFavoriteProjectsSwitcher"
+import {
+  HoverHelp,
+  RestAutocompleteInput
+} from "@lightningkite/mui-lightning-components"
 
 const hiddenTaskStates: TaskState[] = [TaskState.Cancelled, TaskState.Delivered]
 
@@ -34,6 +48,9 @@ export const ProjectBoard: FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
 
+  const [filterTags, setFilterTags] = useState<string[] | null>([])
+  const [showFilter, setShowFilter] = useState<boolean>(false)
+
   const [state, dispatch] = useReducer(reducer, {status: "loadingProjects"})
   const taskRefreshTrigger = usePeriodicRefresh(10 * 60)
   const smallScreen = useMediaQuery("(max-width: 1400px)")
@@ -41,7 +58,9 @@ export const ProjectBoard: FC = () => {
   useEffect(() => {
     session.project
       .query({
-        condition: {organization: {Equal: currentUser.organization}},
+        condition: {
+          And: [{organization: {Equal: currentUser.organization}}]
+        },
         orderBy: ["name"]
       })
       .then((projects) => {
@@ -148,6 +167,10 @@ export const ProjectBoard: FC = () => {
   if (state.status === "loadingProjects") return <Loading />
   if (state.status === "error") return <ErrorAlert>{state.message}</ErrorAlert>
 
+  useEffect(() => {
+    setFilterTags(state.selected.projectTags)
+  })
+
   return (
     <Container sx={{maxWidth: "2500px !important"}} disableGutters>
       <Stack
@@ -168,6 +191,24 @@ export const ProjectBoard: FC = () => {
             dispatch({type: "changeProject", selected: project})
           }}
         />
+        <HoverHelp description="Filter by tag" enableWrapper>
+          <IconButton
+            onClick={() => {
+              if (showFilter) setFilterTags(null)
+              setShowFilter(!showFilter)
+            }}
+          >
+            {showFilter ? <FilterAltOffIcon /> : <FilterAltIcon />}
+          </IconButton>
+        </HoverHelp>
+        {/* {showFilter && (
+          // <Autocomplete
+          //   // label="Tags"
+          //   // getOptionLabel={(tag) => }
+          //   value={filterTags}
+          //   onChange={() => setFilterTags}
+          // />
+        )} */}
       </Stack>
       <DndProvider backend={HTML5Backend}>
         <Stack

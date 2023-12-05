@@ -109,6 +109,9 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
           </Stack>
 
           <Typography mt={0.5}>{task.summary}</Typography>
+          <Typography variant="body2" color="text.secondary" ml="auto">
+            {task.tags}
+          </Typography>
         </CardContent>
       </CardActionArea>
     </Card>

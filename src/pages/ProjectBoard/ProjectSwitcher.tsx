@@ -1,4 +1,4 @@
-import {Autocomplete, TextField} from "@mui/material"
+import {Autocomplete, type SxProps, TextField} from "@mui/material"
 import type {Project} from "api/sdk"
 import type {FC} from "react"
 import React, {useContext} from "react"
@@ -8,6 +8,7 @@ export interface ProjectSwitcherProps {
   projects: Project[]
   selected: Project
   onSelect: (project: Project) => void
+  sx?: SxProps
 }
 
 export const ProjectSwitcher: FC<ProjectSwitcherProps> = (props) => {

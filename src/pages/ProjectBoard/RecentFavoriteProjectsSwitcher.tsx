@@ -3,6 +3,7 @@ import {
   CardActionArea,
   CardContent,
   Stack,
+  type SxProps,
   Typography,
   useMediaQuery
 } from "@mui/material"
@@ -13,6 +14,7 @@ import {AuthContext} from "utils/context"
 export interface RecentFavoriteProjectsSwitcherProps {
   projects: Project[]
   onSelect: (project: Project) => void
+  sx?: SxProps
 }
 
 export const RecentFavoriteProjectsSwitcher: FC<
@@ -74,9 +76,10 @@ export const RecentFavoriteProjectsSwitcher: FC<
         key={title}
         direction="row"
         spacing={1}
-        mr="2rem"
+        // mr="2rem"
         justifyContent="flex-start"
         alignItems="center"
+        sx={{ml: 4}}
       >
         <Typography>{title}:</Typography>
         {projects.map((project) => (

@@ -127,7 +127,8 @@ export const ProjectBoard: FC = () => {
   }, [
     "selected" in state && state.selected._id,
     taskRefreshTrigger,
-    filterTags
+    filterTags,
+    tags
   ])
 
   const tasksByState: Record<TaskState, AnnotatedTask[]> = useMemo(() => {
@@ -162,7 +163,6 @@ export const ProjectBoard: FC = () => {
   const handleDrop = useCallback(
     (task: AnnotatedTask, newState: TaskState) => {
       if (!("tasks" in state)) return
-
       const previousState = task.state
       dispatch({
         type: "updateTask",
@@ -184,30 +184,61 @@ export const ProjectBoard: FC = () => {
 
   if (state.status === "loadingProjects") return <Loading />
   if (state.status === "error") return <ErrorAlert>{state.message}</ErrorAlert>
-  // console.log(showFilter)
+  console.log(showFilter)
   console.log(filterTags)
-  console.log(state.selected.projectTags)
+
   return (
     <Container sx={{maxWidth: "2500px !important"}} disableGutters>
       <Stack
         direction={smallScreen ? "column-reverse" : "row"}
         sx={{mt: 1, mb: 2, mx: 2}}
         spacing={2}
+        alignItems={"center"}
+        justifyContent={"space-between"}
       >
-        <ProjectSwitcher
-          projects={state.projects}
-          selected={state.selected}
-          onSelect={(project) =>
-            dispatch({type: "changeProject", selected: project})
-          }
-        />
-        <RecentFavoriteProjectsSwitcher
-          projects={state.projects}
-          onSelect={(project) => {
-            dispatch({type: "changeProject", selected: project})
-          }}
-        />
+        <Stack
+          direction={"row"}
+          alignItems={"center"}
+          justifyContent={"space-between"}
+        >
+          <ProjectSwitcher
+            projects={state.projects}
+            selected={state.selected}
+            onSelect={(project) =>
+              dispatch({type: "changeProject", selected: project})
+            }
+          />
+          <RecentFavoriteProjectsSwitcher
+            projects={state.projects}
+            onSelect={(project) => {
+              dispatch({type: "changeProject", selected: project})
+            }}
+          />
+        </Stack>
+        <Stack direction={"row"} alignItems={"center"}>
+          {showFilter && (
+            <Autocomplete
+              renderInput={(params) => <TextField {...params} label={"Tags"} />}
+              options={tags ?? []}
+              multiple
+              onChange={(_, e) => setFilterTags(e)}
+              value={filterTags}
+              sx={{minWidth: 200}}
+            />
+          )}
+          <HoverHelp description="Filter by tag" enableWrapper>
+            <IconButton
+              onClick={() => {
+                if (showFilter) setFilterTags([])
+                setShowFilter(!showFilter)
+              }}
+            >
+              {showFilter ? <FilterAltOffIcon /> : <FilterAltIcon />}
+            </IconButton>
+          </HoverHelp>
+        </Stack>
       </Stack>
+      <Stack direction="row" alignItems="center" spacing={1} ml="auto"></Stack>
       <DndProvider backend={HTML5Backend}>
         <Stack
           direction="row"

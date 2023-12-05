@@ -4,6 +4,7 @@ import {
   Divider,
   IconButton,
   Stack,
+  TextField,
   useMediaQuery
 } from "@mui/material"
 import type {Project} from "api/sdk"
@@ -34,10 +35,7 @@ import {CompactColumn} from "./CompactColumn"
 import {ProjectSwitcher} from "./ProjectSwitcher"
 import {TaskStateColumn} from "./TaskStateColumn"
 import {RecentFavoriteProjectsSwitcher} from "./RecentFavoriteProjectsSwitcher"
-import {
-  HoverHelp,
-  RestAutocompleteInput
-} from "@lightningkite/mui-lightning-components"
+import {HoverHelp} from "@lightningkite/mui-lightning-components"
 
 const hiddenTaskStates: TaskState[] = [TaskState.Cancelled, TaskState.Delivered]
 
@@ -48,7 +46,8 @@ export const ProjectBoard: FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
 
-  const [filterTags, setFilterTags] = useState<string[] | null>([])
+  const [filterTags, setFilterTags] = useState<string[]>([])
+  const [tags, setTags] = useState<string[]>([])
   const [showFilter, setShowFilter] = useState<boolean>(false)
 
   const [state, dispatch] = useReducer(reducer, {status: "loadingProjects"})
@@ -99,18 +98,37 @@ export const ProjectBoard: FC = () => {
     searchParams.set("project", state.selected._id)
     navigate({search: searchParams.toString()})
 
-    annotatedTaskEndpoint
-      .query({
-        condition: {
-          And: [
-            {project: {Equal: state.selected._id}},
-            {state: {NotInside: hiddenTaskStates}}
-          ]
-        },
-        limit: 1000
-      })
-      .then((tasks: AnnotatedTask[]) => dispatch({type: "setTasks", tasks}))
-  }, ["selected" in state && state.selected._id, taskRefreshTrigger])
+    setTags(state.selected.projectTags)
+
+    !showFilter
+      ? annotatedTaskEndpoint
+          .query({
+            condition: {
+              And: [
+                {project: {Equal: state.selected._id}},
+                {state: {NotInside: hiddenTaskStates}}
+              ]
+            },
+            limit: 1000
+          })
+          .then((tasks: AnnotatedTask[]) => dispatch({type: "setTasks", tasks}))
+      : annotatedTaskEndpoint
+          .query({
+            condition: {
+              And: [
+                {project: {Equal: state.selected._id}},
+                {state: {NotInside: hiddenTaskStates}},
+                {tags: {SetAnyElements: {Inside: filterTags}}}
+              ]
+            },
+            limit: 1000
+          })
+          .then((tasks: AnnotatedTask[]) => dispatch({type: "setTasks", tasks}))
+  }, [
+    "selected" in state && state.selected._id,
+    taskRefreshTrigger,
+    filterTags
+  ])
 
   const tasksByState: Record<TaskState, AnnotatedTask[]> = useMemo(() => {
     const map: Record<TaskState, AnnotatedTask[]> = {
@@ -166,11 +184,9 @@ export const ProjectBoard: FC = () => {
 
   if (state.status === "loadingProjects") return <Loading />
   if (state.status === "error") return <ErrorAlert>{state.message}</ErrorAlert>
-
-  useEffect(() => {
-    setFilterTags(state.selected.projectTags)
-  })
-
+  // console.log(showFilter)
+  console.log(filterTags)
+  console.log(state.selected.projectTags)
   return (
     <Container sx={{maxWidth: "2500px !important"}} disableGutters>
       <Stack
@@ -191,24 +207,6 @@ export const ProjectBoard: FC = () => {
             dispatch({type: "changeProject", selected: project})
           }}
         />
-        <HoverHelp description="Filter by tag" enableWrapper>
-          <IconButton
-            onClick={() => {
-              if (showFilter) setFilterTags(null)
-              setShowFilter(!showFilter)
-            }}
-          >
-            {showFilter ? <FilterAltOffIcon /> : <FilterAltIcon />}
-          </IconButton>
-        </HoverHelp>
-        {/* {showFilter && (
-          // <Autocomplete
-          //   // label="Tags"
-          //   // getOptionLabel={(tag) => }
-          //   value={filterTags}
-          //   onChange={() => setFilterTags}
-          // />
-        )} */}
       </Stack>
       <DndProvider backend={HTML5Backend}>
         <Stack

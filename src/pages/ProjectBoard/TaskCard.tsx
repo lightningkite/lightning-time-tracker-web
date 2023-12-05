@@ -110,7 +110,7 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
 
           <Typography mt={0.5}>{task.summary}</Typography>
           <Typography variant="body2" color="text.secondary" ml="auto">
-            {task.tags}
+            {task.tags.join(", ")}
           </Typography>
         </CardContent>
       </CardActionArea>

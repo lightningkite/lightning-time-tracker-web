@@ -2,10 +2,11 @@ import {randUuid} from "@ngneat/falso"
 import {type Project} from "api/sdk"
 import {AddTagButton} from "components/AddTagButton"
 import TagTable from "components/Tags/TagTable"
-import {useState, type FC} from "react"
+import {useState, type FC, useEffect} from "react"
 
 export interface TagTabProps {
   project: Project
+  refreshProject: () => void
 }
 
 export interface Tag {
@@ -13,13 +14,17 @@ export interface Tag {
   name: string
 }
 
-export const TagTab: FC<TagTabProps> = ({project}) => {
-  const [mappedProjectTags, setProjectTags] = useState<Tag[]>(
-    project.projectTags.map((tag) => ({
-      id: randUuid(),
-      name: tag
-    }))
-  )
+export const TagTab: FC<TagTabProps> = ({project, refreshProject}) => {
+  const [mappedProjectTags, setProjectTags] = useState<Tag[]>([])
+
+  useEffect(() => {
+    setProjectTags(
+      project.projectTags.map((tag) => ({
+        id: randUuid(),
+        name: tag
+      }))
+    )
+  }, [project])
 
   return (
     <>
@@ -27,14 +32,13 @@ export const TagTab: FC<TagTabProps> = ({project}) => {
         <AddTagButton
           project={project}
           sx={{mb: 1}}
-          tags={mappedProjectTags}
-          setTags={setProjectTags}
+          updateTable={refreshProject}
         />
       </div>
       <TagTable
         project={project}
         tags={mappedProjectTags}
-        setTags={setProjectTags}
+        updateTable={refreshProject}
       />
     </>
   )

@@ -1,31 +1,37 @@
 import {Card, Typography} from "@mui/material"
 import {DataGrid} from "@mui/x-data-grid"
-import {randUuid} from "@ngneat/falso"
+
 import {type Project} from "api/sdk"
 import DialogForm from "components/DialogForm"
-import {Tag} from "pages/ProjectDetail/TagTab"
+import type {Tag} from "pages/ProjectDetail/TagTab"
 
-import {type FC, useState, useContext, useEffect} from "react"
+import {type FC, useState, useContext} from "react"
 import {AuthContext} from "utils/context"
 
 export interface TagTableProps {
   project: Project
   tags: Tag[]
-  setTags: (Tag: Tag[]) => void
+  updateTable: () => void
 }
 
 export const TagTable: FC<TagTableProps> = (props) => {
-  const {project, tags, setTags} = props
+  const {project, tags, updateTable} = props
   const {session} = useContext(AuthContext)
 
   const [selectedTag, setSelectedTag] = useState<string>()
 
   const deleteTag = async () => {
     if (selectedTag === undefined) return
-    await session.project.modify(project._id, {
-      projectTags: {SetRemoveInstances: [selectedTag]}
-    })
-    setTags(tags.filter((tag) => tag.name !== selectedTag))
+    Promise.all([
+      session.project.modify(project._id, {
+        projectTags: {SetRemoveInstances: [selectedTag]}
+      }),
+      session.task.bulkModify({
+        condition: {project: {Equal: project._id}},
+        modification: {tags: {SetRemoveInstances: [selectedTag]}}
+      })
+    ]).finally(() => updateTable())
+
     setSelectedTag(undefined)
   }
 

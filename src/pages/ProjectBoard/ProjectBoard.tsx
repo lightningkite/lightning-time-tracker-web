@@ -184,8 +184,6 @@ export const ProjectBoard: FC = () => {
 
   if (state.status === "loadingProjects") return <Loading />
   if (state.status === "error") return <ErrorAlert>{state.message}</ErrorAlert>
-  console.log(showFilter)
-  console.log(filterTags)
 
   return (
     <Container sx={{maxWidth: "2500px !important"}} disableGutters>

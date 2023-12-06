@@ -5,41 +5,39 @@ import type {Project} from "api/sdk"
 import {useState, type FC, useContext} from "react"
 import DialogForm from "./DialogForm"
 import {AuthContext} from "utils/context"
-import type {Tag} from "pages/ProjectDetail/TagTab"
-import {randUuid} from "@ngneat/falso"
 
 export interface AddTagButtonProps {
   afterSubmit?: () => void
   project: Project
   sx?: SxProps
-  tags: Tag[]
-  setTags: (Tag: Tag[]) => void
+  updateTable: () => void
 }
 
 export const AddTagButton: FC<AddTagButtonProps> = (props) => {
-  const {project, sx, tags, setTags} = props
+  const {project, sx, updateTable} = props
   const {session} = useContext(AuthContext)
 
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [newTag, setNewTag] = useState("")
 
+  const onClose = () => {
+    setShowCreateForm(false)
+    setNewTag("")
+  }
+
   const submitting = () => {
-    setTags([
-      ...tags,
-      {
-        id: randUuid(),
-        name: newTag
-      }
-    ])
     return session.project
       .modify(project._id, {
-        projectTags: {SetAppend: [newTag]}
+        projectTags: {SetAppend: [newTag.trim().toLowerCase()]}
       })
       .then(() => {
         setShowCreateForm(false)
       })
+      .finally(() => {
+        updateTable()
+      })
   }
-  console.log(project.projectTags)
+
   return (
     <>
       <Button
@@ -53,7 +51,7 @@ export const AddTagButton: FC<AddTagButtonProps> = (props) => {
       <DialogForm
         title="New Tag"
         open={showCreateForm}
-        onClose={() => setShowCreateForm(false)}
+        onClose={onClose}
         onSubmit={submitting}
       >
         <TextField

@@ -22,11 +22,15 @@ const ProjectDetail: FC = () => {
   const [project, setProject] = useState<Project | null>()
   const [tab, setTab] = useState("1")
 
-  useEffect(() => {
+  const refreshProject = () => {
     session.project
       .detail(projectId!)
       .then(setProject)
       .catch(() => setProject(null))
+  }
+
+  useEffect(() => {
+    refreshProject()
   }, [projectId])
 
   if (project === undefined) {
@@ -75,7 +79,7 @@ const ProjectDetail: FC = () => {
           <TimeEntryTab project={project} />
         </TabPanel>
         <TabPanel value="3" sx={{p: 0}}>
-          <TagTab project={project} />
+          <TagTab project={project} refreshProject={refreshProject} />
         </TabPanel>
       </TabContext>
     </Container>

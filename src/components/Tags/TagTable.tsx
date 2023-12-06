@@ -3,25 +3,30 @@ import {DataGrid} from "@mui/x-data-grid"
 import {randUuid} from "@ngneat/falso"
 import {type Project} from "api/sdk"
 import DialogForm from "components/DialogForm"
+import {Tag} from "pages/ProjectDetail/TagTab"
 
-import {type FC, useState} from "react"
+import {type FC, useState, useContext, useEffect} from "react"
+import {AuthContext} from "utils/context"
 
 export interface TagTableProps {
   project: Project
+  tags: Tag[]
+  setTags: (Tag: Tag[]) => void
 }
 
 export const TagTable: FC<TagTableProps> = (props) => {
-  const {project} = props
+  const {project, tags, setTags} = props
+  const {session} = useContext(AuthContext)
 
-  const [openModal, setOpenModal] = useState(false)
+  const [selectedTag, setSelectedTag] = useState<string>()
 
-  const mappedProjectTages = project.projectTags.map((tag) => ({
-    id: randUuid(),
-    name: tag
-  }))
-
-  function TODO(): Promise<unknown> {
-    throw new Error("Function not implemented.")
+  const deleteTag = async () => {
+    if (selectedTag === undefined) return
+    await session.project.modify(project._id, {
+      projectTags: {SetRemoveInstances: [selectedTag]}
+    })
+    setTags(tags.filter((tag) => tag.name !== selectedTag))
+    setSelectedTag(undefined)
   }
 
   return (
@@ -38,8 +43,8 @@ export const TagTable: FC<TagTableProps> = (props) => {
               width: 1000
             }
           ]}
-          rows={mappedProjectTages}
-          onRowClick={() => setOpenModal(true)}
+          rows={tags}
+          onRowClick={(e) => setSelectedTag(e.row.name)}
           sx={{
             "& .MuiDataGrid-cell, .MuiDataGrid-columnHeader": {
               outline: "none !important"
@@ -48,13 +53,13 @@ export const TagTable: FC<TagTableProps> = (props) => {
         />
       </Card>
       <DialogForm
-        open={openModal}
-        onClose={() => setOpenModal(false)}
+        open={selectedTag !== undefined}
+        onClose={() => setSelectedTag(undefined)}
         title="Delete Tag?"
-        onSubmit={() => TODO()}
+        onSubmit={deleteTag}
         submitLabel="Delete Tag"
       >
-        <Typography>Are you sure you want to delete this tag?</Typography>
+        <Typography>Are you sure you want to delete {selectedTag}?</Typography>
       </DialogForm>
     </>
   )

@@ -215,7 +215,10 @@ export const ProjectBoard: FC = () => {
             }}
           />
         </Stack>
-        <Stack direction={"row"} alignItems={"center"}>
+        <Stack
+          direction={smallScreen ? "column-reverse" : "row"}
+          alignItems={"center"}
+        >
           {showFilter && (
             <Autocomplete
               renderInput={(params) => <TextField {...params} label={"Tags"} />}

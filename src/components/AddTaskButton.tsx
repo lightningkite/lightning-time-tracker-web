@@ -62,7 +62,6 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
 
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [priorityValue, setPriorityValue] = useState(0.0)
-  const [tagValue, setTagValue] = useState<string[]>([])
   const [tagOptions, setTagOptions] = useState<string[] | undefined>([])
   const [inputRef, setInputFocus] = useFocus()
 

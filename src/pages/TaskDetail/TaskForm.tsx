@@ -1,7 +1,4 @@
-import {
-  HasId,
-  makeObjectModification
-} from "@lightningkite/lightning-server-simplified"
+import {makeObjectModification} from "@lightningkite/lightning-server-simplified"
 import {
   makeFormikAutocompleteProps,
   makeFormikCheckboxProps,
@@ -9,7 +6,6 @@ import {
   makeFormikTextFieldProps,
   RestAutocompleteInput
 } from "@lightningkite/mui-lightning-components"
-import {Tag} from "@mui/icons-material"
 import {LoadingButton} from "@mui/lab"
 import {
   Alert,
@@ -19,10 +15,8 @@ import {
   InputAdornment,
   MenuItem,
   Stack,
-  TextField,
-  Typography
+  TextField
 } from "@mui/material"
-import {randUuid} from "@ngneat/falso"
 import type {Project, Task, User} from "api/sdk"
 import {TaskState} from "api/sdk"
 import {AttachmentsInput} from "components/AttachmentsInput"
@@ -33,7 +27,7 @@ import dayjs from "dayjs"
 import {useFormik} from "formik"
 import {usePermissions} from "hooks/usePermissions"
 import type {FC} from "react"
-import React, {useContext, useEffect, useState} from "react"
+import {useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {
   dynamicFormatDate,
@@ -159,16 +153,6 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
           />
         )}
 
-        <Autocomplete
-          renderInput={(params) => <TextField {...params} label={"Tags"} />}
-          options={possibleTags ?? []}
-          multiple
-          onChange={(_, v) => {
-            formik.setFieldValue("tags", v)
-          }}
-          value={formik.values.tags}
-        />
-
         <AttachmentsInput
           attachments={formik.values.attachments}
           onChange={(value) => {
@@ -228,6 +212,16 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
             searchProperties={["name"]}
             disabled={!loadedInitialAsyncValues}
             {...makeFormikAutocompleteProps(formik, "project")}
+          />
+
+          <Autocomplete
+            renderInput={(params) => <TextField {...params} label={"Tags"} />}
+            options={possibleTags ?? []}
+            multiple
+            onChange={(_, v) => {
+              formik.setFieldValue("tags", v)
+            }}
+            value={formik.values.tags}
           />
 
           <TextField

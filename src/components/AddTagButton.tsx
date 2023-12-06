@@ -1,5 +1,4 @@
 import {Add} from "@mui/icons-material"
-import type {SxProps} from "@mui/material"
 import {Button, TextField} from "@mui/material"
 import type {Project} from "api/sdk"
 import {useState, type FC, useContext} from "react"
@@ -7,14 +6,12 @@ import DialogForm from "./DialogForm"
 import {AuthContext} from "utils/context"
 
 export interface AddTagButtonProps {
-  afterSubmit?: () => void
   project: Project
-  sx?: SxProps
   updateTable: () => void
 }
 
 export const AddTagButton: FC<AddTagButtonProps> = (props) => {
-  const {project, sx, updateTable} = props
+  const {project, updateTable} = props
   const {session} = useContext(AuthContext)
 
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -32,8 +29,6 @@ export const AddTagButton: FC<AddTagButtonProps> = (props) => {
       })
       .then(() => {
         setShowCreateForm(false)
-      })
-      .finally(() => {
         updateTable()
       })
   }
@@ -43,7 +38,7 @@ export const AddTagButton: FC<AddTagButtonProps> = (props) => {
       <Button
         onClick={() => setShowCreateForm(true)}
         startIcon={<Add />}
-        sx={sx}
+        sx={{mb: 1}}
       >
         Create Tag
       </Button>

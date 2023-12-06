@@ -1,13 +1,5 @@
-import {
-  Autocomplete,
-  Container,
-  Divider,
-  IconButton,
-  Stack,
-  TextField,
-  useMediaQuery
-} from "@mui/material"
-import type {Project} from "api/sdk"
+import {Container, Divider, Stack, useMediaQuery} from "@mui/material"
+import type {Project, Task} from "api/sdk"
 import {TaskState} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
@@ -25,8 +17,6 @@ import React, {
   useReducer,
   useState
 } from "react"
-import FilterAltIcon from "@mui/icons-material/FilterAlt"
-import FilterAltOffIcon from "@mui/icons-material/FilterAltOff"
 import {DndProvider} from "react-dnd"
 import {HTML5Backend} from "react-dnd-html5-backend"
 import {useNavigate, useSearchParams} from "react-router-dom"
@@ -35,7 +25,8 @@ import {CompactColumn} from "./CompactColumn"
 import {ProjectSwitcher} from "./ProjectSwitcher"
 import {TaskStateColumn} from "./TaskStateColumn"
 import {RecentFavoriteProjectsSwitcher} from "./RecentFavoriteProjectsSwitcher"
-import {HoverHelp} from "@lightningkite/mui-lightning-components"
+import {ProjectBoardFilter} from "./ProjectBoardFilter"
+import {type Condition} from "@lightningkite/lightning-server-simplified"
 
 const hiddenTaskStates: TaskState[] = [TaskState.Cancelled, TaskState.Delivered]
 
@@ -47,8 +38,6 @@ export const ProjectBoard: FC = () => {
   const navigate = useNavigate()
 
   const [filterTags, setFilterTags] = useState<string[]>([])
-  const [tags, setTags] = useState<string[]>([])
-  const [showFilter, setShowFilter] = useState<boolean>(false)
 
   const [state, dispatch] = useReducer(reducer, {status: "loadingProjects"})
   const taskRefreshTrigger = usePeriodicRefresh(10 * 60)
@@ -103,37 +92,25 @@ export const ProjectBoard: FC = () => {
     searchParams.set("project", state.selected._id)
     navigate({search: searchParams.toString()})
 
-    setTags(state.selected.projectTags)
+    const conditions: Condition<Task>[] =
+      filterTags.length > 0
+        ? [
+            {project: {Equal: state.selected._id}},
+            {state: {NotInside: hiddenTaskStates}},
+            {tags: {SetAnyElements: {Inside: filterTags}}}
+          ]
+        : [
+            {project: {Equal: state.selected._id}},
+            {state: {NotInside: hiddenTaskStates}}
+          ]
 
-    !showFilter
-      ? annotatedTaskEndpoint
-          .query({
-            condition: {
-              And: [
-                {project: {Equal: state.selected._id}},
-                {state: {NotInside: hiddenTaskStates}}
-              ]
-            },
-            limit: 1000
-          })
-          .then((tasks: AnnotatedTask[]) => dispatch({type: "setTasks", tasks}))
-      : annotatedTaskEndpoint
-          .query({
-            condition: {
-              And: [
-                {project: {Equal: state.selected._id}},
-                {state: {NotInside: hiddenTaskStates}},
-                {tags: {SetAnyElements: {Inside: filterTags}}}
-              ]
-            },
-            limit: 1000
-          })
-          .then((tasks: AnnotatedTask[]) => dispatch({type: "setTasks", tasks}))
+    annotatedTaskEndpoint
+      .query({condition: {And: conditions}, limit: 1000})
+      .then((tasks: AnnotatedTask[]) => dispatch({type: "setTasks", tasks}))
   }, [
     "selected" in state && state.selected._id,
     taskRefreshTrigger,
-    filterTags,
-    tags
+    filterTags
   ])
 
   const tasksByState: Record<TaskState, AnnotatedTask[]> = useMemo(() => {
@@ -214,31 +191,12 @@ export const ProjectBoard: FC = () => {
             onSelect={onChangeProject}
           />
         </Stack>
-        <Stack
-          direction={smallScreen ? "column-reverse" : "row"}
-          alignItems={"center"}
-        >
-          {showFilter && (
-            <Autocomplete
-              renderInput={(params) => <TextField {...params} label={"Tags"} />}
-              options={tags ?? []}
-              multiple
-              onChange={(_, e) => setFilterTags(e)}
-              value={filterTags}
-              sx={{minWidth: 200}}
-            />
-          )}
-          <HoverHelp description="Filter by tag" enableWrapper>
-            <IconButton
-              onClick={() => {
-                if (showFilter) setFilterTags([])
-                setShowFilter(!showFilter)
-              }}
-            >
-              {showFilter ? <FilterAltOffIcon /> : <FilterAltIcon />}
-            </IconButton>
-          </HoverHelp>
-        </Stack>
+        <ProjectBoardFilter
+          smallScreen={smallScreen}
+          tags={state.selected.projectTags}
+          setFilterTags={setFilterTags}
+          filterTags={filterTags}
+        />
       </Stack>
       <Stack direction="row" alignItems="center" spacing={1} ml="auto"></Stack>
       <DndProvider backend={HTML5Backend}>

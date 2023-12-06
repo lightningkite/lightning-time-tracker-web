@@ -3,14 +3,13 @@ import {DataGrid} from "@mui/x-data-grid"
 
 import {type Project} from "api/sdk"
 import DialogForm from "components/DialogForm"
-import type {Tag} from "pages/ProjectDetail/TagTab"
 
 import {type FC, useState, useContext} from "react"
 import {AuthContext} from "utils/context"
 
 export interface TagTableProps {
   project: Project
-  tags: Tag[]
+  tags: string[]
   updateTable: () => void
 }
 
@@ -20,9 +19,9 @@ export const TagTable: FC<TagTableProps> = (props) => {
 
   const [selectedTag, setSelectedTag] = useState<string>()
 
-  const deleteTag = async () => {
-    if (selectedTag === undefined) return
-    Promise.all([
+  const deleteTag = () => {
+    if (selectedTag === undefined) return Promise.reject()
+    return Promise.all([
       session.project.modify(project._id, {
         projectTags: {SetRemoveInstances: [selectedTag]}
       }),
@@ -30,9 +29,10 @@ export const TagTable: FC<TagTableProps> = (props) => {
         condition: {project: {Equal: project._id}},
         modification: {tags: {SetRemoveInstances: [selectedTag]}}
       })
-    ]).finally(() => updateTable())
-
-    setSelectedTag(undefined)
+    ]).then(() => {
+      updateTable()
+      setSelectedTag(undefined)
+    })
   }
 
   return (
@@ -49,7 +49,7 @@ export const TagTable: FC<TagTableProps> = (props) => {
               width: 1000
             }
           ]}
-          rows={tags}
+          rows={tags.map((tag) => ({id: tag, name: tag}))}
           onRowClick={(e) => setSelectedTag(e.row.name)}
           sx={{
             "& .MuiDataGrid-cell, .MuiDataGrid-columnHeader": {

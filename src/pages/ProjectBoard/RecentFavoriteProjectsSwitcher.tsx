@@ -3,7 +3,6 @@ import {
   CardActionArea,
   CardContent,
   Stack,
-  type SxProps,
   Typography,
   useMediaQuery
 } from "@mui/material"
@@ -14,7 +13,6 @@ import {AuthContext} from "utils/context"
 export interface RecentFavoriteProjectsSwitcherProps {
   projects: Project[]
   onSelect: (project: Project) => void
-  sx?: SxProps
 }
 
 export const RecentFavoriteProjectsSwitcher: FC<

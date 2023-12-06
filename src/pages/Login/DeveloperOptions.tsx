@@ -28,7 +28,7 @@ export interface URLOption {
 
 export const backendURLOptions: URLOption[] = [
   {
-    label: "Backend",
+    label: "Local",
     url: "http://localhost:8080"
   },
   {

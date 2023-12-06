@@ -19,8 +19,7 @@ export interface RecentFavoriteProjectsSwitcherProps {
 
 export const RecentFavoriteProjectsSwitcher: FC<
   RecentFavoriteProjectsSwitcherProps
-> = (props) => {
-  const {projects, onSelect} = props
+> = ({projects, onSelect}) => {
   const {currentUser, session} = useContext(AuthContext)
   const [recentProjects, setRecentProjects] = useState<Project[]>([])
   const [favoritesProjects, setFavoritesProjects] = useState<Project[]>([])
@@ -42,10 +41,6 @@ export const RecentFavoriteProjectsSwitcher: FC<
         const recentProjects = projects
           .filter((project) => uniqueProjectNames.includes(project.name))
           .splice(0, 3)
-
-        if (recentProjects.length > 0) {
-          onSelect(projects[0])
-        }
 
         setRecentProjects(recentProjects)
       })

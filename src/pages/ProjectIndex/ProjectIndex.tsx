@@ -29,7 +29,12 @@ export const ProjectIndex: FC = () => {
 
       <RestDataTable
         restEndpoint={session.project}
-        onRowClick={(project) => navigate(`/projects/${project._id}`)}
+        onRowClick={(project, e) => {
+          if (e.ctrlKey) {
+            return window.open(`/projects/${project._id}`, "_blank")
+          }
+          navigate(`/projects/${project._id}`)
+        }}
         searchFields={["name"]}
         dependencies={[refreshTrigger]}
         defaultSorting={[{field: "name", sort: "asc"}]}

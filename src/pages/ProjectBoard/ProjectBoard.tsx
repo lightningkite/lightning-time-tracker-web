@@ -1,5 +1,5 @@
 import {Container, Divider, Stack, useMediaQuery} from "@mui/material"
-import type {Project, Task} from "api/sdk"
+import type {Project, Task, User} from "api/sdk"
 import {TaskState} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
@@ -27,17 +27,20 @@ import {TaskStateColumn} from "./TaskStateColumn"
 import {RecentFavoriteProjectsSwitcher} from "./RecentFavoriteProjectsSwitcher"
 import {ProjectBoardFilter} from "./ProjectBoardFilter"
 import {type Condition} from "@lightningkite/lightning-server-simplified"
+import {stat} from "fs"
 
 const hiddenTaskStates: TaskState[] = [TaskState.Cancelled, TaskState.Delivered]
 
 export const ProjectBoard: FC = () => {
-  const {session, currentUser} = useContext(AuthContext)
+  const {session, currentUser, activeUsers} = useContext(AuthContext)
   const {annotatedTaskEndpoint} = useAnnotatedEndpoints()
   const permissions = usePermissions()
   const [urlParams, setUrlParams] = useSearchParams()
   const navigate = useNavigate()
 
   const [filterTags, setFilterTags] = useState<string[]>([])
+
+  const [selectedUser, setSelectedUser] = useState<string[]>([])
 
   const [state, dispatch] = useReducer(reducer, {status: "loadingProjects"})
   const taskRefreshTrigger = usePeriodicRefresh(10 * 60)
@@ -93,7 +96,20 @@ export const ProjectBoard: FC = () => {
     navigate({search: searchParams.toString()})
 
     const conditions: Condition<Task>[] =
-      filterTags.length > 0
+      selectedUser!.length > 0 && filterTags.length > 0
+        ? [
+            {project: {Equal: state.selected._id}},
+            {state: {NotInside: hiddenTaskStates}},
+            {userName: {IfNotNull: {Inside: selectedUser}}},
+            {tags: {SetAnyElements: {Inside: filterTags}}}
+          ]
+        : selectedUser!.length > 0
+        ? [
+            {project: {Equal: state.selected._id}},
+            {state: {NotInside: hiddenTaskStates}},
+            {userName: {IfNotNull: {Inside: selectedUser}}}
+          ]
+        : filterTags.length > 0
         ? [
             {project: {Equal: state.selected._id}},
             {state: {NotInside: hiddenTaskStates}},
@@ -110,7 +126,8 @@ export const ProjectBoard: FC = () => {
   }, [
     "selected" in state && state.selected._id,
     taskRefreshTrigger,
-    filterTags
+    filterTags,
+    selectedUser
   ])
 
   const tasksByState: Record<TaskState, AnnotatedTask[]> = useMemo(() => {
@@ -196,6 +213,9 @@ export const ProjectBoard: FC = () => {
           tags={state.selected.projectTags}
           setFilterTags={setFilterTags}
           filterTags={filterTags}
+          user={activeUsers.map((u) => u.name)}
+          selectedUser={selectedUser ?? []}
+          setSelectedUser={setSelectedUser}
         />
       </Stack>
       <Stack direction="row" alignItems="center" spacing={1} ml="auto"></Stack>

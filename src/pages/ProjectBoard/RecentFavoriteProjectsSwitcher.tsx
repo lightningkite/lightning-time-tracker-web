@@ -69,7 +69,6 @@ export const RecentFavoriteProjectsSwitcher: FC<
         key={title}
         direction="row"
         spacing={1}
-        // mr="2rem"
         justifyContent="flex-start"
         alignItems="center"
         sx={{ml: 4}}

@@ -5,7 +5,7 @@ import {
   makeFormikTextFieldProps,
   RestAutocompleteInput
 } from "@lightningkite/mui-lightning-components"
-import {Add, Task} from "@mui/icons-material"
+import {Add} from "@mui/icons-material"
 import type {ButtonProps, SxProps} from "@mui/material"
 import {
   Autocomplete,

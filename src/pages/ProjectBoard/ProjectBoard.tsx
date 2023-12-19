@@ -1,5 +1,5 @@
 import {Container, Divider, Stack, useMediaQuery} from "@mui/material"
-import type {Project, Task, User} from "api/sdk"
+import type {Project, Task} from "api/sdk"
 import {TaskState} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
@@ -27,7 +27,6 @@ import {TaskStateColumn} from "./TaskStateColumn"
 import {RecentFavoriteProjectsSwitcher} from "./RecentFavoriteProjectsSwitcher"
 import {ProjectBoardFilter} from "./ProjectBoardFilter"
 import {type Condition} from "@lightningkite/lightning-server-simplified"
-import {stat} from "fs"
 
 const hiddenTaskStates: TaskState[] = [TaskState.Cancelled, TaskState.Delivered]
 
@@ -188,7 +187,7 @@ export const ProjectBoard: FC = () => {
     <Container sx={{maxWidth: "2500px !important"}} disableGutters>
       <Stack
         direction={smallScreen ? "column-reverse" : "row"}
-        sx={{mt: 1, mb: 2, mx: 2}}
+        sx={{mt: 1, mb: 2}}
         spacing={2}
         alignItems={"center"}
         justifyContent={"space-between"}

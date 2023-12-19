@@ -62,7 +62,7 @@ const Settings: FC = () => {
         })
       )
   }
-  console.log(currentUser.webPreferences)
+
   return (
     <Container maxWidth="md">
       <PageHeader title="Settings">

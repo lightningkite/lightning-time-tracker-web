@@ -27,6 +27,7 @@ import {TaskStateColumn} from "./TaskStateColumn"
 import {RecentFavoriteProjectsSwitcher} from "./RecentFavoriteProjectsSwitcher"
 import {ProjectBoardFilter} from "./ProjectBoardFilter"
 import {type Condition} from "@lightningkite/lightning-server-simplified"
+import {parsePreferences} from "utils/helpers"
 
 const hiddenTaskStates: TaskState[] = [TaskState.Cancelled, TaskState.Delivered]
 
@@ -46,6 +47,8 @@ export const ProjectBoard: FC = () => {
   const smallScreen = useMediaQuery("(max-width: 1400px)")
 
   const projectUrl = urlParams.get("project")
+
+  const preferences = parsePreferences(currentUser.webPreferences)
 
   const onChangeProject = (project: Project) => {
     if ("selected" in state && state.selected._id === project._id) return
@@ -187,26 +190,31 @@ export const ProjectBoard: FC = () => {
     <Container sx={{maxWidth: "2500px !important"}} disableGutters>
       <Stack
         direction={smallScreen ? "column-reverse" : "row"}
-        sx={{mt: 1, mb: 2}}
+        sx={{mt: 1, mb: 2, ml: 2}}
         spacing={2}
         alignItems={"center"}
-        justifyContent={"space-between"}
+        // justifyContent={"space-between"}
       >
-        <Stack
-          direction={"row"}
-          alignItems={"center"}
-          justifyContent={"space-between"}
-        >
-          <ProjectSwitcher
-            projects={state.projects}
-            selected={state.selected}
-            onSelect={onChangeProject}
-          />
+        <ProjectSwitcher
+          projects={state.projects}
+          selected={state.selected}
+          onSelect={onChangeProject}
+        />
+
+        {preferences.favoritePrefrences === "show" && (
           <RecentFavoriteProjectsSwitcher
             projects={state.projects}
             onSelect={onChangeProject}
           />
-        </Stack>
+        )}
+      </Stack>
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={1}
+        ml="auto"
+        sx={{ml: 1, mb: 2}}
+      >
         <ProjectBoardFilter
           smallScreen={smallScreen}
           tags={state.selected.projectTags}
@@ -217,7 +225,6 @@ export const ProjectBoard: FC = () => {
           setSelectedUser={setSelectedUser}
         />
       </Stack>
-      <Stack direction="row" alignItems="center" spacing={1} ml="auto"></Stack>
       <DndProvider backend={HTML5Backend}>
         <Stack
           direction="row"

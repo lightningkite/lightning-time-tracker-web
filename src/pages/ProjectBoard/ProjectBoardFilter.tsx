@@ -31,6 +31,13 @@ export const ProjectBoardFilter: FC<ProjectBoardFilterProps> = ({
 
   return (
     <Stack direction={"row"} alignItems={"center"}>
+      <HoverHelp description="Filter by tag" enableWrapper>
+        <IconButton
+          onClick={() => (showFilter ? onClose() : setShowFilter(true))}
+        >
+          {showFilter ? <FilterAltOffIcon /> : <FilterAltIcon />}
+        </IconButton>
+      </HoverHelp>
       {showFilter && (
         <>
           <Autocomplete
@@ -42,7 +49,8 @@ export const ProjectBoardFilter: FC<ProjectBoardFilterProps> = ({
             sx={{
               width: "100%",
               minWidth: 250,
-              mr: 2
+              mr: 2,
+              ml: 2
             }}
           />
           <Autocomplete
@@ -53,20 +61,11 @@ export const ProjectBoardFilter: FC<ProjectBoardFilterProps> = ({
             value={selectedUser}
             sx={{
               width: "100%",
-              minWidth: 250,
-              mr: 2
+              minWidth: 250
             }}
           />
         </>
       )}
-
-      <HoverHelp description="Filter by tag" enableWrapper>
-        <IconButton
-          onClick={() => (showFilter ? onClose() : setShowFilter(true))}
-        >
-          {showFilter ? <FilterAltOffIcon /> : <FilterAltIcon />}
-        </IconButton>
-      </HoverHelp>
     </Stack>
   )
 }

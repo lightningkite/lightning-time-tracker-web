@@ -1,4 +1,4 @@
-import {DarkMode, LightMode} from "@mui/icons-material"
+import {CheckBox, DarkMode, LightMode} from "@mui/icons-material"
 import {
   Button,
   Card,
@@ -27,6 +27,7 @@ export interface WebPreferences {
   mode: "light" | "dark"
   themeColor: string
   summaryTime: "day" | "week"
+  favoritePrefrences: "show" | "dontShow"
 }
 
 const Settings: FC = () => {
@@ -61,7 +62,7 @@ const Settings: FC = () => {
         })
       )
   }
-
+  console.log(currentUser.webPreferences)
   return (
     <Container maxWidth="md">
       <PageHeader title="Settings">
@@ -108,6 +109,36 @@ const Settings: FC = () => {
                       value="week"
                       control={<Radio />}
                       label="This Week"
+                    />
+                  </RadioGroup>
+                </FormControl>
+              </FormSection>
+              <FormSection>
+                <FormControl>
+                  <FormLabel>Show Favorites</FormLabel>
+                  <FormHelperText>
+                    Choose if the Recents and Favorites section of Project
+                    Boards is shown
+                  </FormHelperText>
+                  <RadioGroup
+                    value={preferences.favoritePrefrences}
+                    onChange={(e) =>
+                      updatePreferences({
+                        favoritePrefrences: e.target.value as
+                          | "show"
+                          | "dontShow"
+                      })
+                    }
+                  >
+                    <FormControlLabel
+                      value="show"
+                      control={<Radio />}
+                      label="Show"
+                    />
+                    <FormControlLabel
+                      value="dontShow"
+                      control={<Radio />}
+                      label="Hide"
                     />
                   </RadioGroup>
                 </FormControl>

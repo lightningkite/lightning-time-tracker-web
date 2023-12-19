@@ -71,13 +71,13 @@ export const RecentFavoriteProjectsSwitcher: FC<
         spacing={1}
         justifyContent="flex-start"
         alignItems="center"
-        sx={{ml: 4}}
+        sx={{ml: 2}}
       >
         <Typography>{title}:</Typography>
         {projects.map((project) => (
           <Card key={project._id}>
             <CardActionArea onClick={() => onSelect(project)}>
-              <CardContent sx={{width: "100%", maxWidth: "200px"}}>
+              <CardContent sx={{width: "100%", maxWidth: "150px"}}>
                 <Typography
                   sx={{
                     whiteSpace: "nowrap",

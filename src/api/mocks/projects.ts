@@ -14,7 +14,8 @@ export function generateProjects(
         organization: rand(organizations)._id,
         notes: "",
         rate: 100,
-        createdAt: randPastDate().toISOString()
+        createdAt: randPastDate().toISOString(),
+        projectTags: []
       }
     }
   )

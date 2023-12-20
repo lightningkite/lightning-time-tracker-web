@@ -20,7 +20,11 @@ import {usePermissions} from "hooks/usePermissions"
 import type {FC} from "react"
 import React, {useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext, TimerContext} from "utils/context"
-import {booleanCompare, compareTasksByState} from "utils/helpers"
+import {
+  booleanCompare,
+  compareTasksByPriority,
+  compareTasksByState
+} from "utils/helpers"
 import {TaskListItem} from "./TaskListItem"
 
 export const ProjectsTasks: FC = () => {
@@ -155,7 +159,12 @@ export const ProjectsTasks: FC = () => {
                       return (
                         booleanCompare(a, b, (t) => t.emergency) ||
                         compareTasksByState(a, b) ||
-                        booleanCompare(a, b, (t) => t.user === currentUser._id)
+                        booleanCompare(
+                          a,
+                          b,
+                          (t) => t.user === currentUser._id
+                        ) ||
+                        compareTasksByPriority(a, b)
                       )
                     })
                     .map((task) => (

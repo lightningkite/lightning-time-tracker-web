@@ -9,6 +9,7 @@ import {
 import {LoadingButton} from "@mui/lab"
 import {
   Alert,
+  Autocomplete,
   Checkbox,
   FormControlLabel,
   InputAdornment,
@@ -21,11 +22,12 @@ import {TaskState} from "api/sdk"
 import {AttachmentsInput} from "components/AttachmentsInput"
 import FormSection from "components/FormSection"
 import {LabeledInfo} from "components/LabeledInfo"
+import {PrioritySlider} from "components/PrioritySlider"
 import dayjs from "dayjs"
 import {useFormik} from "formik"
 import {usePermissions} from "hooks/usePermissions"
 import type {FC} from "react"
-import React, {useContext, useEffect, useState} from "react"
+import {useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {
   dynamicFormatDate,
@@ -56,6 +58,8 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
   const [loadedInitialAsyncValues, setLoadedInitialAsyncValues] =
     useState(false)
 
+  const [possibleTags, setPossibleTags] = useState<string[]>([])
+
   const canEdit = permissions.canManageAllTasks
   const canEditSomeFields =
     canEdit || [TaskState.Active, TaskState.Hold].includes(task.state)
@@ -70,24 +74,25 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       description: task.description,
       estimate: task.estimate?.toString() ?? "",
       emergency: task.emergency,
-      pullRequestLink: task.pullRequestLink
+      priority: task.priority,
+      pullRequestLink: task.pullRequestLink,
+      tags: task.tags
     },
     validationSchema,
 
     onSubmit: async (values, {resetForm}) => {
       setError("")
-
-      const formattedValues: Partial<Task> = !canEdit
+      const formattedValues: Partial<Task> = canEdit
         ? {
-            summary: values.summary,
-            description: values.description,
-            attachments: values.attachments
-          }
-        : {
             ...values,
             user: values.user?._id,
             project: values.project?._id,
             estimate: values.estimate ? +values.estimate : null
+          }
+        : {
+            summary: values.summary,
+            description: values.description,
+            attachments: values.attachments
           }
 
       // Automatically builds the Lightning Server modification given the old object and the new values
@@ -115,6 +120,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       task.user && canEdit ? session.user.detail(task.user) : null
     ])
       .then(([project, user]) => {
+        setPossibleTags(project.projectTags)
         formik.resetForm({values: {...formik.values, user, project}})
         setLoadedInitialAsyncValues(true)
       })
@@ -208,6 +214,16 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
             {...makeFormikAutocompleteProps(formik, "project")}
           />
 
+          <Autocomplete
+            renderInput={(params) => <TextField {...params} label={"Tags"} />}
+            options={possibleTags ?? []}
+            multiple
+            onChange={(_, v) => {
+              formik.setFieldValue("tags", v)
+            }}
+            value={formik.values.tags}
+          />
+
           <TextField
             label="Estimate (hours)"
             {...makeFormikNumericTextFieldProps(formik, "estimate")}
@@ -230,10 +246,14 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
             }
             label="Emergency"
           />
+          <PrioritySlider
+            onChange={(v) => formik.setFieldValue("priority", v)}
+            value={formik.values.priority}
+          />
         </FormSection>
       )}
 
-      <Stack mt={2} spacing={2}>
+      <Stack mt={4} spacing={2}>
         {error && <Alert severity="error">{error}</Alert>}
 
         <LoadingButton
@@ -243,7 +263,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
           variant="contained"
           color="primary"
           loading={formik.isSubmitting}
-          style={{alignSelf: "end"}}
+          style={{alignSelf: "end", marginTop: 30}}
           disabled={!formik.dirty}
         >
           {formik.dirty ? "Save Changes" : "Saved"}

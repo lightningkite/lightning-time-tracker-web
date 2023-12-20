@@ -1,5 +1,5 @@
 import {Container, Divider, Stack, useMediaQuery} from "@mui/material"
-import type {Project} from "api/sdk"
+import type {Project, Task} from "api/sdk"
 import {TaskState} from "api/sdk"
 import ErrorAlert from "components/ErrorAlert"
 import Loading from "components/Loading"
@@ -14,30 +14,41 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useReducer
+  useReducer,
+  useState
 } from "react"
 import {DndProvider} from "react-dnd"
 import {HTML5Backend} from "react-dnd-html5-backend"
-import {useSearchParams} from "react-router-dom"
+import {useNavigate, useSearchParams} from "react-router-dom"
 import {AuthContext} from "utils/context"
 import {CompactColumn} from "./CompactColumn"
 import {ProjectSwitcher} from "./ProjectSwitcher"
 import {TaskStateColumn} from "./TaskStateColumn"
 import {RecentFavoriteProjectsSwitcher} from "./RecentFavoriteProjectsSwitcher"
+import {ProjectBoardFilter} from "./ProjectBoardFilter"
+import {type Condition} from "@lightningkite/lightning-server-simplified"
+import {parsePreferences} from "utils/helpers"
 
 const hiddenTaskStates: TaskState[] = [TaskState.Cancelled, TaskState.Delivered]
 
 export const ProjectBoard: FC = () => {
-  const {session, currentUser} = useContext(AuthContext)
+  const {session, currentUser, activeUsers} = useContext(AuthContext)
   const {annotatedTaskEndpoint} = useAnnotatedEndpoints()
   const permissions = usePermissions()
   const [urlParams, setUrlParams] = useSearchParams()
+  const navigate = useNavigate()
+
+  const [filterTags, setFilterTags] = useState<string[]>([])
+
+  const [selectedUser, setSelectedUser] = useState<string[]>([])
 
   const [state, dispatch] = useReducer(reducer, {status: "loadingProjects"})
   const taskRefreshTrigger = usePeriodicRefresh(10 * 60)
   const smallScreen = useMediaQuery("(max-width: 1400px)")
 
   const projectUrl = urlParams.get("project")
+
+  const preferences = parsePreferences(currentUser.webPreferences)
 
   const onChangeProject = (project: Project) => {
     if ("selected" in state && state.selected._id === project._id) return
@@ -49,7 +60,9 @@ export const ProjectBoard: FC = () => {
   useEffect(() => {
     session.project
       .query({
-        condition: {organization: {Equal: currentUser.organization}},
+        condition: {
+          And: [{organization: {Equal: currentUser.organization}}]
+        },
         orderBy: ["name"]
       })
       .then((projects) => {
@@ -79,18 +92,45 @@ export const ProjectBoard: FC = () => {
   useEffect(() => {
     if (!("selected" in state)) return
 
-    annotatedTaskEndpoint
-      .query({
-        condition: {
-          And: [
+    // Update selected project in query
+    const searchParams = new URLSearchParams(location.search)
+    searchParams.set("project", state.selected._id)
+    navigate({search: searchParams.toString()})
+
+    const conditions: Condition<Task>[] =
+      selectedUser!.length > 0 && filterTags.length > 0
+        ? [
+            {project: {Equal: state.selected._id}},
+            {state: {NotInside: hiddenTaskStates}},
+            {userName: {IfNotNull: {Inside: selectedUser}}},
+            {tags: {SetAnyElements: {Inside: filterTags}}}
+          ]
+        : selectedUser!.length > 0
+        ? [
+            {project: {Equal: state.selected._id}},
+            {state: {NotInside: hiddenTaskStates}},
+            {userName: {IfNotNull: {Inside: selectedUser}}}
+          ]
+        : filterTags.length > 0
+        ? [
+            {project: {Equal: state.selected._id}},
+            {state: {NotInside: hiddenTaskStates}},
+            {tags: {SetAnyElements: {Inside: filterTags}}}
+          ]
+        : [
             {project: {Equal: state.selected._id}},
             {state: {NotInside: hiddenTaskStates}}
           ]
-        },
-        limit: 1000
-      })
+
+    annotatedTaskEndpoint
+      .query({condition: {And: conditions}, limit: 1000})
       .then((tasks: AnnotatedTask[]) => dispatch({type: "setTasks", tasks}))
-  }, ["selected" in state && state.selected._id, taskRefreshTrigger])
+  }, [
+    "selected" in state && state.selected._id,
+    taskRefreshTrigger,
+    filterTags,
+    selectedUser
+  ])
 
   const tasksByState: Record<TaskState, AnnotatedTask[]> = useMemo(() => {
     const map: Record<TaskState, AnnotatedTask[]> = {
@@ -111,6 +151,8 @@ export const ProjectBoard: FC = () => {
           if (a.user === currentUser._id && b.user !== currentUser._id)
             return -1
           if (a.user !== currentUser._id && b.user === currentUser._id) return 1
+          const priorityDiff = b.priority - a.priority
+          if (priorityDiff !== 0) return priorityDiff
           return dayjs(a.createdAt).diff(dayjs(b.createdAt))
         })
         .forEach((task) => map[task.state].push(task))
@@ -122,7 +164,6 @@ export const ProjectBoard: FC = () => {
   const handleDrop = useCallback(
     (task: AnnotatedTask, newState: TaskState) => {
       if (!("tasks" in state)) return
-
       const previousState = task.state
       dispatch({
         type: "updateTask",
@@ -149,17 +190,39 @@ export const ProjectBoard: FC = () => {
     <Container sx={{maxWidth: "2500px !important"}} disableGutters>
       <Stack
         direction={smallScreen ? "column-reverse" : "row"}
-        sx={{mt: 1, mb: 2, mx: 2}}
+        sx={{mt: 1, mb: 2, ml: 2}}
         spacing={2}
+        alignItems={"center"}
+        // justifyContent={"space-between"}
       >
         <ProjectSwitcher
           projects={state.projects}
           selected={state.selected}
           onSelect={onChangeProject}
         />
-        <RecentFavoriteProjectsSwitcher
-          projects={state.projects}
-          onSelect={onChangeProject}
+
+        {preferences.favoritePrefrences === "show" && (
+          <RecentFavoriteProjectsSwitcher
+            projects={state.projects}
+            onSelect={onChangeProject}
+          />
+        )}
+      </Stack>
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={1}
+        ml="auto"
+        sx={{ml: 1, mb: 2}}
+      >
+        <ProjectBoardFilter
+          smallScreen={smallScreen}
+          tags={state.selected.projectTags}
+          setFilterTags={setFilterTags}
+          filterTags={filterTags}
+          user={activeUsers.map((u) => u.name)}
+          selectedUser={selectedUser ?? []}
+          setSelectedUser={setSelectedUser}
         />
       </Stack>
       <DndProvider backend={HTML5Backend}>

@@ -8,6 +8,7 @@ import {
 import {Add} from "@mui/icons-material"
 import type {ButtonProps, SxProps} from "@mui/material"
 import {
+  Autocomplete,
   Button,
   Checkbox,
   FormControlLabel,
@@ -26,6 +27,7 @@ import React, {useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {makeUserTaskCondition} from "utils/helpers"
 import * as yup from "yup"
+import {PrioritySlider} from "./PrioritySlider"
 
 const validationSchema = yup.object().shape({
   project: yup.object().required("Required").nullable(),
@@ -59,6 +61,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
   const permissions = usePermissions()
 
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [tagOptions, setTagOptions] = useState<string[] | undefined>([])
   const [inputRef, setInputFocus] = useFocus()
 
   function onClose() {
@@ -68,6 +71,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
 
   useEffect(() => {
     setTimeout(setInputFocus, 100)
+    setTagOptions(initialProject?.projectTags)
   }, [showCreateForm])
 
   const formik = useFormik({
@@ -77,7 +81,9 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
       summary: "",
       description: "",
       estimate: "",
-      emergency: false
+      emergency: false,
+      priority: 0.0,
+      tags: []
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -185,6 +191,20 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
             />
           )}
 
+          <Autocomplete
+            renderInput={(params) => <TextField {...params} label={"Tags"} />}
+            options={tagOptions ?? []}
+            multiple
+            onChange={(_, v) => {
+              formik.setFieldValue("tags", v)
+            }}
+            value={formik.values.tags}
+          />
+
+          <PrioritySlider
+            onChange={(value) => formik.setFieldValue("priority", value)}
+            value={formik.values.priority}
+          />
           <FormControlLabel
             control={
               <Checkbox {...makeFormikCheckboxProps(formik, "emergency")} />

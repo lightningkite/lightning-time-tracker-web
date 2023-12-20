@@ -44,7 +44,8 @@ export const AddProjectButton: FC<AddProjectButtonProps> = (props) => {
         organization: currentUser.organization,
         rate: values.rate ? +values.rate : undefined,
         createdAt: new Date().toISOString(),
-        notes: ""
+        notes: "",
+        projectTags: []
       })
 
       props.afterSubmit()

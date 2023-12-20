@@ -11,6 +11,7 @@ import type {WebPreferences} from "pages/Settings/Settings"
 dayjs.extend(duration)
 dayjs.extend(utc)
 
+
 export const MILLISECONDS_PER_HOUR = 1000 * 60 * 60
 
 export function formatDollars(amount: number, includeCents = true) {
@@ -50,6 +51,10 @@ export function compareTasksByState(a: Task, b: Task): number {
   return taskStateOrder[a.state] - taskStateOrder[b.state]
 }
 
+export function compareTasksByPriority(a: Task, b: Task): number {
+  return b.priority - a.priority
+}
+
 export function stringToDuration(durationString: string): Duration | null {
   if (!durationString) return null
 
@@ -81,7 +86,8 @@ export function parsePreferences(
   const defaultPreferences: WebPreferences = {
     mode: "dark",
     themeColor: "#90D1FF",
-    summaryTime: "week"
+    summaryTime: "week",
+    favoritePrefrences: "show"
   }
   try {
     const parsed = JSON.parse(

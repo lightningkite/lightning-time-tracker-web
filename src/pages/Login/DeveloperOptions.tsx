@@ -28,6 +28,10 @@ export interface URLOption {
 
 export const backendURLOptions: URLOption[] = [
   {
+    label: "Local",
+    url: "http://localhost:8080"
+  },
+  {
     label: "Prod",
     url: "https://time.cs.lightningkite.com"
   }

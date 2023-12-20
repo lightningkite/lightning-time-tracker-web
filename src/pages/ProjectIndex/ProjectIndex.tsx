@@ -29,10 +29,10 @@ export const ProjectIndex: FC = () => {
 
       <RestDataTable
         restEndpoint={session.project}
-        onRowClick={(project, e) => {
-          if (e.ctrlKey) {
-            return window.open(`/projects/${project._id}`, "_blank")
-          }
+        onRowClick={(project) => {
+          // if (e.ctrlKey) {
+          //   return window.open(`/projects/${project._id}`, "_blank")
+          // }
           navigate(`/projects/${project._id}`)
         }}
         searchFields={["name"]}

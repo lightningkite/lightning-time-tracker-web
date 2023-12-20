@@ -12,6 +12,7 @@ import {AuthContext} from "utils/context"
 import {ProjectForm} from "./ProjectForm"
 import {TaskTab} from "./TaskTab"
 import {TimeEntryTab} from "./TimeEntryTab"
+import TagTab from "./TagTab"
 
 const ProjectDetail: FC = () => {
   const {projectId} = useParams()
@@ -21,11 +22,15 @@ const ProjectDetail: FC = () => {
   const [project, setProject] = useState<Project | null>()
   const [tab, setTab] = useState("1")
 
-  useEffect(() => {
+  const refreshProject = () => {
     session.project
       .detail(projectId!)
       .then(setProject)
       .catch(() => setProject(null))
+  }
+
+  useEffect(() => {
+    refreshProject()
   }, [projectId])
 
   if (project === undefined) {
@@ -63,6 +68,7 @@ const ProjectDetail: FC = () => {
             {permissions.canViewIndividualTimeEntries && (
               <Tab label="Time Entries" value="2" />
             )}
+            <Tab label="Tags" value="3" />
           </TabList>
         </Paper>
 
@@ -71,6 +77,9 @@ const ProjectDetail: FC = () => {
         </TabPanel>
         <TabPanel value="2" sx={{p: 0}}>
           <TimeEntryTab project={project} />
+        </TabPanel>
+        <TabPanel value="3" sx={{p: 0}}>
+          <TagTab project={project} refreshProject={refreshProject} />
         </TabPanel>
       </TabContext>
     </Container>

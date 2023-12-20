@@ -37,7 +37,7 @@ export const TimeEntryTable: FC<TimeEntryTableProps> = (props) => {
       valueFormatter: ({value}) => dynamicFormatDate(dayjs(value))
     },
     {
-      field: "duration",
+      field: "durationMilliseconds",
       headerName: "Duration",
       valueGetter: (params) =>
         dayjs

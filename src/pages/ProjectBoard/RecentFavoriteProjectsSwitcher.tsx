@@ -71,7 +71,7 @@ export const RecentFavoriteProjectsSwitcher: FC<
         spacing={1}
         justifyContent="flex-start"
         alignItems="center"
-        sx={{ml: 2}}
+        sx={{ml: 2, mb: 1, mt: 1}}
       >
         <Typography>{title}:</Typography>
         {projects.map((project) => (

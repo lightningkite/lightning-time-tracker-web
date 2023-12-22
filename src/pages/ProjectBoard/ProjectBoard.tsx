@@ -189,7 +189,7 @@ export const ProjectBoard: FC = () => {
   return (
     <Container sx={{maxWidth: "2500px !important"}} disableGutters>
       <Stack
-        direction={smallScreen ? "column-reverse" : "row"}
+        direction={"row"}
         sx={{mt: 1, mb: 2, ml: 2}}
         spacing={2}
         alignItems={"center"}
@@ -201,12 +201,14 @@ export const ProjectBoard: FC = () => {
           onSelect={onChangeProject}
         />
 
-        {preferences.favoritePrefrences === "show" && (
-          <RecentFavoriteProjectsSwitcher
-            projects={state.projects}
-            onSelect={onChangeProject}
-          />
-        )}
+        <Stack direction={smallScreen ? "column-reverse" : "row"}>
+          {preferences.favoritePrefrences === "show" && (
+            <RecentFavoriteProjectsSwitcher
+              projects={state.projects}
+              onSelect={onChangeProject}
+            />
+          )}
+        </Stack>
       </Stack>
       <Stack
         direction="row"

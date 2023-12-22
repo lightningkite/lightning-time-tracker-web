@@ -5,7 +5,7 @@ import {UserRole} from "api/sdk"
 import PageHeader from "components/PageHeader"
 import {usePermissions} from "hooks/usePermissions"
 import type {FC} from "react"
-import React, {useContext, useState} from "react"
+import React, {useContext, useEffect, useState} from "react"
 import {AuthContext} from "utils/context"
 import {HoursByDateReport} from "./HoursByDateReport"
 import {HoursByProjectReport} from "./HoursByProjectReport"
@@ -43,6 +43,8 @@ const ReportsPage: FC = () => {
       (!!limitToProjects && limitToProjects.length > 1)
     )
   })()
+
+  useEffect(() => {}, [])
 
   return (
     <Container maxWidth="xl">

@@ -1,7 +1,7 @@
 import type {Condition} from "@lightningkite/lightning-server-simplified"
 import type {FilterOption} from "@lightningkite/mui-lightning-components"
 import {FilterBar} from "@lightningkite/mui-lightning-components"
-import {Skeleton, Stack, Typography} from "@mui/material"
+import {Button, Skeleton, Stack, Typography} from "@mui/material"
 import type {Project, Task, TimeEntry, User} from "api/sdk"
 import type {Dayjs} from "dayjs"
 import dayjs from "dayjs"
@@ -111,6 +111,8 @@ export const ReportFilters: FC<ReportFiltersProps> = (props) => {
     setReportFilterValues((prev) => (prev ? {...prev, dateRange: date} : prev))
   }
 
+  const refresher = () => new Date().toString()
+
   const filterOptions = useMemo(() => {
     if (!users || !projects) return []
 
@@ -169,6 +171,7 @@ export const ReportFilters: FC<ReportFiltersProps> = (props) => {
 
   return (
     <>
+      <Button onClick={refresher}>refresh</Button>
       <FilterBar
         filterOptions={filterOptions}
         onActiveFiltersChange={(activeFilters) => {

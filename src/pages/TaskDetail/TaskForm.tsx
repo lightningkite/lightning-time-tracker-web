@@ -1,21 +1,27 @@
 import {makeObjectModification} from "@lightningkite/lightning-server-simplified"
 import {
+  HoverHelp,
   makeFormikAutocompleteProps,
   makeFormikCheckboxProps,
   makeFormikNumericTextFieldProps,
   makeFormikTextFieldProps,
   RestAutocompleteInput
 } from "@lightningkite/mui-lightning-components"
+import {Edit, Sell} from "@mui/icons-material"
 import {LoadingButton} from "@mui/lab"
 import {
   Alert,
   Autocomplete,
+  Badge,
   Checkbox,
   FormControlLabel,
+  IconButton,
   InputAdornment,
+  Link,
   MenuItem,
   Stack,
-  TextField
+  TextField,
+  Typography
 } from "@mui/material"
 import type {Project, Task, User} from "api/sdk"
 import {TaskState} from "api/sdk"
@@ -28,6 +34,7 @@ import {useFormik} from "formik"
 import {usePermissions} from "hooks/usePermissions"
 import type {FC} from "react"
 import {useContext, useEffect, useState} from "react"
+import {useNavigate} from "react-router-dom"
 import {AuthContext} from "utils/context"
 import {
   dynamicFormatDate,
@@ -54,7 +61,11 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
   const {session} = useContext(AuthContext)
   const permissions = usePermissions()
 
+  const navigate = useNavigate()
+
   const [error, setError] = useState("")
+  const [editing, setEditing] = useState(false)
+
   const [loadedInitialAsyncValues, setLoadedInitialAsyncValues] =
     useState(false)
 
@@ -146,25 +157,59 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
         />
 
         {permissions.doesCareAboutPRs && (
-          <TextField
-            label="Pull Request"
-            {...makeFormikTextFieldProps(formik, "pullRequestLink")}
-            disabled={!canEdit}
-          />
+          <>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <HoverHelp
+                description="Edit Pull Request"
+                enableWrapper
+                sx={{ml: "auto", mr: 1}}
+              >
+                <IconButton onClick={() => setEditing(!editing)}>
+                  <Badge color="primary">
+                    <Edit />
+                  </Badge>
+                </IconButton>
+              </HoverHelp>
+              {editing && (
+                <TextField
+                  label="Pull Request"
+                  {...makeFormikTextFieldProps(formik, "pullRequestLink")}
+                  disabled={!canEdit}
+                  fullWidth
+                />
+              )}
+              {!editing && (
+                <LabeledInfo
+                  label="Pull Request"
+                  onClick={() =>
+                    window.open(`${task.pullRequestLink}`, "_blank")
+                  }
+                >
+                  {task.pullRequestLink}
+                </LabeledInfo>
+              )}
+            </Stack>
+          </>
         )}
 
-        <AttachmentsInput
-          attachments={formik.values.attachments}
-          onChange={(value) => {
-            formik.setFieldValue("attachments", value)
-          }}
-          error={
-            formik.submitCount
-              ? (formik.errors.attachments as string)
-              : undefined
-          }
-          disabled={!canEditSomeFields}
-        />
+        <FormSection title="Attachments">
+          <AttachmentsInput
+            attachments={formik.values.attachments}
+            onChange={(value) => {
+              formik.setFieldValue("attachments", value)
+            }}
+            error={
+              formik.submitCount
+                ? (formik.errors.attachments as string)
+                : undefined
+            }
+            disabled={!canEditSomeFields}
+          />
+        </FormSection>
       </FormSection>
 
       {canEdit && (

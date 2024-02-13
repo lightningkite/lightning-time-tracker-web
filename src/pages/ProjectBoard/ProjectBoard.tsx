@@ -29,8 +29,6 @@ import {ProjectBoardFilter} from "./ProjectBoardFilter"
 import {type Condition} from "@lightningkite/lightning-server-simplified"
 import {parsePreferences} from "utils/helpers"
 
-const hiddenTaskStates: TaskState[] = [TaskState.Cancelled, TaskState.Delivered]
-
 export const ProjectBoard: FC = () => {
   const {session, currentUser, activeUsers} = useContext(AuthContext)
   const {annotatedTaskEndpoint} = useAnnotatedEndpoints()
@@ -49,6 +47,18 @@ export const ProjectBoard: FC = () => {
   const projectUrl = urlParams.get("project")
 
   const preferences = parsePreferences(currentUser.webPreferences)
+
+  const alwaysHiddenTaskStates = [TaskState.Cancelled, TaskState.Delivered]
+
+  const hiddenTaskStates: TaskState[] = permissions.canViewTesting
+    ? alwaysHiddenTaskStates
+    : [
+        ...alwaysHiddenTaskStates,
+        TaskState.Hold,
+        TaskState.Active,
+        TaskState.PullRequest,
+        TaskState.Testing
+      ]
 
   const onChangeProject = (project: Project) => {
     if ("selected" in state && state.selected._id === project._id) return
@@ -106,21 +116,21 @@ export const ProjectBoard: FC = () => {
             {tags: {SetAnyElements: {Inside: filterTags}}}
           ]
         : selectedUser!.length > 0
-        ? [
-            {project: {Equal: state.selected._id}},
-            {state: {NotInside: hiddenTaskStates}},
-            {userName: {IfNotNull: {Inside: selectedUser}}}
-          ]
-        : filterTags.length > 0
-        ? [
-            {project: {Equal: state.selected._id}},
-            {state: {NotInside: hiddenTaskStates}},
-            {tags: {SetAnyElements: {Inside: filterTags}}}
-          ]
-        : [
-            {project: {Equal: state.selected._id}},
-            {state: {NotInside: hiddenTaskStates}}
-          ]
+          ? [
+              {project: {Equal: state.selected._id}},
+              {state: {NotInside: hiddenTaskStates}},
+              {userName: {IfNotNull: {Inside: selectedUser}}}
+            ]
+          : filterTags.length > 0
+            ? [
+                {project: {Equal: state.selected._id}},
+                {state: {NotInside: hiddenTaskStates}},
+                {tags: {SetAnyElements: {Inside: filterTags}}}
+              ]
+            : [
+                {project: {Equal: state.selected._id}},
+                {state: {NotInside: hiddenTaskStates}}
+              ]
 
     annotatedTaskEndpoint
       .query({condition: {And: conditions}, limit: 1000})
@@ -193,7 +203,6 @@ export const ProjectBoard: FC = () => {
         sx={{mt: 1, mb: 2, ml: 2}}
         spacing={2}
         alignItems={"center"}
-        // justifyContent={"space-between"}
       >
         <ProjectSwitcher
           projects={state.projects}

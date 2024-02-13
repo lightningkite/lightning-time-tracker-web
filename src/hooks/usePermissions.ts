@@ -1,13 +1,13 @@
-import {UserRole} from "api/sdk"
+import {type UserRole} from "api/sdk"
 import {useContext} from "react"
 import {AuthContext} from "../utils/context"
 
 export function usePermissions() {
   const {
-    currentUser: {role, isSuperUser, limitToProjects}
+    currentUser: {role, isSuperUser}
   } = useContext(AuthContext)
 
-  function isA(...roles: UserRole[]) {
+  function isA(...roles: `${UserRole}`[]) {
     return !!role && roles.includes(role)
   }
 
@@ -15,46 +15,47 @@ export function usePermissions() {
   const usePermissionsReturn = {
     // USERS
     canManageAllUsers: false as boolean,
-    canViewIndividualUsers: isA(
-      UserRole.InternalTeamMember,
-      UserRole.Contractor
-    ),
+    canViewIndividualUsers: isA("InternalTeamMember", "Contractor"),
 
     // TIME
-    canSubmitTime: isA(UserRole.InternalTeamMember, UserRole.Contractor),
+    canSubmitTime: isA("InternalTeamMember", "Contractor"),
     canManageAllTime: false as boolean,
-    canViewIndividualTimeEntries: isA(
-      UserRole.InternalTeamMember,
-      UserRole.Contractor
-    ),
+    canViewIndividualTimeEntries: isA("InternalTeamMember", "Contractor"),
 
     // PROJECTS
-    canManageAllProjects: isA(UserRole.InternalTeamMember),
-    canViewProjectsTab:
-      isA(UserRole.InternalTeamMember) || !!limitToProjects?.length,
+    canManageAllProjects: isA("InternalTeamMember"),
+    canViewProjectsTab: isA("InternalTeamMember"),
 
     // TASKS
-    canDeliverTasks: isA(UserRole.Client),
+    canDeliverTasks: isA("Client", "ClientTesting"),
     canReportNewTasks: true as boolean,
-    canManageAllTasks: isA(UserRole.InternalTeamMember),
+    canManageAllTasks: isA("InternalTeamMember"),
     canBeAssignedTasks: isA(
-      UserRole.InternalTeamMember,
-      UserRole.ExternalTeamMember,
-      UserRole.Contractor
+      "InternalTeamMember",
+      "ExternalTeamMember",
+      "Contractor"
     ),
     doesCareAboutPRs: isA(
-      UserRole.InternalTeamMember,
-      UserRole.Contractor,
-      UserRole.ExternalTeamMember
+      "InternalTeamMember",
+      "Contractor",
+      "ExternalTeamMember"
+    ),
+    canViewTesting: isA(
+      "Owner",
+      "InternalTeamMember",
+      "Contractor",
+      "Client",
+      "ClientNoBilling",
+      "ExternalTeamMember"
     ),
 
     // REPORTS
-    canViewInternalReports: isA(UserRole.InternalTeamMember),
-    canViewClientReports: isA(UserRole.Client)
+    canViewInternalReports: isA("InternalTeamMember"),
+    canViewClientReports: isA("Client")
   } satisfies Record<string, boolean>
 
   // Super users and owners can do everything
-  if (isSuperUser || isA(UserRole.Owner)) {
+  if (isSuperUser || isA("Owner")) {
     Object.keys(usePermissionsReturn).forEach((key) => {
       usePermissionsReturn[key as keyof typeof usePermissionsReturn] = true
     })

@@ -100,13 +100,19 @@ export const UserForm: FC<UserFormProps> = (props) => {
     }
   })
 
+  const showFavoriteProjectsTab = (() => {
+    if (user._id !== currentUser._id) return false
+    if (!user.limitToProjects) return true
+    return user.limitToProjects.length > 1
+  })()
+
   return (
     <Stack gap={3}>
       <TextField label="Email" {...makeFormikTextFieldProps(formik, "email")} />
 
       <TextField label="Name" {...makeFormikTextFieldProps(formik, "name")} />
 
-      {user._id === currentUser._id && (
+      {showFavoriteProjectsTab && (
         <Autocomplete
           multiple
           options={projectOptions ?? []}

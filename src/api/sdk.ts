@@ -165,6 +165,7 @@ export enum UserRole {
     Contractor = "Contractor",
     Client = "Client",
     ClientNoBilling = "ClientNoBilling",
+    ClientTesting = "ClientTesting",
     ExternalTeamMember = "ExternalTeamMember",
 }
 
@@ -3688,4 +3689,3 @@ export class LiveApi implements Api {
         },
     }
 }
-

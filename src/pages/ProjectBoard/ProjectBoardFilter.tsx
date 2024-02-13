@@ -3,6 +3,7 @@ import {useState, type FC} from "react"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
 import FilterAltOffIcon from "@mui/icons-material/FilterAltOff"
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
+import {usePermissions} from "hooks/usePermissions"
 
 interface ProjectBoardFilterProps {
   smallScreen: boolean
@@ -23,6 +24,8 @@ export const ProjectBoardFilter: FC<ProjectBoardFilterProps> = ({
   setSelectedUser
 }) => {
   const [showFilter, setShowFilter] = useState<boolean>(false)
+
+  const permissions = usePermissions()
 
   const onClose = () => {
     setFilterTags([])
@@ -53,17 +56,21 @@ export const ProjectBoardFilter: FC<ProjectBoardFilterProps> = ({
               ml: 2
             }}
           />
-          <Autocomplete
-            renderInput={(params) => <TextField {...params} label={"Users"} />}
-            options={user ?? []}
-            multiple
-            onChange={(_, e) => setSelectedUser(e)}
-            value={selectedUser}
-            sx={{
-              width: "100%",
-              minWidth: 250
-            }}
-          />
+          {permissions.canViewIndividualUsers && (
+            <Autocomplete
+              renderInput={(params) => (
+                <TextField {...params} label={"Users"} />
+              )}
+              options={user ?? []}
+              multiple
+              onChange={(_, e) => setSelectedUser(e)}
+              value={selectedUser}
+              sx={{
+                width: "100%",
+                minWidth: 250
+              }}
+            />
+          )}
         </>
       )}
     </Stack>

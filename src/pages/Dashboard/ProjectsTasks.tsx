@@ -26,16 +26,22 @@ import {
   compareTasksByState
 } from "utils/helpers"
 import {TaskListItem} from "./TaskListItem"
+import {TaskModal} from "components/TaskModal"
+import {useNavigate, useSearchParams} from "react-router-dom"
 
 export const ProjectsTasks: FC = () => {
   const {session, currentOrganization, currentUser} = useContext(AuthContext)
   const {timers} = useContext(TimerContext)
   const {annotatedTaskEndpoint} = useAnnotatedEndpoints()
   const permissions = usePermissions()
+  const [urlParams, setUrlParams] = useSearchParams()
+  const navigate = useNavigate()
 
   const [projects, setProjects] = useState<Project[] | null>()
   const [annotatedTasks, setAnnotatedTasks] = useState<AnnotatedTask[] | null>()
   const [initialSorting, setInitialSorting] = useState<string[]>()
+
+  const [focusTask, setFocusTask] = useState<AnnotatedTask | null>(null)
 
   const refreshTrigger = usePeriodicRefresh(10 * 60)
 
@@ -84,6 +90,24 @@ export const ProjectsTasks: FC = () => {
 
       tasksByProject[project._id] = {projectTasks, myTasksCount}
     })
+
+    const allTasks = Object.values(tasksByProject).flatMap(
+      (project) => project.projectTasks
+    )
+    const taskFromParams = urlParams.get("task")
+    if (taskFromParams) {
+      const focussed = allTasks.find((task) => task._id === taskFromParams)
+      if (focussed) {
+        setFocusTask(focussed)
+      } else {
+        // For when the url is displaying a certain task but you don't have that task in your list.
+        session.task
+          .detail(taskFromParams)
+          .then((task) =>
+            navigate(`/project-boards?project=${task.project}&task=${task._id}`)
+          )
+      }
+    }
 
     return tasksByProject
   }, [annotatedTasks, projects])
@@ -171,17 +195,12 @@ export const ProjectsTasks: FC = () => {
                       <TaskListItem
                         annotatedTask={task}
                         refreshDashboard={refreshDashboardData}
+                        openTaskInModal={() => {
+                          urlParams.set("task", task._id)
+                          setUrlParams(urlParams)
+                          setFocusTask(task)
+                        }}
                         key={task._id}
-                        updateTask={(updatedTask) =>
-                          setAnnotatedTasks(
-                            (prev) =>
-                              prev?.map((t) =>
-                                t._id === updatedTask._id
-                                  ? {...t, ...updatedTask}
-                                  : t
-                              )
-                          )
-                        }
                       />
                     ))}
                 </List>
@@ -189,6 +208,21 @@ export const ProjectsTasks: FC = () => {
             </Accordion>
           )
         })}
+
+      <TaskModal
+        task={focusTask}
+        handleClose={() => {
+          urlParams.delete("task")
+          setUrlParams(urlParams)
+          setFocusTask(null)
+        }}
+        setTask={(task) => {
+          setAnnotatedTasks(
+            (prev) =>
+              prev?.map((t) => (t._id === task._id ? {...t, ...task} : t))
+          )
+        }}
+      />
     </Box>
   )
 }

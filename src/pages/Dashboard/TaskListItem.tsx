@@ -13,8 +13,6 @@ import {
   useMediaQuery,
   useTheme
 } from "@mui/material"
-import type {Task} from "api/sdk"
-import {TaskModal} from "components/TaskModal"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
@@ -25,34 +23,26 @@ import {AuthContext} from "utils/context"
 import {taskStateLabels} from "utils/helpers"
 import {TaskPlayActionButton} from "./TaskPlayActionButton"
 import {TaskStateActionButton} from "./TaskStateActionButton"
-import {useSearchParams} from "react-router-dom"
 
 dayjs.extend(duration)
 
 export interface TaskListItemProps {
   annotatedTask: AnnotatedTask
   refreshDashboard: () => Promise<void>
-  updateTask: (task: Task) => void
+  openTaskInModal: () => void
 }
 
 export const TaskListItem: FC<TaskListItemProps> = ({
   annotatedTask,
   refreshDashboard,
-  updateTask
+  openTaskInModal
 }) => {
   const {currentUser} = useContext(AuthContext)
   const theme = useTheme()
   const permissions = usePermissions()
-  const [urlParams, setUrlParams] = useSearchParams()
 
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
   const isMine = currentUser._id === annotatedTask.user
-
-  const showModal = urlParams.get("task") === annotatedTask._id
-
-  const changeShowModal = (show: boolean) => {
-    setUrlParams(show ? {task: annotatedTask._id} : {})
-  }
 
   const taskPercentBudget = annotatedTask.estimate
     ? (annotatedTask._annotations.totalTaskHours / annotatedTask.estimate) * 100
@@ -90,7 +80,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({
           }
         }
       >
-        <ListItemButton onClick={() => changeShowModal(true)} sx={{py: 1}}>
+        <ListItemButton onClick={openTaskInModal} sx={{py: 1}}>
           {isMine && (
             <HoverHelp description="Assigned to me">
               <ListItemIcon
@@ -158,12 +148,6 @@ export const TaskListItem: FC<TaskListItemProps> = ({
           </ListItemText>
         </ListItemButton>
       </ListItem>
-
-      <TaskModal
-        task={showModal ? annotatedTask : null}
-        handleClose={() => changeShowModal(false)}
-        setTask={updateTask}
-      />
     </>
   )
 }

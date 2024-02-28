@@ -163,17 +163,6 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
               justifyContent="space-between"
               alignItems="center"
             >
-              <HoverHelp
-                description="Edit Pull Request"
-                enableWrapper
-                sx={{ml: "auto", mr: 1}}
-              >
-                <IconButton onClick={() => setEditing(!editing)}>
-                  <Badge color="primary">
-                    <Edit />
-                  </Badge>
-                </IconButton>
-              </HoverHelp>
               {editing && (
                 <TextField
                   label="Pull Request"
@@ -182,16 +171,29 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
                   fullWidth
                 />
               )}
-              {!editing && (
-                <LabeledInfo
-                  label="Pull Request"
-                  onClick={() =>
-                    window.open(`${task.pullRequestLink}`, "_blank")
-                  }
-                >
-                  {task.pullRequestLink}
-                </LabeledInfo>
-              )}
+              {!editing &&
+                task.pullRequestLink &&
+                task.pullRequestLink?.length > 0 && (
+                  <LabeledInfo
+                    label="Pull Request"
+                    onClick={() =>
+                      window.open(`${task.pullRequestLink}`, "_blank")
+                    }
+                  >
+                    {task.pullRequestLink}
+                  </LabeledInfo>
+                )}
+              <HoverHelp
+                description="Edit Pull Request"
+                enableWrapper
+                sx={{ml: "auto", mr: 0}}
+              >
+                <IconButton onClick={() => setEditing(!editing)}>
+                  <Badge color="primary">
+                    <Edit />
+                  </Badge>
+                </IconButton>
+              </HoverHelp>
             </Stack>
           </>
         )}

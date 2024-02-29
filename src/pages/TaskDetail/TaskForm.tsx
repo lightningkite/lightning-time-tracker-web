@@ -160,7 +160,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
           <>
             <FormSection title="Pull Request">
               <Stack direction="row" alignItems="center">
-                {editing ? (
+                {!task.pullRequestLink || editing ? (
                   <TextField
                     label="Pull Request"
                     {...makeFormikTextFieldProps(formik, "pullRequestLink")}
@@ -172,41 +172,34 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
                     <Stack alignItems="center" direction="row">
                       {task.pullRequestLink &&
                       task.pullRequestLink?.length > 0 ? (
-                        <Typography
-                          onClick={() =>
-                            window.open(`${task.pullRequestLink}`, "_blank")
-                          }
-                          sx={{
-                            "&:hover": {textDecoration: "underline"},
-                            cursor: "pointer",
-                            width: "fit-content"
-                          }}
-                        >
-                          {task.pullRequestLink}
-                        </Typography>
+                        <>
+                          <Typography
+                            onClick={() =>
+                              window.open(`${task.pullRequestLink}`, "_blank")
+                            }
+                            sx={{
+                              "&:hover": {textDecoration: "underline"},
+                              cursor: "pointer",
+                              width: "fit-content"
+                            }}
+                          >
+                            {task.pullRequestLink}
+                          </Typography>
+                          <HoverHelp
+                            description={"Edit Pull Request"}
+                            enableWrapper
+                            sx={{ml: 1, mr: 0}}
+                          >
+                            <IconButton onClick={() => setEditing(true)}>
+                              <Badge color="primary">
+                                <Edit />
+                              </Badge>
+                            </IconButton>
+                          </HoverHelp>
+                        </>
                       ) : (
                         <></>
                       )}
-
-                      <HoverHelp
-                        description={
-                          formik.values.pullRequestLink
-                            ? "Edit Pull Request"
-                            : "Link Pull Request"
-                        }
-                        enableWrapper
-                        sx={{ml: "auto", mr: 0}}
-                      >
-                        <IconButton onClick={() => setEditing(true)}>
-                          <Badge color="primary">
-                            {formik.values.pullRequestLink ? (
-                              <Edit />
-                            ) : (
-                              <GitHub />
-                            )}
-                          </Badge>
-                        </IconButton>
-                      </HoverHelp>
                     </Stack>
                   </>
                 )}

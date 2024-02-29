@@ -7,7 +7,7 @@ import {
   makeFormikTextFieldProps,
   RestAutocompleteInput
 } from "@lightningkite/mui-lightning-components"
-import {Edit, Sell} from "@mui/icons-material"
+import {Edit, EditOff, GitHub, Sell} from "@mui/icons-material"
 import {LoadingButton} from "@mui/lab"
 import {
   Alert,
@@ -117,7 +117,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       try {
         const updatedTask = await session.task.modify(task._id, modification)
         setTask(updatedTask)
-
+        setEditing(false)
         resetForm({values})
       } catch {
         setError("Error updating task")
@@ -158,43 +158,60 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
 
         {permissions.doesCareAboutPRs && (
           <>
-            <Stack
-              direction="row"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              {editing && (
-                <TextField
-                  label="Pull Request"
-                  {...makeFormikTextFieldProps(formik, "pullRequestLink")}
-                  disabled={!canEdit}
-                  fullWidth
-                />
-              )}
-              {!editing &&
-                task.pullRequestLink &&
-                task.pullRequestLink?.length > 0 && (
-                  <LabeledInfo
+            <FormSection title="Pull Request">
+              <Stack direction="row" alignItems="center">
+                {editing ? (
+                  <TextField
                     label="Pull Request"
-                    onClick={() =>
-                      window.open(`${task.pullRequestLink}`, "_blank")
-                    }
-                  >
-                    {task.pullRequestLink}
-                  </LabeledInfo>
+                    {...makeFormikTextFieldProps(formik, "pullRequestLink")}
+                    disabled={!canEdit}
+                    fullWidth
+                  />
+                ) : (
+                  <>
+                    <Stack alignItems="center" direction="row">
+                      {task.pullRequestLink &&
+                      task.pullRequestLink?.length > 0 ? (
+                        <Typography
+                          onClick={() =>
+                            window.open(`${task.pullRequestLink}`, "_blank")
+                          }
+                          sx={{
+                            "&:hover": {textDecoration: "underline"},
+                            cursor: "pointer",
+                            width: "fit-content"
+                          }}
+                        >
+                          {task.pullRequestLink}
+                        </Typography>
+                      ) : (
+                        <></>
+                      )}
+
+                      <HoverHelp
+                        description={
+                          formik.values.pullRequestLink
+                            ? "Edit Pull Request"
+                            : "Link Pull Request"
+                        }
+                        enableWrapper
+                        sx={{ml: "auto", mr: 0}}
+                      >
+                        <IconButton onClick={() => setEditing(true)}>
+                          <Badge color="primary">
+                            {formik.values.pullRequestLink ? (
+                              <Edit />
+                            ) : (
+                              <GitHub />
+                            )}
+                          </Badge>
+                        </IconButton>
+                      </HoverHelp>
+                    </Stack>
+                  </>
                 )}
-              <HoverHelp
-                description="Edit Pull Request"
-                enableWrapper
-                sx={{ml: "auto", mr: 0}}
-              >
-                <IconButton onClick={() => setEditing(!editing)}>
-                  <Badge color="primary">
-                    <Edit />
-                  </Badge>
-                </IconButton>
-              </HoverHelp>
-            </Stack>
+              </Stack>
+            </FormSection>
           </>
         )}
 

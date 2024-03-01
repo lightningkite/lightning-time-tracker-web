@@ -61,8 +61,6 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
   const {session} = useContext(AuthContext)
   const permissions = usePermissions()
 
-  const navigate = useNavigate()
-
   const [error, setError] = useState("")
   const [editing, setEditing] = useState(false)
 
@@ -168,40 +166,35 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
                     fullWidth
                   />
                 ) : (
-                  <>
-                    <Stack alignItems="center" direction="row">
-                      {task.pullRequestLink &&
-                      task.pullRequestLink?.length > 0 ? (
-                        <>
-                          <Typography
-                            onClick={() =>
-                              window.open(`${task.pullRequestLink}`, "_blank")
-                            }
-                            sx={{
-                              "&:hover": {textDecoration: "underline"},
-                              cursor: "pointer",
-                              width: "fit-content"
-                            }}
-                          >
-                            {task.pullRequestLink}
-                          </Typography>
-                          <HoverHelp
-                            description={"Edit Pull Request"}
-                            enableWrapper
-                            sx={{ml: 1, mr: 0}}
-                          >
-                            <IconButton onClick={() => setEditing(true)}>
-                              <Badge color="primary">
-                                <Edit />
-                              </Badge>
-                            </IconButton>
-                          </HoverHelp>
-                        </>
-                      ) : (
-                        <></>
-                      )}
-                    </Stack>
-                  </>
+                  <Stack alignItems="center" direction="row">
+                    {task.pullRequestLink && (
+                      <>
+                        <Typography
+                          onClick={() =>
+                            window.open(`${task.pullRequestLink}`, "_blank")
+                          }
+                          sx={{
+                            "&:hover": {textDecoration: "underline"},
+                            cursor: "pointer",
+                            width: "fit-content"
+                          }}
+                        >
+                          {task.pullRequestLink}
+                        </Typography>
+                        <HoverHelp
+                          description={"Edit Pull Request"}
+                          enableWrapper
+                          sx={{ml: 1, mr: 0}}
+                        >
+                          <IconButton onClick={() => setEditing(true)}>
+                            <Badge color="primary">
+                              <Edit />
+                            </Badge>
+                          </IconButton>
+                        </HoverHelp>
+                      </>
+                    )}
+                  </Stack>
                 )}
               </Stack>
             </FormSection>

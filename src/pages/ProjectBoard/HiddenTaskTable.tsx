@@ -46,7 +46,6 @@ export const HiddenTaskTable: FC<HiddenTaskTableProps> = (props) => {
       </DialogTitle>
 
       <DialogContent>
-        {/* <Box sx={{mt: 1}}> */}
         <TaskTable
           additionalQueryConditions={[
             {project: {Equal: project._id}},
@@ -66,7 +65,6 @@ export const HiddenTaskTable: FC<HiddenTaskTableProps> = (props) => {
               : {}
           }
         />
-        {/* </Box> */}
       </DialogContent>
     </Dialog>
   )

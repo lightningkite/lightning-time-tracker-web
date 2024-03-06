@@ -185,7 +185,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           createdAt: new Date().toISOString(),
           createdBy: currentUser._id,
           creatorName: currentUser.name,
-          pullRequestLink: prLink ?? null,
+          pullRequestLink: null,
           tags: []
         })
         .then((task) => {
@@ -373,12 +373,14 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
         </Stack>
       </Paper>
       <Menu anchorEl={anchorEl} open={open} onClick={() => setAnchorEl(null)}>
-        <MenuItem onClick={() => setOpenPRLink(!openPRLink)}>
-          <ListItemIcon>
-            <GitHub />
-          </ListItemIcon>
-          {"Pull Request"}
-        </MenuItem>
+        {timer.task && (
+          <MenuItem onClick={() => setOpenPRLink(!openPRLink)}>
+            <ListItemIcon>
+              <GitHub />
+            </ListItemIcon>
+            {"Pull Request"}
+          </MenuItem>
+        )}
         <MenuItem onClick={() => setOpenDateModal(!openDateModal)}>
           <ListItemIcon>
             <CalendarIcon />

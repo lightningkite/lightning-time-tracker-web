@@ -59,6 +59,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
   const [reactivateModal, setReactivateModal] = useState(false)
   const [taskSearch, setTaskSearch] = useState("")
   const [openPRLink, setOpenPRLink] = useState(false)
+  const [prLink, setPRLink] = useState("")
   const [selectedDate, setSelectedDate] = useState(dayjs(timer.date))
   const [shownDate, setShownDate] = useState(dayjs(timer.date))
   const [openDateModal, setOpenDateModal] = useState(false)
@@ -82,8 +83,6 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     () => sortedTaskOptions?.find((t) => t._id === timer.task),
     [timer.task, sortedTaskOptions]
   )
-
-  const [prLink, setPRLink] = useState(task?.pullRequestLink ?? "")
 
   useEffect(() => {
     if (!timer.project) {
@@ -137,7 +136,8 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     setExpanded(false)
 
     if (task.project !== project._id) updateTimer(timer._id, {task: undefined})
-  }, [timer.task, timer.project])
+    if (task.pullRequestLink) setPRLink(task.pullRequestLink)
+  }, [timer.task, timer.project, task?.pullRequestLink])
 
   const isMyActiveTask = useCallback((task: Task): boolean => {
     return task.user === currentUser._id && task.state === TaskState.Active
@@ -197,11 +197,6 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     },
     [project]
   )
-
-  const handleSubmit = () => {}
-
-  console.log(task?.pullRequestLink)
-  console.log(prLink)
 
   return (
     <>
@@ -332,19 +327,23 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           fullWidth
         />
 
-        {openPRLink &&
+        {task?.pullRequestLink &&
           (expanded ? (
-            <TextField
-              label="PR Link"
-              value={prLink}
-              onChange={(e) => setPRLink(e.target.value)}
-              fullWidth
-              multiline
-              sx={{mb: 2}}
-            />
+            <Typography
+              onClick={() => window.open(`${task?.pullRequestLink}`, "_blank")}
+              sx={{
+                "&:hover": {textDecoration: "underline"},
+                cursor: "pointer",
+                width: "fit-content",
+                mb: 2
+              }}
+              color="text.disabled"
+            >
+              {task.pullRequestLink}
+            </Typography>
           ) : (
-            <Typography sx={{mb: 2}} color="text.disabled">
-              {prLink}
+            <Typography sx={{mb: 2}} color="text.disabled" variant="body2">
+              {task.pullRequestLink}
             </Typography>
           ))}
 
@@ -360,7 +359,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
 
           <AutoLoadingButton
             onClick={() =>
-              submitTimer(timer._id, prLink).catch(() =>
+              submitTimer(timer._id).catch(() =>
                 alert("Error submitting timer")
               )
             }
@@ -403,6 +402,36 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           {"Delete Timer"}
         </MenuItem>
       </Menu>
+      <DialogForm
+        open={openPRLink}
+        onClose={() => setOpenPRLink(false)}
+        onSubmit={() =>
+          session.task
+            .modify(timer.task!, {pullRequestLink: {Assign: prLink}})
+            .then((newTask) => {
+              setSortedTaskOptions((prev) =>
+                prev.map((t) => (t._id === newTask._id ? newTask : t))
+              )
+            })
+        }
+        title={
+          task?.pullRequestLink
+            ? "Edit Pull Request Link"
+            : "Create Pull Request Link"
+        }
+        submitLabel="Save PR"
+      >
+        <Typography sx={{mb: 2}}>{`This will ${
+          task?.pullRequestLink ? "edit the current " : "create a "
+        } pull request link on the selected task`}</Typography>
+        <TextField
+          label="Pull Request Link"
+          value={prLink}
+          onChange={(e) => setPRLink(e.target.value)}
+          fullWidth
+          sx={{my: 2}}
+        />
+      </DialogForm>
       <DialogForm
         open={openDateModal}
         onClose={() => setOpenDateModal(false)}

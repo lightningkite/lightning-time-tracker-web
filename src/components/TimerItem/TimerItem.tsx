@@ -40,6 +40,7 @@ import {useThrottle} from "@lightningkite/react-lightning-helpers"
 import DialogForm from "components/DialogForm"
 import {CalendarIcon, DatePicker} from "@mui/x-date-pickers"
 import dayjs from "dayjs"
+import {usePermissions} from "hooks/usePermissions"
 
 export interface TimerItemProps {
   timer: Timer
@@ -51,6 +52,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
   const {removeTimer, submitTimer, updateTimer, toggleTimer} =
     useContext(TimerContext)
   const theme = useTheme()
+  const permissions = usePermissions()
 
   const [summary, setSummary] = useState(timer.summary)
   const [expanded, setExpanded] = useState(!timer.project || !timer.task)
@@ -328,6 +330,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
         />
 
         {task?.pullRequestLink &&
+          permissions.doesCareAboutPRs &&
           (expanded ? (
             <Typography
               onClick={() => window.open(`${task?.pullRequestLink}`, "_blank")}
@@ -373,7 +376,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
         </Stack>
       </Paper>
       <Menu anchorEl={anchorEl} open={open} onClick={() => setAnchorEl(null)}>
-        {timer.task && (
+        {timer.task && permissions.doesCareAboutPRs && (
           <MenuItem onClick={() => setOpenPRLink(!openPRLink)}>
             <ListItemIcon>
               <GitHub />

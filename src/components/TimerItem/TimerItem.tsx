@@ -1,6 +1,7 @@
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {
   DeleteOutline,
+  GitHub,
   MoreVert,
   Pause,
   PlayArrow,
@@ -57,6 +58,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
   const [isCreatingNewTask, setIsCreatingNewTask] = useState(false)
   const [reactivateModal, setReactivateModal] = useState(false)
   const [taskSearch, setTaskSearch] = useState("")
+  const [openPRLink, setOpenPRLink] = useState(false)
   const [selectedDate, setSelectedDate] = useState(dayjs(timer.date))
   const [shownDate, setShownDate] = useState(dayjs(timer.date))
   const [openDateModal, setOpenDateModal] = useState(false)
@@ -80,6 +82,8 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     () => sortedTaskOptions?.find((t) => t._id === timer.task),
     [timer.task, sortedTaskOptions]
   )
+
+  const [prLink, setPRLink] = useState(task?.pullRequestLink ?? "")
 
   useEffect(() => {
     if (!timer.project) {
@@ -181,7 +185,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           createdAt: new Date().toISOString(),
           createdBy: currentUser._id,
           creatorName: currentUser.name,
-          pullRequestLink: null,
+          pullRequestLink: prLink ?? null,
           tags: []
         })
         .then((task) => {
@@ -193,6 +197,11 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     },
     [project]
   )
+
+  const handleSubmit = () => {}
+
+  console.log(task?.pullRequestLink)
+  console.log(prLink)
 
   return (
     <>
@@ -208,7 +217,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
                   </IconButton>
                 </HoverHelp>
               )}
-              <HoverHelp description="more">
+              <HoverHelp description="Options">
                 <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
                   <MoreVert />
                 </IconButton>
@@ -323,6 +332,22 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           fullWidth
         />
 
+        {openPRLink &&
+          (expanded ? (
+            <TextField
+              label="PR Link"
+              value={prLink}
+              onChange={(e) => setPRLink(e.target.value)}
+              fullWidth
+              multiline
+              sx={{mb: 2}}
+            />
+          ) : (
+            <Typography sx={{mb: 2}} color="text.disabled">
+              {prLink}
+            </Typography>
+          ))}
+
         <Stack direction="row" justifyContent="space-between" spacing={1}>
           <Button
             variant={timer.lastStarted ? "contained" : "outlined"}
@@ -335,7 +360,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
 
           <AutoLoadingButton
             onClick={() =>
-              submitTimer(timer._id).catch(() =>
+              submitTimer(timer._id, prLink).catch(() =>
                 alert("Error submitting timer")
               )
             }
@@ -349,6 +374,12 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
         </Stack>
       </Paper>
       <Menu anchorEl={anchorEl} open={open} onClick={() => setAnchorEl(null)}>
+        <MenuItem onClick={() => setOpenPRLink(!openPRLink)}>
+          <ListItemIcon>
+            <GitHub />
+          </ListItemIcon>
+          {"Pull Request"}
+        </MenuItem>
         <MenuItem onClick={() => setOpenDateModal(!openDateModal)}>
           <ListItemIcon>
             <CalendarIcon />

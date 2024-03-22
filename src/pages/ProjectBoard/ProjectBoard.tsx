@@ -61,7 +61,8 @@ export const ProjectBoard: FC = () => {
       ]
 
   const onChangeProject = (project: Project) => {
-    if ("selected" in state && state.selected._id === project._id) return
+    if ("selected" in state && state.selected.map((p) => p._id === project._id))
+      return
     urlParams.set("project", project._id)
     setUrlParams(urlParams)
     dispatch({type: "changeProject", selected: project})
@@ -116,21 +117,21 @@ export const ProjectBoard: FC = () => {
             {tags: {SetAnyElements: {Inside: filterTags}}}
           ]
         : selectedUser!.length > 0
-          ? [
-              {project: {Equal: state.selected._id}},
-              {state: {NotInside: hiddenTaskStates}},
-              {userName: {IfNotNull: {Inside: selectedUser}}}
-            ]
-          : filterTags.length > 0
-            ? [
-                {project: {Equal: state.selected._id}},
-                {state: {NotInside: hiddenTaskStates}},
-                {tags: {SetAnyElements: {Inside: filterTags}}}
-              ]
-            : [
-                {project: {Equal: state.selected._id}},
-                {state: {NotInside: hiddenTaskStates}}
-              ]
+        ? [
+            {project: {Equal: state.selected._id}},
+            {state: {NotInside: hiddenTaskStates}},
+            {userName: {IfNotNull: {Inside: selectedUser}}}
+          ]
+        : filterTags.length > 0
+        ? [
+            {project: {Equal: state.selected._id}},
+            {state: {NotInside: hiddenTaskStates}},
+            {tags: {SetAnyElements: {Inside: filterTags}}}
+          ]
+        : [
+            {project: {Equal: state.selected._id}},
+            {state: {NotInside: hiddenTaskStates}}
+          ]
 
     annotatedTaskEndpoint
       .query({condition: {And: conditions}, limit: 1000})
@@ -284,21 +285,21 @@ export const ProjectBoard: FC = () => {
 
 type State =
   | {status: "loadingProjects"}
-  | {status: "loadingTasks"; projects: Project[]; selected: Project}
+  | {status: "loadingTasks"; projects: Project[]; selected: Project[]}
   | {
       status: "ready"
       projects: Project[]
       tasks: AnnotatedTask[]
-      selected: Project
+      selected: Project[]
     }
   | {status: "error"; message: string}
 
 type Action =
-  | {type: "setProjects"; projects: Project[]; selected: Project}
+  | {type: "setProjects"; projects: Project[]; selected: Project[]}
   | {type: "setTasks"; tasks: AnnotatedTask[]}
   | {type: "updateTask"; taskId: string; updates: Partial<AnnotatedTask>}
   | {type: "addTask"; task: AnnotatedTask}
-  | {type: "changeProject"; selected: Project}
+  | {type: "changeProject"; selected: Project[]}
   | {type: "error"; message: string}
 
 function reducer(state: State, action: Action): State {

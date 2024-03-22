@@ -16,7 +16,7 @@ import {useSearchParams} from "react-router-dom"
 dayjs.extend(duration)
 
 export interface TaskStateColumnProps {
-  project: Project
+  project: Project[]
   state: TaskState
   tasks: AnnotatedTask[] | undefined
   updateTask: (task: Task) => void
@@ -99,7 +99,7 @@ export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
                   sx={{mb: 1.5}}
                   fullWidth
                   variant="outlined"
-                  project={project}
+                  projects={project}
                   state={state}
                 />
               )}

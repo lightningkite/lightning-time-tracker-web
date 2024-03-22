@@ -5,6 +5,7 @@ import {
   Insights,
   People,
   Settings,
+  ViewList,
   ViewWeek
 } from "@mui/icons-material"
 import {
@@ -43,7 +44,7 @@ export const NavigationDrawer: FC<{
     {
       label: "Dashboard",
       to: "/dashboard",
-      icon: Dashboard,
+      icon: ViewList,
       show: permissions.canBeAssignedTasks
     },
     {

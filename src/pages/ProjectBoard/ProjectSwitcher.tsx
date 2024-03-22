@@ -6,8 +6,8 @@ import {AuthContext} from "utils/context"
 
 export interface ProjectSwitcherProps {
   projects: Project[]
-  selected: Project
-  onSelect: (project: Project) => void
+  selected: Project[]
+  onSelect: (project: Project[]) => void
   sx?: SxProps
 }
 
@@ -35,6 +35,7 @@ export const ProjectSwitcher: FC<ProjectSwitcherProps> = (props) => {
       groupBy={(option) =>
         isMyProject(option) ? "My Projects" : "Other Projects"
       }
+      multiple
     />
   )
 }

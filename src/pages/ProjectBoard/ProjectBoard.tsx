@@ -227,7 +227,7 @@ export const ProjectBoard: FC = () => {
       >
         <ProjectBoardFilter
           smallScreen={smallScreen}
-          tags={state.selected.projectTags}
+          tags={state.selected}
           setFilterTags={setFilterTags}
           filterTags={filterTags}
           user={activeUsers.map((u) => u.name)}

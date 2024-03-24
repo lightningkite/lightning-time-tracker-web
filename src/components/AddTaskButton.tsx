@@ -44,7 +44,7 @@ const validationSchema = yup.object().shape({
 export interface AddTaskButtonProps extends ButtonProps {
   afterSubmit: (task: AnnotatedTask) => void
   state?: TaskState
-  projects?: Project | Project[]
+  projects?: Project[]
   user?: User
   sx?: SxProps
 }
@@ -146,7 +146,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
         onClose={() => {
           setProjectSelectModal(false)
         }}
-        onSubmit={() => {
+        onSubmit={async () => {
           setProjectSelectModal(false)
           setShowCreateForm(true)
         }}
@@ -154,8 +154,10 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
       >
         <Autocomplete
           renderInput={(params) => <TextField {...params} label={"Projects"} />}
-          options={projects}
-          getOptionLabel={}
+          options={projects!}
+          value={initialProject}
+          getOptionLabel={(project) => project.name}
+          onChange={(e, value) => setInitialProject(value!)}
         />
       </DialogForm>
 

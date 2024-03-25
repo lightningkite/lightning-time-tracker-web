@@ -12,7 +12,7 @@ import {AuthContext} from "utils/context"
 
 export interface RecentFavoriteProjectsSwitcherProps {
   projects: Project[]
-  onSelect: (project: Project) => void
+  onSelect: (project: Project[]) => void
 }
 
 export const RecentFavoriteProjectsSwitcher: FC<
@@ -76,7 +76,7 @@ export const RecentFavoriteProjectsSwitcher: FC<
         <Typography>{title}:</Typography>
         {projects.map((project) => (
           <Card key={project._id}>
-            <CardActionArea onClick={() => onSelect(project)}>
+            <CardActionArea onClick={() => onSelect([project])}>
               <CardContent sx={{width: "100%", maxWidth: "150px"}}>
                 <Typography
                   sx={{

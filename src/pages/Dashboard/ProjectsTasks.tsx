@@ -164,7 +164,7 @@ export const ProjectsTasks: FC = () => {
                 <Typography variant="h2">{project?.name}</Typography>
                 {permissions.canManageAllTasks && (
                   <AddTaskButton
-                    project={project}
+                    projects={[project!]}
                     afterSubmit={(newAnnotatedTask) =>
                       setAnnotatedTasks([
                         ...(annotatedTasks ?? []),

@@ -19,13 +19,11 @@ import {getContrastingColor, getNameInitials} from "utils/helpers"
 
 dayjs.extend(duration)
 
-export interface TaskCardProps {
+export const TaskCard: FC<{
   task: AnnotatedTask
   onClick: (task: AnnotatedTask) => void
-}
-
-export const TaskCard: FC<TaskCardProps> = (props) => {
-  const {task, onClick} = props
+  showProject: boolean
+}> = ({task, onClick, showProject}) => {
   const {userColors, currentUser} = useContext(AuthContext)
   const permissions = usePermissions()
 
@@ -107,6 +105,12 @@ export const TaskCard: FC<TaskCardProps> = (props) => {
                 : `${hoursSpent} hr`}
             </Typography>
           </Stack>
+
+          {showProject && (
+            <Typography variant="body2" color="text.secondary" mt={1}>
+              {task.projectName}
+            </Typography>
+          )}
 
           <Typography mt={0.5}>{task.summary}</Typography>
           <Typography variant="body2" color="text.secondary" ml="auto">

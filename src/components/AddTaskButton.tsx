@@ -5,7 +5,7 @@ import {
   makeFormikTextFieldProps,
   RestAutocompleteInput
 } from "@lightningkite/mui-lightning-components"
-import {Add, Policy} from "@mui/icons-material"
+import {Add} from "@mui/icons-material"
 import type {ButtonProps, SxProps} from "@mui/material"
 import {
   Autocomplete,
@@ -54,16 +54,14 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
     afterSubmit,
     user: initialUser,
     state: initialState,
-    projects,
+    projects: initialProject,
     ...rest
   } = props
   const {session, currentUser, currentOrganization} = useContext(AuthContext)
   const permissions = usePermissions()
 
   const [showCreateForm, setShowCreateForm] = useState(false)
-  const [projectSelectModal, setProjectSelectModal] = useState(false)
   const [tagOptions, setTagOptions] = useState<string[] | undefined>([])
-  const [initialProject, setInitialProject] = useState<Project>()
   const [inputRef, setInputFocus] = useFocus()
 
   function onClose() {
@@ -73,22 +71,15 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
 
   useEffect(() => {
     setTimeout(setInputFocus, 100)
-    setTagOptions(initialProject?.projectTags)
+    setTagOptions(initialProject?.[0]?.projectTags)
   }, [showCreateForm])
 
-  const openModal = () => {
-    if (projects && "length" in projects) {
-      setProjectSelectModal(true)
-    } else {
-      setInitialProject(projects)
-      setShowCreateForm(true)
-    }
-  }
+  console.log(initialProject, 1)
 
   const formik = useFormik({
     initialValues: {
       user: initialUser ?? permissions.canBeAssignedTasks ? currentUser : null,
-      project: initialProject ?? null,
+      project: initialProject?.[0] ?? null,
       summary: "",
       description: "",
       estimate: "",
@@ -133,33 +124,13 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
       <Button
         onClick={(e) => {
           e.stopPropagation()
-          openModal()
+          setShowCreateForm(true)
         }}
         startIcon={<Add />}
         {...rest}
       >
         Add Task
       </Button>
-
-      <DialogForm
-        open={projectSelectModal}
-        onClose={() => {
-          setProjectSelectModal(false)
-        }}
-        onSubmit={async () => {
-          setProjectSelectModal(false)
-          setShowCreateForm(true)
-        }}
-        title="What Project Is This Task For?"
-      >
-        <Autocomplete
-          renderInput={(params) => <TextField {...params} label={"Projects"} />}
-          options={projects!}
-          value={initialProject}
-          getOptionLabel={(project) => project.name}
-          onChange={(e, value) => setInitialProject(value!)}
-        />
-      </DialogForm>
 
       <DialogForm
         title="New Task"
@@ -190,7 +161,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
             />
           )}
 
-          {!initialProject && (
+          {(initialProject!.length > 1 ?? !initialProject) && (
             <RestAutocompleteInput
               label="Project"
               restEndpoint={session.project}

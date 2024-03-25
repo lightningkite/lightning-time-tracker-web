@@ -140,7 +140,7 @@ export const ProjectBoard: FC = () => {
       .query({condition: {And: conditions}, limit: 1000})
       .then((tasks: AnnotatedTask[]) => dispatch({type: "setTasks", tasks}))
   }, [
-    "selected" in state && state.selected.map((p) => p._id),
+    "selected" in state && state.selected,
     taskRefreshTrigger,
     filterTags,
     selectedUser
@@ -214,12 +214,12 @@ export const ProjectBoard: FC = () => {
           onSelect={onChangeProject}
         />
 
-        {/* {preferences.favoritePrefrences === "show" && (
+        {preferences.favoritePrefrences === "show" && (
           <RecentFavoriteProjectsSwitcher
             projects={state.projects}
             onSelect={onChangeProject}
           />
-        )} */}
+        )}
       </Stack>
       <Stack
         direction="row"
@@ -230,7 +230,7 @@ export const ProjectBoard: FC = () => {
       >
         <ProjectBoardFilter
           smallScreen={smallScreen}
-          tags={state.selected.map((p) => p._id)}
+          tags={state.selected.flatMap((p) => p.projectTags)}
           setFilterTags={setFilterTags}
           filterTags={filterTags}
           user={activeUsers.map((u) => u.name)}
@@ -258,11 +258,12 @@ export const ProjectBoard: FC = () => {
               <TaskStateColumn
                 key={taskState}
                 state={taskState}
+                showProject={state.selected.length > 1 ? true : false}
                 tasks={
                   state.status === "ready" ? tasksByState[taskState] : undefined
                 }
                 handleDrop={handleDrop}
-                project={state.selected}
+                projects={state.selected}
                 onAddedTask={(task) => dispatch({type: "addTask", task})}
                 updateTask={(updatedTask) =>
                   dispatch({

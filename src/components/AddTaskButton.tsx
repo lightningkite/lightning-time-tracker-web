@@ -74,8 +74,6 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
     setTagOptions(initialProject?.[0]?.projectTags)
   }, [showCreateForm])
 
-  console.log(initialProject, 1)
-
   const formik = useFormik({
     initialValues: {
       user: initialUser ?? permissions.canBeAssignedTasks ? currentUser : null,

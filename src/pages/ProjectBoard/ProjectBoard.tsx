@@ -28,6 +28,7 @@ import {RecentFavoriteProjectsSwitcher} from "./RecentFavoriteProjectsSwitcher"
 import {ProjectBoardFilter} from "./ProjectBoardFilter"
 import {type Condition} from "@lightningkite/lightning-server-simplified"
 import {parsePreferences} from "utils/helpers"
+import {HiddenTaskTable} from "./HiddenTaskTable"
 
 export const ProjectBoard: FC = () => {
   const {session, currentUser, activeUsers} = useContext(AuthContext)
@@ -39,6 +40,12 @@ export const ProjectBoard: FC = () => {
   const [filterTags, setFilterTags] = useState<string[]>([])
 
   const [selectedUser, setSelectedUser] = useState<string[]>([])
+
+  // const [openModal, setOpenModal] = useState(false)
+
+  const [tableState, setTableState] = useState<
+    "Delivered" | "Cancelled" | null
+  >(null)
 
   const [state, dispatch] = useReducer(reducer, {status: "loadingProjects"})
   const taskRefreshTrigger = usePeriodicRefresh(10 * 60)
@@ -197,88 +204,103 @@ export const ProjectBoard: FC = () => {
   if (state.status === "error") return <ErrorAlert>{state.message}</ErrorAlert>
 
   return (
-    <Container sx={{maxWidth: "2500px !important"}} disableGutters>
-      <Stack
-        direction={smallScreen ? "column-reverse" : "row"}
-        sx={{mt: 1, mb: 2, ml: 2}}
-        spacing={2}
-        alignItems={"center"}
-      >
-        <ProjectSwitcher
-          projects={state.projects}
-          selected={state.selected}
-          onSelect={onChangeProject}
-        />
-
-        {preferences.favoritePrefrences === "show" && (
-          <RecentFavoriteProjectsSwitcher
+    <>
+      <Container sx={{maxWidth: "2500px !important"}} disableGutters>
+        <Stack
+          direction={smallScreen ? "column-reverse" : "row"}
+          sx={{mt: 1, mb: 2, ml: 2}}
+          spacing={2}
+          alignItems={"center"}
+        >
+          <ProjectSwitcher
             projects={state.projects}
+            selected={state.selected}
             onSelect={onChangeProject}
           />
-        )}
-      </Stack>
-      <Stack
-        direction="row"
-        alignItems="center"
-        spacing={1}
-        ml="auto"
-        sx={{ml: 1, mb: 2}}
-      >
-        <ProjectBoardFilter
-          smallScreen={smallScreen}
-          tags={state.selected.projectTags}
-          setFilterTags={setFilterTags}
-          filterTags={filterTags}
-          user={activeUsers.map((u) => u.name)}
-          selectedUser={selectedUser ?? []}
-          setSelectedUser={setSelectedUser}
-        />
-      </Stack>
-      <DndProvider backend={HTML5Backend}>
-        <Stack
-          direction="row"
-          spacing={1}
-          sx={{overflowX: "auto", px: 2}}
-          divider={<Divider orientation="vertical" flexItem />}
-        >
-          {permissions.canManageAllTasks && (
-            <CompactColumn
-              handleDrop={handleDrop}
-              taskState={TaskState.Cancelled}
-            />
-          )}
 
-          {Object.values(TaskState)
-            .filter((taskState) => !hiddenTaskStates.includes(taskState))
-            .map((taskState) => (
-              <TaskStateColumn
-                key={taskState}
-                state={taskState}
-                tasks={
-                  state.status === "ready" ? tasksByState[taskState] : undefined
-                }
-                handleDrop={handleDrop}
-                project={state.selected}
-                onAddedTask={(task) => dispatch({type: "addTask", task})}
-                updateTask={(updatedTask) =>
-                  dispatch({
-                    type: "updateTask",
-                    taskId: updatedTask._id,
-                    updates: updatedTask
-                  })
-                }
-              />
-            ))}
-
-          {(permissions.canManageAllTasks || permissions.canDeliverTasks) && (
-            <CompactColumn
-              handleDrop={handleDrop}
-              taskState={TaskState.Delivered}
+          {preferences.favoritePrefrences === "show" && (
+            <RecentFavoriteProjectsSwitcher
+              projects={state.projects}
+              onSelect={onChangeProject}
             />
           )}
         </Stack>
-      </DndProvider>
-    </Container>
+        <Stack
+          direction="row"
+          alignItems="center"
+          spacing={1}
+          ml="auto"
+          sx={{ml: 1, mb: 2}}
+        >
+          <ProjectBoardFilter
+            smallScreen={smallScreen}
+            tags={state.selected.projectTags}
+            setFilterTags={setFilterTags}
+            filterTags={filterTags}
+            user={activeUsers.map((u) => u.name)}
+            selectedUser={selectedUser ?? []}
+            setSelectedUser={setSelectedUser}
+          />
+        </Stack>
+        <DndProvider backend={HTML5Backend}>
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{overflowX: "auto", px: 2}}
+            divider={<Divider orientation="vertical" flexItem />}
+          >
+            {permissions.canManageAllTasks && (
+              <CompactColumn
+                onClick={() => {
+                  setTableState("Cancelled")
+                }}
+                handleDrop={handleDrop}
+                taskState={TaskState.Cancelled}
+              />
+            )}
+
+            {Object.values(TaskState)
+              .filter((taskState) => !hiddenTaskStates.includes(taskState))
+              .map((taskState) => (
+                <TaskStateColumn
+                  key={taskState}
+                  state={taskState}
+                  tasks={
+                    state.status === "ready"
+                      ? tasksByState[taskState]
+                      : undefined
+                  }
+                  handleDrop={handleDrop}
+                  project={state.selected}
+                  onAddedTask={(task) => dispatch({type: "addTask", task})}
+                  updateTask={(updatedTask) =>
+                    dispatch({
+                      type: "updateTask",
+                      taskId: updatedTask._id,
+                      updates: updatedTask
+                    })
+                  }
+                />
+              ))}
+
+            {(permissions.canManageAllTasks || permissions.canDeliverTasks) && (
+              <CompactColumn
+                onClick={() => {
+                  setTableState("Delivered")
+                }}
+                handleDrop={handleDrop}
+                taskState={TaskState.Delivered}
+              />
+            )}
+          </Stack>
+        </DndProvider>
+      </Container>
+      <HiddenTaskTable
+        project={state.selected}
+        closeModal={() => setTableState(null)}
+        showTaskModal={tableState}
+      />
+    </>
   )
 }
 

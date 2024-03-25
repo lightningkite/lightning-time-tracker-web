@@ -64,12 +64,12 @@ export const ProjectBoard: FC = () => {
       state.selected.map((p) => p._id) === projects.map((p) => p._id)
     )
       return
-    urlParams.set("projects", `${projects.map((p) => p._id + "-")}`)
+    urlParams.set("project", `${projects.map((p) => p._id + "-")}`)
     setUrlParams(urlParams)
     dispatch({type: "changeProject", selected: projects})
   }
 
-  const projectUrl = urlParams.get("projects")
+  const projectUrl = urlParams.get("project")
 
   useEffect(() => {
     session.project
@@ -87,7 +87,7 @@ export const ProjectBoard: FC = () => {
           projectFromQuery ??
           projects.find((p) => currentUser.projectFavorites.includes(p._id)) ??
           projects[0]
-        urlParams.set("projects", initialProject._id)
+        urlParams.set("project", initialProject._id)
         setUrlParams(urlParams)
 
         if (projects.length === 0) {
@@ -110,10 +110,7 @@ export const ProjectBoard: FC = () => {
 
     // Update selected project in query
     const searchParams = new URLSearchParams(location.search)
-    searchParams.set(
-      "projects",
-      `${state.selected.map((p) => p._id).join(" ")}`
-    )
+    searchParams.set("project", `${state.selected.map((p) => p._id).join(" ")}`)
 
     navigate({search: searchParams.toString()})
 

@@ -262,7 +262,9 @@ export const ProjectBoard: FC = () => {
           user={activeUsers.map((u) => u.name)}
           selectedUser={selectedUser ?? []}
           setSelectedUser={setSelectedUser}
-          projects={state.projects}
+          projects={state.projects.filter(
+            (p) => p._id !== state.selected[0]._id
+          )}
           selectedProjects={selectedProjects ?? []}
           setSelectedProjects={setSelectedProjects}
         />

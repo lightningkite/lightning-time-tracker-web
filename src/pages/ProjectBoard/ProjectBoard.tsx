@@ -80,7 +80,7 @@ export const ProjectBoard: FC = () => {
         orderBy: ["name"]
       })
       .then((projects) => {
-        const projectFromQuery = projects.find((p) => p._id === projectUrl)
+        const projectFromQuery = projects.find((p) => p._id === projectUrl[0])
         const initialProject =
           projectFromQuery ??
           projects.find((p) => currentUser.projectFavorites.includes(p._id)) ??
@@ -108,43 +108,39 @@ export const ProjectBoard: FC = () => {
 
     // Update selected project in query
     const searchParams = new URLSearchParams(location.search)
-    searchParams.set(
-      "project",
-      state.selected.forEach((p) => p._id)
-    )
+    state.selected.map((p) => searchParams.set("project", p._id))
     navigate({search: searchParams.toString()})
 
-    state.selected.map((p) => 
     const conditions: Condition<Task>[] =
-    selectedUser!.length > 0 && filterTags.length > 0
+      selectedUser!.length > 0 && filterTags.length > 0
         ? [
-            {project: {Equal: p._id}},
+            {project: {Inside: state.selected.map((p) => p._id)}},
             {state: {NotInside: hiddenTaskStates}},
             {userName: {IfNotNull: {Inside: selectedUser}}},
             {tags: {SetAnyElements: {Inside: filterTags}}}
           ]
         : selectedUser!.length > 0
         ? [
-            {project: {Equal: p._id}},
+            {project: {Inside: state.selected.map((p) => p._id)}},
             {state: {NotInside: hiddenTaskStates}},
             {userName: {IfNotNull: {Inside: selectedUser}}}
           ]
         : filterTags.length > 0
         ? [
-            {project: {Equal: p._id}},
+            {project: {Inside: state.selected.map((p) => p._id)}},
             {state: {NotInside: hiddenTaskStates}},
             {tags: {SetAnyElements: {Inside: filterTags}}}
           ]
         : [
-            {project: {Equal: p._id}},
+            {project: {Inside: state.selected.map((p) => p._id)}},
             {state: {NotInside: hiddenTaskStates}}
           ]
-    )
+
     annotatedTaskEndpoint
       .query({condition: {And: conditions}, limit: 1000})
       .then((tasks: AnnotatedTask[]) => dispatch({type: "setTasks", tasks}))
   }, [
-    "selected" in state && state.selected._id,
+    "selected" in state && state.selected.map((p) => p._id),
     taskRefreshTrigger,
     filterTags,
     selectedUser
@@ -218,12 +214,12 @@ export const ProjectBoard: FC = () => {
           onSelect={onChangeProject}
         />
 
-        {preferences.favoritePrefrences === "show" && (
+        {/* {preferences.favoritePrefrences === "show" && (
           <RecentFavoriteProjectsSwitcher
             projects={state.projects}
             onSelect={onChangeProject}
           />
-        )}
+        )} */}
       </Stack>
       <Stack
         direction="row"

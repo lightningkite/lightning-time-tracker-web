@@ -7,7 +7,7 @@ import {AuthContext} from "utils/context"
 export interface ProjectSwitcherProps {
   projects: Project[]
   selected: Project[]
-  onSelect: (project: Project[]) => void
+  onSelect: (projects: Project[]) => void
   sx?: SxProps
 }
 
@@ -15,11 +15,11 @@ export const ProjectSwitcher: FC<ProjectSwitcherProps> = (props) => {
   const {projects, selected, onSelect} = props
   const {currentUser} = useContext(AuthContext)
 
-  function isMyProject(project: Project[]) {
+  function isMyProject(project: Project) {
     return [
       ...currentUser.projectFavorites,
       ...(currentUser.limitToProjects ?? [])
-    ].includes(project.filter((p) => p._id))
+    ].includes(project._id)
   }
 
   return (
@@ -30,12 +30,13 @@ export const ProjectSwitcher: FC<ProjectSwitcherProps> = (props) => {
       value={selected}
       sx={{width: 300, minWidth: 200, mt: 1, mb: 2, ml: 2}}
       renderInput={(params) => <TextField {...params} />}
-      getOptionLabel={(option) => option.name}
-      isOptionEqualToValue={(option, value) => option._id === value._id}
-      groupBy={(option) =>
-        isMyProject(option) ? "My Projects" : "Other Projects"
+      getOptionLabel={(options) => options.name}
+      isOptionEqualToValue={(options, value) => options._id === value._id}
+      groupBy={(options) =>
+        isMyProject(options) ? "My Projects" : "Other Projects"
       }
       multiple
     />
   )
 }
+1

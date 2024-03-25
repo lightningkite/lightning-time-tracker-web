@@ -44,7 +44,7 @@ export const ProjectBoard: FC = () => {
   const taskRefreshTrigger = usePeriodicRefresh(10 * 60)
   const smallScreen = useMediaQuery("(max-width: 1400px)")
 
-  const projectUrl = urlParams.get("project")
+  const projectUrl = urlParams.getAll("projects")
 
   const preferences = parsePreferences(currentUser.webPreferences)
 
@@ -60,12 +60,15 @@ export const ProjectBoard: FC = () => {
         TaskState.Testing
       ]
 
-  const onChangeProject = (project: Project) => {
-    if ("selected" in state && state.selected.map((p) => p._id === project._id))
+  const onChangeProject = (projects: Project[]) => {
+    if (
+      "selected" in state &&
+      state.selected.map((p) => p._id) === projects.map((p) => p._id)
+    )
       return
-    urlParams.set("project", project._id)
+    projects.forEach((p) => urlParams.set("projects", p._id))
     setUrlParams(urlParams)
-    dispatch({type: "changeProject", selected: project})
+    dispatch({type: "changeProject", selected: projects})
   }
 
   useEffect(() => {
@@ -91,7 +94,7 @@ export const ProjectBoard: FC = () => {
           dispatch({
             type: "setProjects",
             projects,
-            selected: initialProject
+            selected: [initialProject]
           })
         }
       })
@@ -105,34 +108,38 @@ export const ProjectBoard: FC = () => {
 
     // Update selected project in query
     const searchParams = new URLSearchParams(location.search)
-    searchParams.set("project", state.selected._id)
+    searchParams.set(
+      "project",
+      state.selected.forEach((p) => p._id)
+    )
     navigate({search: searchParams.toString()})
 
+    state.selected.map((p) => 
     const conditions: Condition<Task>[] =
-      selectedUser!.length > 0 && filterTags.length > 0
+    selectedUser!.length > 0 && filterTags.length > 0
         ? [
-            {project: {Equal: state.selected._id}},
+            {project: {Equal: p._id}},
             {state: {NotInside: hiddenTaskStates}},
             {userName: {IfNotNull: {Inside: selectedUser}}},
             {tags: {SetAnyElements: {Inside: filterTags}}}
           ]
         : selectedUser!.length > 0
         ? [
-            {project: {Equal: state.selected._id}},
+            {project: {Equal: p._id}},
             {state: {NotInside: hiddenTaskStates}},
             {userName: {IfNotNull: {Inside: selectedUser}}}
           ]
         : filterTags.length > 0
         ? [
-            {project: {Equal: state.selected._id}},
+            {project: {Equal: p._id}},
             {state: {NotInside: hiddenTaskStates}},
             {tags: {SetAnyElements: {Inside: filterTags}}}
           ]
         : [
-            {project: {Equal: state.selected._id}},
+            {project: {Equal: p._id}},
             {state: {NotInside: hiddenTaskStates}}
           ]
-
+    )
     annotatedTaskEndpoint
       .query({condition: {And: conditions}, limit: 1000})
       .then((tasks: AnnotatedTask[]) => dispatch({type: "setTasks", tasks}))
@@ -227,7 +234,7 @@ export const ProjectBoard: FC = () => {
       >
         <ProjectBoardFilter
           smallScreen={smallScreen}
-          tags={state.selected}
+          tags={state.selected.map((p) => p._id)}
           setFilterTags={setFilterTags}
           filterTags={filterTags}
           user={activeUsers.map((u) => u.name)}

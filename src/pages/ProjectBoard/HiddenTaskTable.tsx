@@ -14,21 +14,25 @@ import {useNavigate} from "react-router-dom"
 
 export interface HiddenTaskTableProps {
   project: Project
-  state: "Delivered" | "Cancelled"
-  openModal: boolean
+  showTaskModal: "Delivered" | "Cancelled" | null
   closeModal: () => void
 }
 
 export const HiddenTaskTable: FC<HiddenTaskTableProps> = (props) => {
-  const {project, state, openModal, closeModal} = props
+  const {project, showTaskModal, closeModal} = props
 
   const permissions = usePermissions()
   const navigate = useNavigate()
 
   return (
-    <Dialog open={openModal} onClose={closeModal} fullWidth maxWidth="md">
+    <Dialog
+      open={showTaskModal !== null}
+      onClose={closeModal}
+      fullWidth
+      maxWidth="md"
+    >
       <DialogTitle sx={{pr: 5}}>
-        {state === "Delivered" ? "Delivered Tasks" : "Cancelled Tasks"}
+        {showTaskModal === "Delivered" ? "Delivered Tasks" : "Cancelled Tasks"}
 
         <Tooltip title="Close">
           <IconButton
@@ -52,7 +56,7 @@ export const HiddenTaskTable: FC<HiddenTaskTableProps> = (props) => {
             {
               state: {
                 Equal:
-                  state === "Delivered"
+                  showTaskModal === "Delivered"
                     ? TaskState.Delivered
                     : TaskState.Cancelled
               }

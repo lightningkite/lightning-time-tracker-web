@@ -41,11 +41,11 @@ export const ProjectBoard: FC = () => {
 
   const [selectedUser, setSelectedUser] = useState<string[]>([])
 
-  const [openModal, setOpenModal] = useState(false)
+  // const [openModal, setOpenModal] = useState(false)
 
-  const [tableState, setTableState] = useState<"Delivered" | "Cancelled">(
-    "Delivered"
-  )
+  const [tableState, setTableState] = useState<
+    "Delivered" | "Cancelled" | null
+  >(null)
 
   const [state, dispatch] = useReducer(reducer, {status: "loadingProjects"})
   const taskRefreshTrigger = usePeriodicRefresh(10 * 60)
@@ -123,21 +123,21 @@ export const ProjectBoard: FC = () => {
             {tags: {SetAnyElements: {Inside: filterTags}}}
           ]
         : selectedUser!.length > 0
-        ? [
-            {project: {Equal: state.selected._id}},
-            {state: {NotInside: hiddenTaskStates}},
-            {userName: {IfNotNull: {Inside: selectedUser}}}
-          ]
-        : filterTags.length > 0
-        ? [
-            {project: {Equal: state.selected._id}},
-            {state: {NotInside: hiddenTaskStates}},
-            {tags: {SetAnyElements: {Inside: filterTags}}}
-          ]
-        : [
-            {project: {Equal: state.selected._id}},
-            {state: {NotInside: hiddenTaskStates}}
-          ]
+          ? [
+              {project: {Equal: state.selected._id}},
+              {state: {NotInside: hiddenTaskStates}},
+              {userName: {IfNotNull: {Inside: selectedUser}}}
+            ]
+          : filterTags.length > 0
+            ? [
+                {project: {Equal: state.selected._id}},
+                {state: {NotInside: hiddenTaskStates}},
+                {tags: {SetAnyElements: {Inside: filterTags}}}
+              ]
+            : [
+                {project: {Equal: state.selected._id}},
+                {state: {NotInside: hiddenTaskStates}}
+              ]
 
     annotatedTaskEndpoint
       .query({condition: {And: conditions}, limit: 1000})
@@ -253,7 +253,6 @@ export const ProjectBoard: FC = () => {
               <CompactColumn
                 onClick={() => {
                   setTableState("Cancelled")
-                  setOpenModal(true)
                 }}
                 handleDrop={handleDrop}
                 taskState={TaskState.Cancelled}
@@ -288,7 +287,6 @@ export const ProjectBoard: FC = () => {
               <CompactColumn
                 onClick={() => {
                   setTableState("Delivered")
-                  setOpenModal(true)
                 }}
                 handleDrop={handleDrop}
                 taskState={TaskState.Delivered}
@@ -299,9 +297,8 @@ export const ProjectBoard: FC = () => {
       </Container>
       <HiddenTaskTable
         project={state.selected}
-        closeModal={() => setOpenModal(false)}
-        openModal={openModal}
-        state={tableState}
+        closeModal={() => setTableState(null)}
+        showTaskModal={tableState}
       />
     </>
   )

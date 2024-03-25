@@ -1,10 +1,11 @@
 import {Autocomplete, IconButton, Stack, TextField} from "@mui/material"
-import {useState, type FC} from "react"
+import {useState, type FC, useContext} from "react"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
 import FilterAltOffIcon from "@mui/icons-material/FilterAltOff"
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {usePermissions} from "hooks/usePermissions"
 import type {Project} from "api/sdk"
+import {AuthContext} from "utils/context"
 
 interface ProjectBoardFilterProps {
   smallScreen: boolean
@@ -31,6 +32,7 @@ export const ProjectBoardFilter: FC<ProjectBoardFilterProps> = ({
   setSelectedProjects
 }) => {
   const [showFilter, setShowFilter] = useState<boolean>(false)
+  const {currentUser} = useContext(AuthContext)
 
   const permissions = usePermissions()
 
@@ -38,6 +40,13 @@ export const ProjectBoardFilter: FC<ProjectBoardFilterProps> = ({
     setFilterTags([])
     setShowFilter(false)
     setSelectedProjects([])
+  }
+
+  function isMyProject(project: Project) {
+    return [
+      ...currentUser.projectFavorites,
+      ...(currentUser.limitToProjects ?? [])
+    ].includes(project._id)
   }
 
   return (
@@ -55,7 +64,7 @@ export const ProjectBoardFilter: FC<ProjectBoardFilterProps> = ({
             renderInput={(params) => (
               <TextField {...params} label={"Other Projects"} />
             )}
-            options={projects ?? []}
+            options={projects.sort((a, _) => (isMyProject(a) ? -1 : 1))}
             getOptionLabel={(p) => p.name}
             multiple
             onChange={(_, e) => setSelectedProjects(e)}
@@ -65,6 +74,9 @@ export const ProjectBoardFilter: FC<ProjectBoardFilterProps> = ({
               minWidth: 250,
               ml: 2
             }}
+            groupBy={(options) =>
+              isMyProject(options) ? "My Projects" : "Other Projects"
+            }
           />
           <Autocomplete
             renderInput={(params) => <TextField {...params} label={"Tags"} />}

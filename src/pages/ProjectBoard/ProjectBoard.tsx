@@ -38,7 +38,6 @@ export const ProjectBoard: FC = () => {
 
   const [filterTags, setFilterTags] = useState<string[]>([])
   const [selectedUser, setSelectedUser] = useState<string[]>([])
-  const [selectedProjects, setSelectedProjects] = useState<Project[]>([])
 
   const [state, dispatch] = useReducer(reducer, {status: "loadingProjects"})
   const taskRefreshTrigger = usePeriodicRefresh(10 * 60)
@@ -117,45 +116,29 @@ export const ProjectBoard: FC = () => {
     const conditions: Condition<Task>[] =
       selectedUser!.length > 0 && filterTags.length > 0
         ? [
-            {
-              Or: [
-                {project: {Inside: state.selected.map((p) => p._id)}},
-                {project: {Inside: selectedProjects.map((p) => p._id)}}
-              ]
-            },
+            {project: {Inside: state.selected.map((p) => p._id)}},
+
             {state: {NotInside: hiddenTaskStates}},
             {userName: {IfNotNull: {Inside: selectedUser}}},
             {tags: {SetAnyElements: {Inside: filterTags}}}
           ]
         : selectedUser!.length > 0
         ? [
-            {
-              Or: [
-                {project: {Inside: state.selected.map((p) => p._id)}},
-                {project: {Inside: selectedProjects.map((p) => p._id)}}
-              ]
-            },
+            {project: {Inside: state.selected.map((p) => p._id)}},
+
             {state: {NotInside: hiddenTaskStates}},
             {userName: {IfNotNull: {Inside: selectedUser}}}
           ]
         : filterTags.length > 0
         ? [
-            {
-              Or: [
-                {project: {Inside: state.selected.map((p) => p._id)}},
-                {project: {Inside: selectedProjects.map((p) => p._id)}}
-              ]
-            },
+            {project: {Inside: state.selected.map((p) => p._id)}},
+
             {state: {NotInside: hiddenTaskStates}},
             {tags: {SetAnyElements: {Inside: filterTags}}}
           ]
         : [
-            {
-              Or: [
-                {project: {Inside: state.selected.map((p) => p._id)}},
-                {project: {Inside: selectedProjects.map((p) => p._id)}}
-              ]
-            },
+            {project: {Inside: state.selected.map((p) => p._id)}},
+
             {state: {NotInside: hiddenTaskStates}}
           ]
 
@@ -166,8 +149,7 @@ export const ProjectBoard: FC = () => {
     "selected" in state && state.selected,
     taskRefreshTrigger,
     filterTags,
-    selectedUser,
-    selectedProjects
+    selectedUser
   ])
 
   const tasksByState: Record<TaskState, AnnotatedTask[]> = useMemo(() => {
@@ -254,19 +236,12 @@ export const ProjectBoard: FC = () => {
       >
         <ProjectBoardFilter
           smallScreen={smallScreen}
-          tags={[...state.selected, ...selectedProjects].flatMap(
-            (p) => p.projectTags
-          )}
+          tags={[...state.selected].flatMap((p) => p.projectTags)}
           setFilterTags={setFilterTags}
           filterTags={filterTags}
           user={activeUsers.map((u) => u.name)}
           selectedUser={selectedUser ?? []}
           setSelectedUser={setSelectedUser}
-          projects={state.projects.filter(
-            (p) => p._id !== state.selected[0]._id
-          )}
-          selectedProjects={selectedProjects ?? []}
-          setSelectedProjects={setSelectedProjects}
         />
       </Stack>
       <DndProvider backend={HTML5Backend}>
@@ -289,12 +264,12 @@ export const ProjectBoard: FC = () => {
               <TaskStateColumn
                 key={taskState}
                 state={taskState}
-                showProject={selectedProjects.length > 0 ? true : false}
+                showProject={state.selected.length > 1 ? true : false}
                 tasks={
                   state.status === "ready" ? tasksByState[taskState] : undefined
                 }
                 handleDrop={handleDrop}
-                projects={[...state.selected, ...selectedProjects]}
+                projects={state.selected}
                 onAddedTask={(task) => dispatch({type: "addTask", task})}
                 updateTask={(updatedTask) =>
                   dispatch({

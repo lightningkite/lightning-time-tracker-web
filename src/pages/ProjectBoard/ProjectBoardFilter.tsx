@@ -63,7 +63,6 @@ export const ProjectBoardFilter: FC<ProjectBoardFilterProps> = ({
             sx={{
               width: "100%",
               minWidth: 250,
-              mr: 2,
               ml: 2
             }}
           />

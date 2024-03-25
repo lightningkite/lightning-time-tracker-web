@@ -37,6 +37,7 @@ export const ProjectBoardFilter: FC<ProjectBoardFilterProps> = ({
   const onClose = () => {
     setFilterTags([])
     setShowFilter(false)
+    setSelectedProjects([])
   }
 
   return (

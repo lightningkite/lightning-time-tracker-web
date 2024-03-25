@@ -7,7 +7,7 @@ import {
   makeFormikTextFieldProps,
   RestAutocompleteInput
 } from "@lightningkite/mui-lightning-components"
-import {Edit, EditOff, GitHub, Sell} from "@mui/icons-material"
+import {Edit} from "@mui/icons-material"
 import {LoadingButton} from "@mui/lab"
 import {
   Alert,
@@ -17,7 +17,6 @@ import {
   FormControlLabel,
   IconButton,
   InputAdornment,
-  Link,
   MenuItem,
   Stack,
   TextField,
@@ -34,7 +33,6 @@ import {useFormik} from "formik"
 import {usePermissions} from "hooks/usePermissions"
 import type {FC} from "react"
 import {useContext, useEffect, useState} from "react"
-import {useNavigate} from "react-router-dom"
 import {AuthContext} from "utils/context"
 import {
   dynamicFormatDate,

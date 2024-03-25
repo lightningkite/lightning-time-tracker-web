@@ -1,5 +1,6 @@
+import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {Cancel, CheckCircle} from "@mui/icons-material"
-import {Box, Typography} from "@mui/material"
+import {Box, IconButton, Typography} from "@mui/material"
 import {TaskState} from "api/sdk"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
@@ -14,10 +15,11 @@ dayjs.extend(duration)
 export interface CompactColumnProps {
   handleDrop: (task: AnnotatedTask, newState: TaskState) => void
   taskState: TaskState
+  onClick: () => void
 }
 
 export const CompactColumn: FC<CompactColumnProps> = (props) => {
-  const {handleDrop, taskState} = props
+  const {handleDrop, taskState, onClick} = props
 
   const [{isOver, canDrop}, drop] = useDrop({
     accept: Object.values(TaskState),
@@ -44,7 +46,17 @@ export const CompactColumn: FC<CompactColumnProps> = (props) => {
       }}
       ref={drop}
     >
-      <Icon sx={{color: canDrop ? "white" : "text.disabled"}} />
+      <IconButton onClick={onClick}>
+        <HoverHelp
+          description={
+            taskState === TaskState.Delivered
+              ? "Delivered Tasks"
+              : "Cancelled Tasks"
+          }
+        >
+          <Icon sx={{color: canDrop ? "white" : "text.disabled"}} />
+        </HoverHelp>
+      </IconButton>
 
       {canDrop && (
         <Typography

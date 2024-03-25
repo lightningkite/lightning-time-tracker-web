@@ -296,7 +296,7 @@ export const ProjectBoard: FC = () => {
                   state.status === "ready" ? tasksByState[taskState] : undefined
                 }
                 handleDrop={handleDrop}
-                projects={state.selected}
+                projects={[...state.selected, ...selectedProjects]}
                 onAddedTask={(task) => dispatch({type: "addTask", task})}
                 updateTask={(updatedTask) =>
                   dispatch({

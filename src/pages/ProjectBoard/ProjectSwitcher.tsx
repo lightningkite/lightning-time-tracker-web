@@ -26,8 +26,8 @@ export const ProjectSwitcher: FC<ProjectSwitcherProps> = (props) => {
     <Autocomplete
       disableClearable
       options={projects.sort((a, _) => (isMyProject(a) ? -1 : 1))}
-      onChange={(_, newValue) => onSelect(newValue)}
-      value={selected}
+      onChange={(_, newValue) => onSelect([newValue])}
+      value={selected[0]}
       sx={{width: 300, minWidth: 200, mt: 1, mb: 2, ml: 2}}
       renderInput={(params) => <TextField {...params} />}
       getOptionLabel={(options) => options.name}
@@ -35,7 +35,6 @@ export const ProjectSwitcher: FC<ProjectSwitcherProps> = (props) => {
       groupBy={(options) =>
         isMyProject(options) ? "My Projects" : "Other Projects"
       }
-      multiple
     />
   )
 }

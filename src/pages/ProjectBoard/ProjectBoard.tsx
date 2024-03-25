@@ -28,7 +28,6 @@ import {RecentFavoriteProjectsSwitcher} from "./RecentFavoriteProjectsSwitcher"
 import {ProjectBoardFilter} from "./ProjectBoardFilter"
 import {type Condition} from "@lightningkite/lightning-server-simplified"
 import {parsePreferences} from "utils/helpers"
-import {Insights} from "@mui/icons-material"
 
 export const ProjectBoard: FC = () => {
   const {session, currentUser, activeUsers} = useContext(AuthContext)

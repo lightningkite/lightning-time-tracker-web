@@ -36,19 +36,20 @@ export const ProjectSwitcher: FC<ProjectSwitcherProps> = (props) => {
         options={projects.sort((a, _) => (isMyProject(a) ? -1 : 1))}
         onChange={(_, e) => onSelect(Array.isArray(e) ? e : [e])}
         value={multiple ? selected : selected[0]}
-        sx={{width: 310, minWidth: 200, mt: 1, mb: 2, ml: 2}}
+        sx={{width: 350, minWidth: 200, mt: 1, mb: 2, ml: 2}}
         renderInput={(params) => (
           <TextField
             {...params}
             InputProps={{
               ...params.InputProps,
               endAdornment: (
-                <Stack direction="row">
+                <Stack>
                   <IconButton
                     sx={{
-                      justifyContent: "center",
-                      alignItems: "center",
-                      position: "relative"
+                      justifySelf: "center",
+                      alignSelf: "center",
+                      position: "sticky",
+                      flexWrap: "nowrap"
                     }}
                     onClick={() => handleSetMultiple(!multiple)}
                   >

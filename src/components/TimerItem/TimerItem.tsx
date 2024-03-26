@@ -113,17 +113,13 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
       })
       .then((tasks) =>
         setSortedTaskOptions(
-          tasks.sort((a, b) =>
-            isMyActiveTask(a)
-              ? -1
-              : isMyActiveTask(b)
-              ? 1
-              : isOpenTask(a)
-              ? -1
-              : isOpenTask(b)
-              ? 1
-              : 0
-          )
+          tasks.sort((a, b) => {
+            if (isMyActiveTask(a)) return -1
+            if (isMyActiveTask(b)) return 1
+            if (isOpenTask(a)) return -1
+            if (isOpenTask(b)) return 1
+            return 0
+          })
         )
       )
   }, [timer.project, throttledTaskSearch])
@@ -279,13 +275,10 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
                 />
               )}
               groupBy={(task) => {
-                return typeof task === "string"
-                  ? "New Task"
-                  : isMyActiveTask(task)
-                  ? "My Active Tasks"
-                  : isOpenTask(task)
-                  ? "Open Tasks"
-                  : "Closed"
+                if (typeof task === "string") return "New Task"
+                if (isMyActiveTask(task)) return "My Active Tasks"
+                if (isOpenTask(task)) return "Open Tasks"
+                return "Closed"
               }}
               filterOptions={(options, {inputValue, getOptionLabel}) => {
                 const filtered = options.filter((option) =>

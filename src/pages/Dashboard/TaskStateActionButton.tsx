@@ -1,17 +1,16 @@
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
-import {CheckCircle, Done, Undo} from "@mui/icons-material"
+import {Add, CheckCircle, Done, Undo} from "@mui/icons-material"
 import {
-  Box,
+  Button,
   CircularProgress,
   IconButton,
   ListItemIcon,
   Menu,
   MenuItem,
-  Modal,
-  TextField,
-  Typography
+  Stack,
+  TextField
 } from "@mui/material"
-import {Task, TaskState} from "api/sdk"
+import {type Task, TaskState} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import {useFormik} from "formik"
 import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
@@ -19,14 +18,8 @@ import type {FC} from "react"
 import React, {useContext, useState} from "react"
 import {AuthContext} from "utils/context"
 import * as yup from "yup"
-import {
-  makeFormikNumericTextFieldProps,
-  makeFormikTextFieldProps
-} from "@lightningkite/mui-lightning-components"
-import {
-  Modification,
-  makeObjectModification
-} from "@lightningkite/lightning-server-simplified"
+import {makeFormikTextFieldProps} from "@lightningkite/mui-lightning-components"
+import {makeObjectModification} from "@lightningkite/lightning-server-simplified"
 
 const style = {
   position: "absolute" as "absolute",
@@ -100,6 +93,7 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [isChangingState, setIsChangingState] = useState(false)
   const [modalIsOpen, setModalIsOpen] = useState(false)
+  const [prLinks, setPrLinks] = useState<string[]>([])
   const handleModalClose = () => {
     setModalIsOpen(false)
     formik.resetForm()
@@ -132,7 +126,7 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
   }
   const formik = useFormik({
     initialValues: {
-      url: ""
+      url: []
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -147,6 +141,8 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
     }
   })
 
+  console.log(prLinks)
+
   return (
     <>
       <DialogForm
@@ -160,12 +156,27 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
           }
         }}
       >
-        <TextField
-          label="URL"
-          placeholder="Put Pull Request URL here"
-          fullWidth
-          {...makeFormikTextFieldProps(formik, "url")}
-        />
+        <Stack alignItems="center" justifyContent="center">
+          {formik.values.url.map(() => (
+            <>
+              <TextField
+                label="URL"
+                placeholder="Put Pull Request URL here"
+                fullWidth
+                {...makeFormikTextFieldProps(formik, "url")}
+                // value={prLinks}
+                // onChange={(e) => setPrLinks([...prev, e.target.value])}
+              />
+            </>
+          ))}
+          <Button
+            endIcon={<Add />}
+            sx={{mt: 3}}
+            onClick={() => setPrLinks((prev) => [...prev, ""])}
+          >
+            Add Another PR
+          </Button>
+        </Stack>
       </DialogForm>
       {isChangingState ? (
         <IconButton disabled>

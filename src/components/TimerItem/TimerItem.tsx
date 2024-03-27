@@ -41,6 +41,7 @@ import DialogForm from "components/DialogForm"
 import {CalendarIcon, DatePicker} from "@mui/x-date-pickers"
 import dayjs from "dayjs"
 import {usePermissions} from "hooks/usePermissions"
+import {parsePreferences} from "utils/helpers"
 
 export interface TimerItemProps {
   timer: Timer
@@ -53,6 +54,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     useContext(TimerContext)
   const theme = useTheme()
   const permissions = usePermissions()
+  const preferences = parsePreferences(currentUser.webPreferences)
 
   const [summary, setSummary] = useState(timer.summary)
   const [expanded, setExpanded] = useState(!timer.project || !timer.task)
@@ -61,7 +63,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
   const [reactivateModal, setReactivateModal] = useState(false)
   const [taskSearch, setTaskSearch] = useState("")
   const [openPRLink, setOpenPRLink] = useState(false)
-  const [prLink, setPRLink] = useState("")
+  const [prLinks, setPRLinks] = useState<string[]>([])
   const [selectedDate, setSelectedDate] = useState(dayjs(timer.date))
   const [shownDate, setShownDate] = useState(dayjs(timer.date))
   const [openDateModal, setOpenDateModal] = useState(false)
@@ -134,7 +136,9 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     setExpanded(false)
 
     if (task.project !== project._id) updateTimer(timer._id, {task: undefined})
-    if (task.pullRequestLink) setPRLink(task.pullRequestLink)
+    if (task.pullRequestLink) {
+      setPRLinks(task.pullRequestLink)
+    }
   }, [timer.task, timer.project, task?.pullRequestLink])
 
   const isMyActiveTask = useCallback((task: Task): boolean => {
@@ -322,7 +326,8 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           fullWidth
         />
 
-        {task?.pullRequestLink &&
+        {preferences.timerPR === "show" &&
+          task?.pullRequestLink &&
           permissions.doesCareAboutPRs &&
           (expanded ? (
             <Typography
@@ -405,7 +410,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
         onClose={() => setOpenPRLink(false)}
         onSubmit={() =>
           session.task
-            .modify(timer.task!, {pullRequestLink: {Assign: prLink}})
+            .modify(timer.task!, {pullRequestLink: {Assign: prLinks}})
             .then((newTask) => {
               setSortedTaskOptions((prev) =>
                 prev.map((t) => (t._id === newTask._id ? newTask : t))
@@ -424,8 +429,8 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
         } pull request link on the selected task`}</Typography>
         <TextField
           label="Pull Request Link"
-          value={prLink}
-          onChange={(e) => setPRLink(e.target.value)}
+          value={prLinks}
+          onChange={(e) => setPRLinks((prev) => [...prev, e.target.value])}
           fullWidth
           sx={{my: 2}}
         />

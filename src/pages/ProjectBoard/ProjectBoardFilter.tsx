@@ -1,4 +1,4 @@
-import {Autocomplete, Hidden, IconButton, Stack, TextField} from "@mui/material"
+import {Autocomplete, IconButton, Stack, TextField} from "@mui/material"
 import {useState, type FC} from "react"
 import FilterAltIcon from "@mui/icons-material/FilterAlt"
 import FilterAltOffIcon from "@mui/icons-material/FilterAltOff"

@@ -13,7 +13,7 @@ import type {FC} from "react"
 import {useNavigate} from "react-router-dom"
 
 export interface HiddenTaskTableProps {
-  project: Project
+  project: Project[]
   showTaskModal: "Delivered" | "Cancelled" | null
   closeModal: () => void
 }
@@ -52,7 +52,7 @@ export const HiddenTaskTable: FC<HiddenTaskTableProps> = (props) => {
       <DialogContent>
         <TaskTable
           additionalQueryConditions={[
-            {project: {Equal: project._id}},
+            {project: {Inside: project.map((p) => p._id)}},
             {
               state: {
                 Equal:
@@ -65,7 +65,7 @@ export const HiddenTaskTable: FC<HiddenTaskTableProps> = (props) => {
           dependencies={[]}
           onRowClick={(task) =>
             permissions.canManageAllTasks
-              ? navigate(`/projects/${project._id}/tasks/${task._id}`)
+              ? navigate(`/projects/${task.project}/tasks/${task._id}`)
               : {}
           }
         />

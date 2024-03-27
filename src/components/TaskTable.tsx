@@ -43,7 +43,12 @@ export const TaskTable: FC<TaskTableProps> = (props) => {
         {
           field: "userName",
           headerName: "User",
-          minWidth: 200
+          minWidth: 150
+        },
+        {
+          field: "projectName",
+          headerName: "Poject",
+          minWidth: 150
         },
         {
           field: "summary",
@@ -51,23 +56,6 @@ export const TaskTable: FC<TaskTableProps> = (props) => {
           flex: 1,
           minWidth: 200
         }
-        // {
-        //   field: "estimate",
-        //   headerName: "Estimate",
-        //   minWidth: 100,
-        //   type: "number"
-        // },
-        // {
-        //   field: "budget",
-        //   headerName: "Budget",
-        //   minWidth: 100,
-        //   type: "number",
-        //   sortable: false,
-        //   valueGetter: ({row}) =>
-        //     row.estimate ? row._annotations.totalTaskHours / row.estimate : null,
-        //   valueFormatter: ({value}) =>
-        //     value ? `${Math.round((value as number) * 100)}%` : "–"
-        // }
       ]}
     />
   )

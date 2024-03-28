@@ -1,14 +1,11 @@
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
-import {Add, CheckCircle, Done, Undo} from "@mui/icons-material"
+import {CheckCircle, Done, Undo} from "@mui/icons-material"
 import {
-  Button,
   CircularProgress,
   IconButton,
   ListItemIcon,
   Menu,
-  MenuItem,
-  Stack,
-  TextField
+  MenuItem
 } from "@mui/material"
 import {type Task, TaskState} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
@@ -18,20 +15,8 @@ import type {FC} from "react"
 import React, {useContext, useState} from "react"
 import {AuthContext} from "utils/context"
 import * as yup from "yup"
-import {makeFormikTextFieldProps} from "@lightningkite/mui-lightning-components"
 import {makeObjectModification} from "@lightningkite/lightning-server-simplified"
-
-const style = {
-  position: "absolute" as "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4
-}
+import {PullRequestSection} from "components/PullRequestSection/PullRequestSection"
 
 interface TaskStateAction {
   label: string
@@ -93,7 +78,6 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [isChangingState, setIsChangingState] = useState(false)
   const [modalIsOpen, setModalIsOpen] = useState(false)
-  const [prLinks, setPrLinks] = useState<string[]>([])
   const handleModalClose = () => {
     setModalIsOpen(false)
     formik.resetForm()
@@ -126,7 +110,7 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
   }
   const formik = useFormik({
     initialValues: {
-      url: []
+      url: annotatedTask.pullRequestLink ?? []
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -141,8 +125,6 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
     }
   })
 
-  console.log(prLinks)
-
   return (
     <>
       <DialogForm
@@ -156,27 +138,11 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
           }
         }}
       >
-        <Stack alignItems="center" justifyContent="center">
-          {formik.values.url.map(() => (
-            <>
-              <TextField
-                label="URL"
-                placeholder="Put Pull Request URL here"
-                fullWidth
-                {...makeFormikTextFieldProps(formik, "url")}
-                // value={prLinks}
-                // onChange={(e) => setPrLinks([...prev, e.target.value])}
-              />
-            </>
-          ))}
-          <Button
-            endIcon={<Add />}
-            sx={{mt: 3}}
-            onClick={() => setPrLinks((prev) => [...prev, ""])}
-          >
-            Add Another PR
-          </Button>
-        </Stack>
+        <PullRequestSection
+          edit
+          url={formik.values.url}
+          setUrl={(u) => formik.setFieldValue("url", u)}
+        />
       </DialogForm>
       {isChangingState ? (
         <IconButton disabled>
@@ -196,6 +162,7 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
         {next?.map((next) => (
           <MenuItem
+            key={next.nextState}
             onClick={() => {
               changeTaskStatus(next.nextState)
             }}

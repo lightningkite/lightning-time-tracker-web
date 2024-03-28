@@ -1,40 +1,39 @@
 import {Box, Typography} from "@mui/material"
 import {Stack} from "@mui/system"
 import type {FC, PropsWithChildren} from "react"
-import React from "react"
 
-export interface FormSectionProps {
+interface FormSectionProps {
   title?: string
+  titleIcon?: JSX.Element
   subtitle?: string
   disableTopPadding?: boolean
 }
 
 export const FormSection: FC<PropsWithChildren<FormSectionProps>> = (props) => {
-  const {title, subtitle, disableTopPadding, children} = props
+  const {title, titleIcon, subtitle, disableTopPadding, children} = props
 
   return (
-    <Box pt={disableTopPadding ? undefined : 6}>
+    <Box pt={disableTopPadding ? undefined : 6} className="hcp-form-section">
       {title && (
-        <Typography variant="h3" color="text.secondary">
-          {title}
-        </Typography>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          <Typography variant="h6" fontWeight="bold" color="primary.main">
+            {title}
+          </Typography>
+          {titleIcon}
+        </Stack>
       )}
       {subtitle && (
-        <Typography variant="body2" color="text.disabled">
+        <Typography variant="body2" sx={{color: "#888"}}>
           {subtitle}
         </Typography>
       )}
-      <Stack
-        spacing={3}
-        mt={
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-          title || subtitle ? 3 : 0
-        }
-      >
+      <Stack spacing={3} mt={title || subtitle ? 3 : 2}>
         {children}
       </Stack>
     </Box>
   )
 }
-
-export default FormSection

@@ -1,4 +1,4 @@
-import {CheckBox, DarkMode, LightMode} from "@mui/icons-material"
+import {DarkMode, LightMode} from "@mui/icons-material"
 import {
   Button,
   Card,
@@ -13,7 +13,6 @@ import {
   Typography
 } from "@mui/material"
 import {logout} from "api/useSessionManager"
-import FormSection from "components/FormSection"
 import PageHeader from "components/PageHeader"
 import {UserForm} from "components/UserForm"
 import {usePermissions} from "hooks/usePermissions"
@@ -22,6 +21,7 @@ import React, {useContext} from "react"
 import {AuthContext} from "utils/context"
 import {parsePreferences} from "utils/helpers"
 import {ColorPicker} from "./ColorPicker"
+import {FormSection} from "components/FormSection"
 
 export interface WebPreferences {
   mode: "light" | "dark"

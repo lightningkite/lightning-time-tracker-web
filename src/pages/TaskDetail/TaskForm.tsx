@@ -1,33 +1,31 @@
 import {makeObjectModification} from "@lightningkite/lightning-server-simplified"
 import {
-  HoverHelp,
   makeFormikAutocompleteProps,
   makeFormikCheckboxProps,
   makeFormikNumericTextFieldProps,
   makeFormikTextFieldProps,
   RestAutocompleteInput
 } from "@lightningkite/mui-lightning-components"
-import {Edit} from "@mui/icons-material"
+import {Cancel, Edit} from "@mui/icons-material"
 import {LoadingButton} from "@mui/lab"
 import {
   Alert,
   Autocomplete,
-  Badge,
+  Button,
   Checkbox,
   FormControlLabel,
-  IconButton,
   InputAdornment,
   MenuItem,
   Stack,
-  TextField,
-  Typography
+  TextField
 } from "@mui/material"
 import type {Project, Task, User} from "api/sdk"
 import {TaskState} from "api/sdk"
 import {AttachmentsInput} from "components/AttachmentsInput"
-import FormSection from "components/FormSection"
+import {FormSection} from "components/FormSection"
 import {LabeledInfo} from "components/LabeledInfo"
 import {PrioritySlider} from "components/PrioritySlider"
+import {PullRequestSection} from "components/PullRequestSection/PullRequestSection"
 import dayjs from "dayjs"
 import {useFormik} from "formik"
 import {usePermissions} from "hooks/usePermissions"
@@ -60,7 +58,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
   const permissions = usePermissions()
 
   const [error, setError] = useState("")
-  const [editing, setEditing] = useState(false)
+  const [edit, setEdit] = useState(false)
 
   const [loadedInitialAsyncValues, setLoadedInitialAsyncValues] =
     useState(false)
@@ -113,7 +111,6 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       try {
         const updatedTask = await session.task.modify(task._id, modification)
         setTask(updatedTask)
-        setEditing(false)
         resetForm({values})
       } catch {
         setError("Error updating task")
@@ -133,6 +130,8 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       })
       .catch(() => alert("Error loading initial values"))
   }, [])
+
+  console.log(formik.values.pullRequestLink)
 
   return (
     <>
@@ -154,47 +153,22 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
 
         {permissions.doesCareAboutPRs && (
           <>
-            <FormSection title="Pull Request">
-              <Stack direction="row" alignItems="center">
-                {!task.pullRequestLink || editing ? (
-                  <TextField
-                    label="Pull Request"
-                    {...makeFormikTextFieldProps(formik, "pullRequestLink")}
-                    disabled={!canEdit}
-                    fullWidth
-                  />
-                ) : (
-                  <Stack alignItems="center" direction="row">
-                    {task.pullRequestLink && (
-                      <>
-                        <Typography
-                          onClick={() =>
-                            window.open(`${task.pullRequestLink}`, "_blank")
-                          }
-                          sx={{
-                            "&:hover": {textDecoration: "underline"},
-                            cursor: "pointer",
-                            width: "fit-content"
-                          }}
-                        >
-                          {task.pullRequestLink}
-                        </Typography>
-                        <HoverHelp
-                          description={"Edit Pull Request"}
-                          enableWrapper
-                          sx={{ml: 1, mr: 0}}
-                        >
-                          <IconButton onClick={() => setEditing(true)}>
-                            <Badge color="primary">
-                              <Edit />
-                            </Badge>
-                          </IconButton>
-                        </HoverHelp>
-                      </>
-                    )}
-                  </Stack>
-                )}
-              </Stack>
+            <FormSection
+              title="Pull Request"
+              titleIcon={
+                <Button
+                  onClick={() => setEdit(!edit)}
+                  startIcon={edit ? <Cancel /> : <Edit />}
+                >
+                  Manage PR
+                </Button>
+              }
+            >
+              <PullRequestSection
+                edit={edit}
+                url={formik.values.pullRequestLink ?? []}
+                setUrl={(value) => console.log(value)}
+              />
             </FormSection>
           </>
         )}

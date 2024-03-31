@@ -10,8 +10,6 @@ export const PullRequestSection: FC<{
   const [prLinks, setPrLinks] = useState<string[]>(url ?? [])
   const [prField, setPrField] = useState("")
 
-  console.log(prLinks)
-
   return (
     <>
       <Stack direction="column">

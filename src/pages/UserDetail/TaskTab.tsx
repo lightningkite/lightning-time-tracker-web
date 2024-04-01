@@ -18,14 +18,16 @@ export const TaskTab: FC<TaskTabProps> = ({user}) => {
     <>
       <div style={{textAlign: "right"}}>
         <AddTaskButton
-          user={user}
+          users={[user]}
           afterSubmit={() => setRefreshTrigger((prev) => prev + 1)}
           sx={{mb: 1}}
         />
       </div>
 
       <TaskTable
-        additionalQueryConditions={[{user: {Equal: user._id}}]}
+        additionalQueryConditions={[
+          {users: {SetAnyElements: {Equal: user._id}}}
+        ]}
         dependencies={[refreshTrigger]}
         onRowClick={(task) => navigate(`/users/${user._id}/tasks/${task._id}`)}
       />

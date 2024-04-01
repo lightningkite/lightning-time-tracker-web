@@ -54,7 +54,9 @@ export const TaskCard: FC<{
       key={task._id}
       ref={
         permissions.canManageAllTasks ||
-        (task.user === currentUser._id && permissions.canBeAssignedTasks) ||
+        task.users.map(
+          (u) => u === currentUser._id && permissions.canBeAssignedTasks
+        ) ||
         (task.state === TaskState.Approved && permissions.canDeliverTasks)
           ? drag
           : undefined
@@ -71,27 +73,35 @@ export const TaskCard: FC<{
       <CardActionArea onClick={() => onClick(task)} disableRipple>
         <CardContent sx={{p: 1}}>
           <Stack direction="row" gap={1} alignItems="center">
-            {task.user ? (
+            {task.users ? (
               <>
-                <Avatar
-                  // src="https://avatars.githubusercontent.com/u/8319056?v=4"
-                  sx={{
-                    backgroundColor: userColors[task.user],
-                    width: "1.6rem",
-                    height: "1.6rem",
-                    fontSize: "0.75rem",
-                    fontWeight: "bold",
-                    border: `1px solid ${userColors[task.user]}`,
-                    color: getContrastingColor(
-                      userColors[task.user] ?? "#444444"
-                    )
-                  }}
-                >
-                  {getNameInitials(task.userName ?? "")}
-                </Avatar>
-                <Typography variant="body2" color="text.secondary">
-                  {task.userName}
-                </Typography>
+                {task.users.map((u) => (
+                  <>
+                    {task.userNames.map((n) => (
+                      <>
+                        <Avatar
+                          // src="https://avatars.githubusercontent.com/u/8319056?v=4"
+                          sx={{
+                            backgroundColor: userColors[u],
+                            width: "1.6rem",
+                            height: "1.6rem",
+                            fontSize: "0.75rem",
+                            fontWeight: "bold",
+                            border: `1px solid ${userColors[u]}`,
+                            color: getContrastingColor(
+                              userColors[u] ?? "#444444"
+                            )
+                          }}
+                        >
+                          {getNameInitials(n ?? "")}
+                        </Avatar>
+                        <Typography variant="body2" color="text.secondary">
+                          {n}
+                        </Typography>
+                      </>
+                    ))}
+                  </>
+                ))}
               </>
             ) : (
               <Typography variant="body2" color="text.secondary">

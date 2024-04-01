@@ -27,7 +27,7 @@ export const RecentFavoriteProjectsSwitcher: FC<
     session.task
       .query({
         condition: {
-          And: [{user: {Equal: currentUser._id}}]
+          And: [{users: {SetAnyElements: {Equal: currentUser._id}}}]
         },
         limit: 100,
         orderBy: ["-createdAt"]

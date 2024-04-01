@@ -45,14 +45,14 @@ export interface AddTaskButtonProps extends ButtonProps {
   afterSubmit: (task: AnnotatedTask) => void
   state?: TaskState
   projects?: Project[]
-  user?: User
+  users?: User[]
   sx?: SxProps
 }
 
 export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
   const {
     afterSubmit,
-    user: initialUser,
+    users: initialUsers,
     state: initialState,
     projects: initialProject,
     ...rest
@@ -76,7 +76,8 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
 
   const formik = useFormik({
     initialValues: {
-      user: initialUser ?? permissions.canBeAssignedTasks ? currentUser : null,
+      users:
+        [initialUsers] ?? permissions.canBeAssignedTasks ? [currentUser] : [],
       project: initialProject?.[0] ?? null,
       summary: "",
       description: "",
@@ -90,8 +91,8 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
       const task = await session.task.insert({
         ...values,
         _id: crypto.randomUUID(),
-        user: values.user?._id,
-        userName: undefined,
+        users: values.users!.flatMap((u) => u._id),
+        userNames: [],
         project: values.project!._id,
         projectName: undefined,
         organization: currentUser.organization,
@@ -142,11 +143,12 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
         }}
       >
         <Stack gap={3}>
-          {!initialUser && permissions.canManageAllTasks && (
+          {!initialUsers && permissions.canManageAllTasks && (
             <RestAutocompleteInput
-              label="User"
+              multiple
+              label="Users"
               restEndpoint={session.user}
-              getOptionLabel={(user) => user.name || user.email}
+              getOptionLabel={(users) => users.name || users.email}
               searchProperties={["name", "email"]}
               additionalQueryConditions={[
                 makeUserTaskCondition({
@@ -155,7 +157,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
                 })
               ]}
               dependencies={[formik.values.project]}
-              {...makeFormikAutocompleteProps(formik, "user")}
+              {...makeFormikAutocompleteProps(formik, "users")}
             />
           )}
 

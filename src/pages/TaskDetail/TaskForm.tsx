@@ -71,7 +71,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
 
   const formik = useFormik({
     initialValues: {
-      users: [] as User | [],
+      users: [] as User[] | [],
       project: null as Project | null,
       state: task.state,
       summary: task.summary,
@@ -90,7 +90,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       const formattedValues: Partial<Task> = canEdit
         ? {
             ...values,
-            user: values.users?._id,
+            users: values.users.map((u) => u._id),
             project: values.project?._id,
             estimate: values.estimate ? +values.estimate : null
           }
@@ -121,7 +121,11 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
   useEffect(() => {
     Promise.all([
       session.project.detail(task.project),
-      task.user && canEdit ? session.user.detail(task.user) : null
+      task.users && canEdit
+        ? session.user.query({
+            condition: {_id: {Inside: task.users}}
+          })
+        : []
     ])
       .then(([project, users]) => {
         setPossibleTags(project.projectTags)
@@ -203,6 +207,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
             }}
           >
             <RestAutocompleteInput
+              multiple
               label="Assignee"
               restEndpoint={session.user}
               getOptionLabel={(user) => user.name || user.email}

@@ -10,7 +10,6 @@ import type {Dispatch, FC, SetStateAction} from "react"
 import {useContext, useEffect, useMemo, useState} from "react"
 import {AuthContext} from "utils/context"
 import type {ReportFilterValues} from "./ReportsPage"
-import {dayjsToISO} from "@lightningkite/react-lightning-helpers"
 import {DatePicker} from "@mui/x-date-pickers"
 
 export interface DateRange {
@@ -254,7 +253,7 @@ export function filtersToTaskCondition(
   }
 
   if (users) {
-    conditions.push({user: {Inside: users.map((u) => u._id)}})
+    conditions.push({users: {Equal: users.map((u) => u._id)}})
   }
 
   return {And: conditions}

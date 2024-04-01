@@ -36,8 +36,8 @@ export function generateTasks(params: {
         organizationName: organizations.find(
           (o) => o._id === project.organization
         )?.name,
-        user: user._id,
-        userName: user.name,
+        users: [user._id],
+        userNames: [user.name],
         state: rand(Object.values(TaskState)),
         summary: capitalize(randVerb() + " " + randCatchPhrase().toLowerCase()),
         description: randParagraph(),

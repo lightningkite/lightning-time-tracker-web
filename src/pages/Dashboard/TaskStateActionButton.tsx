@@ -140,8 +140,8 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
       >
         <PullRequestSection
           edit
-          url={formik.values.url}
-          setUrl={(u) => formik.setFieldValue("url", u)}
+          urls={formik.values.url}
+          setUrls={(u) => formik.setFieldValue("url", u)}
         />
       </DialogForm>
       {isChangingState ? (

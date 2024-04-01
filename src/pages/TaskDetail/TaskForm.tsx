@@ -71,7 +71,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
 
   const formik = useFormik({
     initialValues: {
-      user: null as User | null,
+      users: [] as User | [],
       project: null as Project | null,
       state: task.state,
       summary: task.summary,
@@ -90,7 +90,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       const formattedValues: Partial<Task> = canEdit
         ? {
             ...values,
-            user: values.user?._id,
+            user: values.users?._id,
             project: values.project?._id,
             estimate: values.estimate ? +values.estimate : null
           }
@@ -123,9 +123,9 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       session.project.detail(task.project),
       task.user && canEdit ? session.user.detail(task.user) : null
     ])
-      .then(([project, user]) => {
+      .then(([project, users]) => {
         setPossibleTags(project.projectTags)
-        formik.resetForm({values: {...formik.values, user, project}})
+        formik.resetForm({values: {...formik.values, users, project}})
         setLoadedInitialAsyncValues(true)
       })
       .catch(() => alert("Error loading initial values"))
@@ -166,8 +166,10 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
             >
               <PullRequestSection
                 edit={edit}
-                url={formik.values.pullRequestLink ?? []}
-                setUrl={(value) => console.log(value)}
+                urls={formik.values.pullRequestLink ?? []}
+                setUrls={(value) =>
+                  formik.setFieldValue("pullRequestLink", value)
+                }
               />
             </FormSection>
           </>
@@ -212,7 +214,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
                   organization: task.organization
                 })
               ]}
-              {...makeFormikAutocompleteProps(formik, "user")}
+              {...makeFormikAutocompleteProps(formik, "users")}
             />
             <TextField
               select

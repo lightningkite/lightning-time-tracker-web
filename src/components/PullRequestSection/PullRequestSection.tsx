@@ -42,10 +42,10 @@ export const PullRequestSection: FC<{
           >
             <TextField
               label="Add Pull Request"
-              value={prField}
+              value={pr}
               sx={{mb: 3}}
               fullWidth
-              onChange={(e) => setPrField(e.target.value)}
+              onChange={(e) => setPrLinks((prev) => [...prev, e.target.value])}
             />
 
             <IconButton

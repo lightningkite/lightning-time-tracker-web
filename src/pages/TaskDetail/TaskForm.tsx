@@ -135,8 +135,6 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       .catch(() => alert("Error loading initial values"))
   }, [])
 
-  console.log(formik.values.pullRequestLink)
-
   return (
     <>
       <FormSection disableTopPadding>

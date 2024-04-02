@@ -161,7 +161,8 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
             />
           )}
 
-          {(initialProject!.length > 1 ?? !initialProject) && (
+          {((initialProject && initialProject?.length > 1) ??
+            !initialProject) && (
             <RestAutocompleteInput
               label="Project"
               restEndpoint={session.project}

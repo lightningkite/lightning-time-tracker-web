@@ -99,12 +99,22 @@ export const TaskListItem: FC<TaskListItemProps> = ({
               justifyContent="space-between"
               spacing={1}
             >
-              {annotatedTask.userNames.map((username, index) => (
-                <Typography variant="body2" color="text.secondary" key={index}>
+              <Stack direction="row">
+                <Typography variant="body2" color="text.secondary">
                   {taskStateLabels[annotatedTask.state].toUpperCase()}{" "}
-                  &nbsp;&#x2022;&nbsp; {username}
                 </Typography>
-              ))}
+                {annotatedTask.userNames
+                  .sort((a, b) => a.localeCompare(b))
+                  .map((username, index) => (
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      key={index}
+                    >
+                      &nbsp;&nbsp;&#x2022;&nbsp; {username}
+                    </Typography>
+                  ))}
+              </Stack>
               {!isMobile && permissions.canSubmitTime && (
                 <Box sx={{width: "8rem"}}>
                   <Typography

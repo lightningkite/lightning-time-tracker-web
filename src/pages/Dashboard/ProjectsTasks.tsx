@@ -56,7 +56,7 @@ export const ProjectsTasks: FC = () => {
         condition: {
           And: [
             {organization: {Equal: currentOrganization._id}},
-            {user: {Equal: currentUser._id}},
+            {users: {SetAnyElements: {Equal: currentUser._id}}},
             {
               state: {
                 Or: [{Equal: TaskState.Active}, {Equal: TaskState.PullRequest}]
@@ -183,8 +183,10 @@ export const ProjectsTasks: FC = () => {
                       return (
                         booleanCompare(a, b, (t) => t.emergency) ||
                         compareTasksByState(a, b) ||
-                        booleanCompare(a, b, (t) =>
-                          t.users.map((u) => u === currentUser._id)
+                        booleanCompare(
+                          a,
+                          b,
+                          (t) => t.users.map((u) => u === currentUser._id)[0]
                         ) ||
                         compareTasksByPriority(a, b)
                       )

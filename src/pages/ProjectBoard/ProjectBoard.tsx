@@ -126,7 +126,7 @@ export const ProjectBoard: FC = () => {
             {project: {Inside: state.selected.map((p) => p._id)}},
 
             {state: {NotInside: hiddenTaskStates}},
-            {userNames: {Equal: selectedUser}},
+            {userNames: {ListAnyElements: {Inside: selectedUser}}},
             {tags: {SetAnyElements: {Inside: filterTags}}}
           ]
         : selectedUser!.length > 0
@@ -134,7 +134,7 @@ export const ProjectBoard: FC = () => {
             {project: {Inside: state.selected.map((p) => p._id)}},
 
             {state: {NotInside: hiddenTaskStates}},
-            {userNames: {Equal: selectedUser}}
+            {userNames: {ListAnyElements: {Inside: selectedUser}}}
           ]
         : filterTags.length > 0
         ? [

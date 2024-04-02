@@ -1,4 +1,4 @@
-import {type FC, useState} from "react"
+import {type FC} from "react"
 import {Add, Delete} from "@mui/icons-material"
 import {Button, IconButton, Stack, TextField, Typography} from "@mui/material"
 
@@ -31,6 +31,27 @@ export const PullRequestSection: FC<{
                   value={pr}
                   sx={{mb: 3}}
                   fullWidth
+                  InputProps={{
+                    endAdornment: (
+                      <Stack>
+                        <IconButton
+                          color="error"
+                          sx={{
+                            visibility: "hidden",
+                            justifySelf: "center",
+                            alignSelf: "center",
+                            position: "sticky",
+                            flexWrap: "nowrap"
+                          }}
+                          onClick={() =>
+                            setUrls(urls.filter((_, i) => i !== index))
+                          }
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Stack>
+                    )
+                  }}
                   onChange={({target}) =>
                     setUrls(
                       urls.map((value, i) =>
@@ -39,17 +60,6 @@ export const PullRequestSection: FC<{
                     )
                   }
                 />
-
-                <IconButton
-                  color="error"
-                  onClick={() => setUrls(urls.filter((_, i) => i !== index))}
-                  size="small"
-                  sx={{
-                    visibility: "hidden"
-                  }}
-                >
-                  <Delete />
-                </IconButton>
               </Stack>
             ) : (
               <Stack>

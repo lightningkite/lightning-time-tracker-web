@@ -23,6 +23,7 @@ import {AuthContext} from "utils/context"
 import {taskStateLabels} from "utils/helpers"
 import {TaskPlayActionButton} from "./TaskPlayActionButton"
 import {TaskStateActionButton} from "./TaskStateActionButton"
+import {UserCount} from "components/UserCount"
 
 dayjs.extend(duration)
 
@@ -99,21 +100,11 @@ export const TaskListItem: FC<TaskListItemProps> = ({
               justifyContent="space-between"
               spacing={1}
             >
-              <Stack direction="row">
+              <Stack direction="row" spacing={1}>
                 <Typography variant="body2" color="text.secondary">
                   {taskStateLabels[annotatedTask.state].toUpperCase()}{" "}
                 </Typography>
-                {annotatedTask.userNames
-                  .sort((a, b) => a.localeCompare(b))
-                  .map((username, index) => (
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      key={index}
-                    >
-                      &nbsp;&nbsp;&#x2022;&nbsp; {username}
-                    </Typography>
-                  ))}
+                <UserCount userNames={annotatedTask.userNames} count={3} />
               </Stack>
               {!isMobile && permissions.canSubmitTime && (
                 <Box sx={{width: "8rem"}}>

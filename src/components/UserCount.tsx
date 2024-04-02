@@ -8,7 +8,6 @@ export const UserCount: FC<{
   return (
     <>
       {userNames
-        .sort((a, b) => a.localeCompare(b))
         .filter((_, index) => index <= count - 1)
         .map((username, index) => (
           <Typography variant="body2" color="text.secondary" key={index}>

@@ -22,8 +22,8 @@ export const UserChip: FC<UserChipProps> = (props) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [isChanging, setIsChanging] = useState(false)
 
-  const isMine = task.users.map((u) => u === currentUser._id)
-  const taskUsers = users.find((user) => task.users.map((u) => u === user._id))
+  const isMine = task.user === currentUser._id
+  const taskUser = users.find((user) => task.user === user._id)
   const open = Boolean(anchorEl)
 
   const handleClose = () => {
@@ -35,7 +35,7 @@ export const UserChip: FC<UserChipProps> = (props) => {
     handleClose()
 
     session.task
-      .modify(task._id, {users: {Assign: [user._id]}})
+      .modify(task._id, {user: {Assign: user._id}})
       .then(setTask)
       .catch(() => alert("Error changing user"))
       .finally(() => setIsChanging(false))
@@ -47,7 +47,7 @@ export const UserChip: FC<UserChipProps> = (props) => {
         size="small"
         color={isMine ? "primary" : undefined}
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        label={(taskUsers?.name || taskUsers?.email) ?? "Unknown"}
+        label={(taskUser?.name || taskUser?.email) ?? "Unknown"}
         icon={<ArrowDropDown />}
         onClick={(e) => setAnchorEl(e.currentTarget)}
         disabled={isChanging}

@@ -186,7 +186,7 @@ export const ProjectsTasks: FC = () => {
                         booleanCompare(
                           a,
                           b,
-                          (t) => t.users.map((u) => u === currentUser._id)[0]
+                          (t) => t.user === currentUser._id
                         ) ||
                         compareTasksByPriority(a, b)
                       )

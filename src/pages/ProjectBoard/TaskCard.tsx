@@ -55,9 +55,7 @@ export const TaskCard: FC<{
       key={task._id}
       ref={
         permissions.canManageAllTasks ||
-        task.users.map(
-          (u) => u === currentUser._id && permissions.canBeAssignedTasks
-        ) ||
+        (task.user === currentUser._id && permissions.canBeAssignedTasks) ||
         (task.state === TaskState.Approved && permissions.canDeliverTasks)
           ? drag
           : undefined
@@ -74,25 +72,25 @@ export const TaskCard: FC<{
       <CardActionArea onClick={() => onClick(task)} disableRipple>
         <CardContent sx={{p: 1}}>
           <Stack direction="row" gap={1} alignItems="center">
-            {task.users.length > 0 ? (
+            {task.user ? (
               <>
                 <Avatar
                   // src="https://avatars.githubusercontent.com/u/8319056?v=4"
                   sx={{
-                    backgroundColor: userColors[task.users[0]],
+                    backgroundColor: userColors[task.user],
                     width: "1.6rem",
                     height: "1.6rem",
                     fontSize: "0.75rem",
                     fontWeight: "bold",
-                    border: `1px solid ${userColors[task.users[0]]}`,
+                    border: `1px solid ${userColors[task.user]}`,
                     color: getContrastingColor(
-                      userColors[task.users[0]] ?? "#444444"
+                      userColors[task.user] ?? "#444444"
                     )
                   }}
                 >
-                  {getNameInitials(task.userNames[0] ?? "")}
+                  {getNameInitials(task.userName ?? "")}
                 </Avatar>
-                <UserCount userNames={task.userNames} count={1} />
+                <UserCount userName={task.userName!} count={1} />
               </>
             ) : (
               <Typography variant="body2" color="text.secondary">

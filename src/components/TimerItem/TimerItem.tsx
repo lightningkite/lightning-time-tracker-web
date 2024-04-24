@@ -142,10 +142,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
   }, [timer.task, timer.project, task?.pullRequestLink])
 
   const isMyActiveTask = useCallback((task: Task): boolean => {
-    return (
-      task.users.map((u) => u === currentUser._id) &&
-      task.state === TaskState.Active
-    )
+    return task.user === currentUser._id && task.state === TaskState.Active
   }, [])
 
   const isOpenTask = useCallback((task: Task): boolean => {
@@ -178,8 +175,10 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           projectName: project.name,
           organization: project.organization,
           organizationName: undefined,
-          users: [currentUser._id],
-          userNames: [currentUser.name],
+          user: currentUser._id,
+          associatedUsers: [],
+          userName: currentUser.name,
+          associatedUserNames: [],
           state: TaskState.Active,
           summary,
           description: "",
@@ -474,7 +473,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           session.task.modify(task?._id ?? "", {
             Chain: [
               {state: {Assign: TaskState.Active}},
-              {users: {Assign: [currentUser._id]}}
+              {user: {Assign: currentUser._id}}
             ]
           })
         }

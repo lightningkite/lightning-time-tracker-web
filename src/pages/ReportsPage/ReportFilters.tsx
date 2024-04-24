@@ -253,7 +253,7 @@ export function filtersToTaskCondition(
   }
 
   if (users) {
-    conditions.push({users: {Equal: users.map((u) => u._id)}})
+    conditions.push({user: {Inside: users.map((u) => u._id)}})
   }
 
   return {And: conditions}

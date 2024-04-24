@@ -126,7 +126,7 @@ export const ProjectBoard: FC = () => {
             {project: {Inside: state.selected.map((p) => p._id)}},
 
             {state: {NotInside: hiddenTaskStates}},
-            {userNames: {ListAnyElements: {Inside: selectedUser}}},
+            {userName: {IfNotNull: {Inside: selectedUser}}},
             {tags: {SetAnyElements: {Inside: filterTags}}}
           ]
         : selectedUser!.length > 0
@@ -134,7 +134,7 @@ export const ProjectBoard: FC = () => {
             {project: {Inside: state.selected.map((p) => p._id)}},
 
             {state: {NotInside: hiddenTaskStates}},
-            {userNames: {ListAnyElements: {Inside: selectedUser}}}
+            {userName: {IfNotNull: {Inside: selectedUser}}}
           ]
         : filterTags.length > 0
         ? [
@@ -175,16 +175,9 @@ export const ProjectBoard: FC = () => {
         .sort((a, b) => {
           if (a.emergency && !b.emergency) return -1
           if (!a.emergency && b.emergency) return 1
-          if (
-            a.users.map((u) => u === currentUser._id) &&
-            b.users.map((u) => u !== currentUser._id)
-          )
+          if (a.user === currentUser._id && b.user !== currentUser._id)
             return -1
-          if (
-            a.users.map((u) => u === currentUser._id) &&
-            b.users.map((u) => u === currentUser._id)
-          )
-            return 1
+          if (a.user === currentUser._id && b.user === currentUser._id) return 1
           const priorityDiff = b.priority - a.priority
           if (priorityDiff !== 0) return priorityDiff
           return dayjs(a.createdAt).diff(dayjs(b.createdAt))

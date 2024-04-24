@@ -8,7 +8,7 @@ export const UserCount: FC<{
   return (
     <>
       <Typography variant="body2" color="text.secondary">
-        &#x2022;&nbsp; {userName} + {count > 0 ? `${count}` : ""}
+        &#x2022;&nbsp; {userName} {count > 0 ? `+ ${count}` : ""}
       </Typography>
     </>
   )

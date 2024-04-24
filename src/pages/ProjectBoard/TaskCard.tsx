@@ -90,7 +90,10 @@ export const TaskCard: FC<{
                 >
                   {getNameInitials(task.userName ?? "")}
                 </Avatar>
-                <UserCount userName={task.userName!} count={1} />
+                <UserCount
+                  userName={task.userName!}
+                  count={task.associatedUsers.length}
+                />
               </>
             ) : (
               <Typography variant="body2" color="text.secondary">

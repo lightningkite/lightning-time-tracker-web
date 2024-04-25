@@ -25,20 +25,25 @@ import {CompactColumn} from "./CompactColumn"
 import {ProjectSwitcher} from "./ProjectSwitcher"
 import {TaskStateColumn} from "./TaskStateColumn"
 import {RecentFavoriteProjectsSwitcher} from "./RecentFavoriteProjectsSwitcher"
-import {ProjectBoardFilter} from "./ProjectBoardFilter"
 import {type Condition} from "@lightningkite/lightning-server-simplified"
 import {parsePreferences} from "utils/helpers"
 import {HiddenTaskTable} from "./HiddenTaskTable"
+import {
+  ProjectBoardFilterBar,
+  type ProjectBoardFilterBarValues,
+  filtersToTaskProjectCondition,
+  filtersToTaskUserCondition
+} from "./ProjectBoardFilterBar"
 
 export const ProjectBoard: FC = () => {
-  const {session, currentUser, activeUsers} = useContext(AuthContext)
+  const {session, currentUser} = useContext(AuthContext)
   const {annotatedTaskEndpoint} = useAnnotatedEndpoints()
   const permissions = usePermissions()
   const [urlParams, setUrlParams] = useSearchParams()
   const navigate = useNavigate()
 
-  const [filterTags, setFilterTags] = useState<string[]>([])
-  const [selectedUser, setSelectedUser] = useState<string[]>([])
+  const [projectBoardFilterValues, setProjectBoardFilterValues] =
+    useState<ProjectBoardFilterBarValues>()
 
   // const [openModal, setOpenModal] = useState(false)
 
@@ -120,34 +125,16 @@ export const ProjectBoard: FC = () => {
 
     navigate({search: searchParams.toString()})
 
-    const conditions: Condition<Task>[] =
-      selectedUser!.length > 0 && filterTags.length > 0
-        ? [
-            {project: {Inside: state.selected.map((p) => p._id)}},
-
-            {state: {NotInside: hiddenTaskStates}},
-            {userName: {IfNotNull: {Inside: selectedUser}}},
-            {tags: {SetAnyElements: {Inside: filterTags}}}
-          ]
-        : selectedUser!.length > 0
-        ? [
-            {project: {Inside: state.selected.map((p) => p._id)}},
-
-            {state: {NotInside: hiddenTaskStates}},
-            {userName: {IfNotNull: {Inside: selectedUser}}}
-          ]
-        : filterTags.length > 0
-        ? [
-            {project: {Inside: state.selected.map((p) => p._id)}},
-
-            {state: {NotInside: hiddenTaskStates}},
-            {tags: {SetAnyElements: {Inside: filterTags}}}
-          ]
-        : [
-            {project: {Inside: state.selected.map((p) => p._id)}},
-
-            {state: {NotInside: hiddenTaskStates}}
-          ]
+    const conditions: Condition<Task>[] = projectBoardFilterValues
+      ? [
+          {
+            state: {NotInside: hiddenTaskStates}
+          },
+          filtersToTaskProjectCondition(projectBoardFilterValues),
+          filtersToTaskUserCondition(projectBoardFilterValues),
+          filtersToTaskUserCondition(projectBoardFilterValues)
+        ]
+      : [{state: {NotInside: hiddenTaskStates}}]
 
     annotatedTaskEndpoint
       .query({condition: {And: conditions}, limit: 1000})
@@ -155,8 +142,7 @@ export const ProjectBoard: FC = () => {
   }, [
     "selected" in state && state.selected,
     taskRefreshTrigger,
-    filterTags,
-    selectedUser
+    projectBoardFilterValues
   ])
 
   const tasksByState: Record<TaskState, AnnotatedTask[]> = useMemo(() => {
@@ -213,6 +199,8 @@ export const ProjectBoard: FC = () => {
   if (state.status === "loadingProjects") return <Loading />
   if (state.status === "error") return <ErrorAlert>{state.message}</ErrorAlert>
 
+  console.log(projectBoardFilterValues)
+
   return (
     <>
       <Container sx={{maxWidth: "2500px !important"}} disableGutters>
@@ -226,6 +214,7 @@ export const ProjectBoard: FC = () => {
             projects={state.projects}
             selected={state.selected}
             onSelect={onChangeProject}
+            // disabled={projectBoardFilterValues === undefined}
           />
 
           {preferences.favoritePrefrences === "show" && (
@@ -235,23 +224,10 @@ export const ProjectBoard: FC = () => {
             />
           )}
         </Stack>
-        <Stack
-          direction="row"
-          alignItems="center"
-          spacing={1}
-          ml="auto"
-          sx={{ml: 1, mb: 2}}
-        >
-          <ProjectBoardFilter
-            smallScreen={smallScreen}
-            tags={[...state.selected].flatMap((p) => p.projectTags)}
-            setFilterTags={setFilterTags}
-            filterTags={filterTags}
-            user={activeUsers.map((u) => u.name)}
-            selectedUser={selectedUser ?? []}
-            setSelectedUser={setSelectedUser}
-          />
-        </Stack>
+        <ProjectBoardFilterBar
+          setProjectBoardFilterValues={setProjectBoardFilterValues}
+        />
+
         <DndProvider backend={HTML5Backend}>
           <Stack
             direction="row"

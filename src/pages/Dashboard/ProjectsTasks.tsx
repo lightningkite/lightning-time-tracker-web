@@ -56,7 +56,7 @@ export const ProjectsTasks: FC = () => {
         condition: {
           And: [
             {organization: {Equal: currentOrganization._id}},
-            {users: {SetAnyElements: {Equal: currentUser._id}}},
+            {user: {Equal: currentUser._id}},
             {
               state: {
                 Or: [{Equal: TaskState.Active}, {Equal: TaskState.PullRequest}]

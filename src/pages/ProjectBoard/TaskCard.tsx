@@ -7,7 +7,6 @@ import {
   Typography
 } from "@mui/material"
 import {TaskState} from "api/sdk"
-import {UserCount} from "components/UserCount"
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
@@ -90,10 +89,9 @@ export const TaskCard: FC<{
                 >
                   {getNameInitials(task.userName ?? "")}
                 </Avatar>
-                <UserCount
-                  userName={task.userName!}
-                  count={task.associatedUsers.length}
-                />
+                <Typography variant="body2" color="text.secondary">
+                  {task.userName}
+                </Typography>
               </>
             ) : (
               <Typography variant="body2" color="text.secondary">

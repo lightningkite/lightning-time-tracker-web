@@ -7,8 +7,6 @@ export const PullRequestSection: FC<{
   setUrls: (url: string[]) => void
   edit: boolean
 }> = ({urls, setUrls, edit}) => {
-  // const [prLinks, setPrLinks] = useState<string[]>(url ?? [])
-
   return (
     <>
       <Stack direction="column">

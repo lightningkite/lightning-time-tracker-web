@@ -86,9 +86,7 @@ export interface Task {
     organization: UUID
     organizationName: string | null | undefined
     user: UUID | null | undefined
-    associatedUsers: Array<UUID>
     userName: string | null | undefined
-    associatedUserNames: Array<string>
     state: TaskState
     summary: string
     description: string

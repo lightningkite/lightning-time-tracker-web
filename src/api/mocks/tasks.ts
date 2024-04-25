@@ -37,9 +37,7 @@ export function generateTasks(params: {
           (o) => o._id === project.organization
         )?.name,
         user: user._id,
-        associatedUsers: [],
         userName: user.name,
-        associatedUserNames: [],
         state: rand(Object.values(TaskState)),
         summary: capitalize(randVerb() + " " + randCatchPhrase().toLowerCase()),
         description: randParagraph(),

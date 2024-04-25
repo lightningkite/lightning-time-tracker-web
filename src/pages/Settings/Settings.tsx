@@ -28,7 +28,6 @@ export interface WebPreferences {
   themeColor: string
   summaryTime: "day" | "week"
   favoritePrefrences: "show" | "dontShow"
-  timerPR: "show" | "dontShow"
 }
 
 const Settings: FC = () => {
@@ -128,33 +127,6 @@ const Settings: FC = () => {
                         favoritePrefrences: e.target.value as
                           | "show"
                           | "dontShow"
-                      })
-                    }
-                  >
-                    <FormControlLabel
-                      value="show"
-                      control={<Radio />}
-                      label="Show"
-                    />
-                    <FormControlLabel
-                      value="dontShow"
-                      control={<Radio />}
-                      label="Hide"
-                    />
-                  </RadioGroup>
-                </FormControl>
-              </FormSection>
-              <FormSection>
-                <FormControl>
-                  <FormLabel>Show Timer Pull Request</FormLabel>
-                  <FormHelperText>
-                    Choose if the pull request is shown in your Timers
-                  </FormHelperText>
-                  <RadioGroup
-                    value={preferences.timerPR}
-                    onChange={(e) =>
-                      updatePreferences({
-                        timerPR: e.target.value as "show" | "dontShow"
                       })
                     }
                   >

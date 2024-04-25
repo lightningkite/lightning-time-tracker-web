@@ -86,8 +86,7 @@ export function parsePreferences(
     mode: "dark",
     themeColor: "#90D1FF",
     summaryTime: "week",
-    favoritePrefrences: "show",
-    timerPR: "show"
+    favoritePrefrences: "show"
   }
   try {
     const parsed = JSON.parse(

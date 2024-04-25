@@ -80,7 +80,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
       estimate: task.estimate?.toString() ?? "",
       emergency: task.emergency,
       priority: task.priority,
-      pullRequestLink: task.pullRequestLink,
+      pullRequestLinks: task.pullRequestLinks,
       tags: task.tags
     },
     validationSchema,
@@ -164,9 +164,9 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
             >
               <PullRequestSection
                 edit={edit}
-                urls={formik.values.pullRequestLink ?? []}
+                urls={formik.values.pullRequestLinks ?? []}
                 setUrls={(value) =>
-                  formik.setFieldValue("pullRequestLink", value)
+                  formik.setFieldValue("pullRequestLinks", value)
                 }
               />
             </FormSection>

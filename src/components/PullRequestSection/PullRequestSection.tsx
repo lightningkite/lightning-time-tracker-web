@@ -3,7 +3,7 @@ import {Add, Delete} from "@mui/icons-material"
 import {Button, IconButton, Stack, TextField, Typography} from "@mui/material"
 
 export const PullRequestSection: FC<{
-  urls?: string[]
+  urls: string[]
   setUrls: (url: string[]) => void
   edit: boolean
 }> = ({urls, setUrls, edit}) => {
@@ -50,13 +50,13 @@ export const PullRequestSection: FC<{
                       </Stack>
                     )
                   }}
-                  onChange={({target}) =>
+                  onChange={({target}) => {
                     setUrls(
                       urls.map((value, i) =>
                         i === index ? target.value : value
                       )
                     )
-                  }
+                  }}
                 />
               </Stack>
             ) : (

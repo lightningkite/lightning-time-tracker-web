@@ -104,7 +104,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
         createdAt: new Date().toISOString(),
         createdBy: currentUser._id,
         creatorName: currentUser.name,
-        pullRequestLink: null
+        pullRequestLinks: []
       })
 
       afterSubmit({

@@ -98,7 +98,7 @@ export interface Task {
     createdAt: Instant
     createdBy: UUID
     creatorName: string | null | undefined
-    pullRequestLink: Array<string> | null | undefined
+    pullRequestLinks: Array<string> | null | undefined
 }
 
 export enum TaskState {

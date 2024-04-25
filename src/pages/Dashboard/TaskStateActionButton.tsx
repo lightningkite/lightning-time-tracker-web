@@ -65,10 +65,6 @@ export interface TaskStateActionButtonProps {
   refreshDashboard: () => Promise<void>
 }
 
-const validationSchema = yup.object().shape({
-  url: yup.string().required("Required")
-})
-
 export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
   props
 ) => {
@@ -78,6 +74,7 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [isChangingState, setIsChangingState] = useState(false)
   const [modalIsOpen, setModalIsOpen] = useState(false)
+
   const handleModalClose = () => {
     setModalIsOpen(false)
     formik.resetForm()
@@ -110,12 +107,11 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
   }
   const formik = useFormik({
     initialValues: {
-      url: annotatedTask.pullRequestLink ?? []
+      url: annotatedTask.pullRequestLinks ?? []
     },
-    validationSchema,
     onSubmit: async (values) => {
       const task: Partial<Task> = {
-        pullRequestLink: values.url,
+        pullRequestLinks: values.url,
         state: TaskState.PullRequest
       }
       const modification = makeObjectModification(annotatedTask, task)

@@ -90,8 +90,8 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
       const task = await session.task.insert({
         ...values,
         _id: crypto.randomUUID(),
-        user: initialUser?._id,
-        userName: initialUser?.name,
+        user: values.user?._id,
+        userName: undefined,
         project: values.project!._id,
         projectName: undefined,
         organization: currentUser.organization,

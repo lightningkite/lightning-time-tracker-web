@@ -32,8 +32,10 @@ import {
   ProjectBoardFilterBar,
   type ProjectBoardFilterBarValues,
   filtersToTaskProjectCondition,
-  filtersToTaskUserCondition
+  filtersToTaskUserCondition,
+  filtersToTaskTagsCondition
 } from "./ProjectBoardFilterBar"
+import {filtersToProjectCondition} from "pages/ReportsPage/ReportFilters"
 
 export const ProjectBoard: FC = () => {
   const {session, currentUser} = useContext(AuthContext)
@@ -130,9 +132,11 @@ export const ProjectBoard: FC = () => {
           {
             state: {NotInside: hiddenTaskStates}
           },
-          filtersToTaskProjectCondition(projectBoardFilterValues),
+          projectBoardFilterValues.projects !== null
+            ? filtersToTaskProjectCondition(projectBoardFilterValues)
+            : {project: {Inside: state.selected.flatMap((p) => p._id)}},
           filtersToTaskUserCondition(projectBoardFilterValues),
-          filtersToTaskUserCondition(projectBoardFilterValues)
+          filtersToTaskTagsCondition(projectBoardFilterValues)
         ]
       : [{state: {NotInside: hiddenTaskStates}}]
 
@@ -199,8 +203,6 @@ export const ProjectBoard: FC = () => {
   if (state.status === "loadingProjects") return <Loading />
   if (state.status === "error") return <ErrorAlert>{state.message}</ErrorAlert>
 
-  console.log(projectBoardFilterValues)
-
   return (
     <>
       <Container sx={{maxWidth: "2500px !important"}} disableGutters>
@@ -212,9 +214,9 @@ export const ProjectBoard: FC = () => {
         >
           <ProjectSwitcher
             projects={state.projects}
-            selected={state.selected}
+            selected={state.selected[0]}
             onSelect={onChangeProject}
-            // disabled={projectBoardFilterValues === undefined}
+            disabled={projectBoardFilterValues?.projects !== null}
           />
 
           {preferences.favoritePrefrences === "show" && (
@@ -226,6 +228,7 @@ export const ProjectBoard: FC = () => {
         </Stack>
         <ProjectBoardFilterBar
           setProjectBoardFilterValues={setProjectBoardFilterValues}
+          selectedProjects={projectBoardFilterValues?.projects}
         />
 
         <DndProvider backend={HTML5Backend}>

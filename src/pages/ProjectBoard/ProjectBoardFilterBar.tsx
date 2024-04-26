@@ -31,13 +31,16 @@ export const ProjectBoardFilterBar: FC<{
   setProjectBoardFilterValues: Dispatch<
     SetStateAction<ProjectBoardFilterBarValues | undefined>
   >
-}> = ({setProjectBoardFilterValues}) => {
+  selectedProjects: Project[] | null | undefined
+}> = ({setProjectBoardFilterValues, selectedProjects}) => {
   const {session, currentUser} = useContext(AuthContext)
   const permissions = usePermissions()
 
   const [users, setUsers] = useState<User[]>()
-  const [projects, setProjects] = useState<Project[]>()
-  const [tags, setTags] = useState<string[]>([])
+  const [projects, setProjects] = useState<Project[] | null | undefined>(
+    selectedProjects
+  )
+  const [tags, setTags] = useState<string[]>()
 
   const filterOptions = useMemo(() => {
     if (!users || !projects) return []
@@ -48,7 +51,7 @@ export const ProjectBoardFilterBar: FC<{
         type: "multiSelect",
         name: FilterNames.TAGS,
         placeholder: "Tags",
-        options: tags,
+        options: tags!.sort((a, b) => a.localeCompare(b)),
         optionToID: (t) => t,
         optionToLabel: (t) => t
       },
@@ -73,7 +76,7 @@ export const ProjectBoardFilterBar: FC<{
     return options.filter(
       (o) => permissions.canViewIndividualUsers || o.name !== FilterNames.USERS
     )
-  }, [users, projects])
+  }, [users, projects, selectedProjects])
 
   useEffect(() => {
     session.user
@@ -85,12 +88,18 @@ export const ProjectBoardFilterBar: FC<{
       .then(setProjects)
       .catch(console.error)
     session.project
-      .query({condition: {organization: {Equal: currentUser.organization}}})
+      .query({
+        condition: {
+          And: [{organization: {Equal: currentUser.organization}}]
+        }
+      })
       .then((projects) => setTags(projects.flatMap((p) => p.projectTags)))
       .catch(console.error)
-  }, [])
+  }, [selectedProjects])
 
   if (!users || !projects) return <Skeleton height={70} />
+
+  console.log("Selected", selectedProjects)
 
   return (
     <>
@@ -104,6 +113,10 @@ export const ProjectBoardFilterBar: FC<{
 
           const projects: Project[] | undefined = activeFilters.find(
             (filter) => filter.filterOption.name === FilterNames.PROJECTS
+          )?.value
+
+          const tags: string[] | undefined = activeFilters.find(
+            (filter) => filter.filterOption.name === FilterNames.TAGS
           )?.value
 
           setProjectBoardFilterValues({
@@ -122,9 +135,7 @@ export function filtersToTaskProjectCondition(
 ): Condition<Task> {
   const {projects} = pfilters
 
-  return projects
-    ? {project: {Inside: projects.map((p) => p._id)}}
-    : {Always: true}
+  return {project: {Inside: projects!.map((p) => p._id)}}
 }
 
 export function filtersToTaskUserCondition(
@@ -135,10 +146,12 @@ export function filtersToTaskUserCondition(
   return users ? {userName: {Inside: users.map((u) => u.name)}} : {Always: true}
 }
 
-export function filterToTaskTagsCondition(
+export function filtersToTaskTagsCondition(
   tfilters: ProjectBoardFilterBarValues
 ): Condition<Task> {
   const {tags} = tfilters
 
-  return tags ? {tags: {SetAnyElements: {Inside: tags}}} : {Always: true}
+  return tags
+    ? {tags: {SetAnyElements: {Inside: tags.map((t) => t)}}}
+    : {Always: true}
 }

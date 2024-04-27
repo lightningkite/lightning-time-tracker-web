@@ -95,7 +95,6 @@ export const ProjectBoardFilterBar: FC<{
         }
       })
       .then((projects) => setTags(projects.flatMap((p) => p.projectTags)))
-      .catch(console.error)
   }, [selectedProjects])
 
   if (!users || !projects) return <Skeleton height={70} />

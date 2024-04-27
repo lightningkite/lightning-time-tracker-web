@@ -35,7 +35,7 @@ import {
   filtersToTaskUserCondition,
   filtersToTaskTagsCondition
 } from "./ProjectBoardFilterBar"
-import {filtersToProjectCondition} from "pages/ReportsPage/ReportFilters"
+import {start} from "repl"
 
 export const ProjectBoard: FC = () => {
   const {session, currentUser} = useContext(AuthContext)
@@ -46,8 +46,6 @@ export const ProjectBoard: FC = () => {
 
   const [projectBoardFilterValues, setProjectBoardFilterValues] =
     useState<ProjectBoardFilterBarValues>()
-
-  // const [openModal, setOpenModal] = useState(false)
 
   const [tableState, setTableState] = useState<
     "Delivered" | "Cancelled" | null
@@ -228,7 +226,9 @@ export const ProjectBoard: FC = () => {
         </Stack>
         <ProjectBoardFilterBar
           setProjectBoardFilterValues={setProjectBoardFilterValues}
-          selectedProjects={projectBoardFilterValues?.projects}
+          selectedProjects={
+            projectBoardFilterValues?.projects ?? state.selected
+          }
         />
 
         <DndProvider backend={HTML5Backend}>

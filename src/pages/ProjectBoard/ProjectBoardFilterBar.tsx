@@ -31,15 +31,13 @@ export const ProjectBoardFilterBar: FC<{
   setProjectBoardFilterValues: Dispatch<
     SetStateAction<ProjectBoardFilterBarValues | undefined>
   >
-  selectedProjects: Project[] | null | undefined
+  selectedProjects: Project[]
 }> = ({setProjectBoardFilterValues, selectedProjects}) => {
   const {session, currentUser} = useContext(AuthContext)
   const permissions = usePermissions()
 
   const [users, setUsers] = useState<User[]>()
-  const [projects, setProjects] = useState<Project[] | null | undefined>(
-    selectedProjects
-  )
+  const [projects, setProjects] = useState<Project[]>(selectedProjects)
   const [tags, setTags] = useState<string[]>()
 
   const filterOptions = useMemo(() => {
@@ -90,7 +88,10 @@ export const ProjectBoardFilterBar: FC<{
     session.project
       .query({
         condition: {
-          And: [{organization: {Equal: currentUser.organization}}]
+          And: [
+            {_id: {Inside: selectedProjects.map((p) => p._id)}},
+            {organization: {Equal: currentUser.organization}}
+          ]
         }
       })
       .then((projects) => setTags(projects.flatMap((p) => p.projectTags)))
@@ -99,7 +100,7 @@ export const ProjectBoardFilterBar: FC<{
 
   if (!users || !projects) return <Skeleton height={70} />
 
-  console.log("Selected", selectedProjects)
+  console.log("Selected", selectedProjects !== null ?? undefined ? true : false)
 
   return (
     <>

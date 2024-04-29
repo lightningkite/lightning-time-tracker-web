@@ -44,32 +44,52 @@ export const ProjectBoardFilterBar: FC<{
     if (!users || !projects) return []
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const options: FilterOption<any>[] = [
-      {
-        type: "multiSelect",
-        name: FilterNames.TAGS,
-        placeholder: "Tags",
-        options: tags!.sort((a, b) => a.localeCompare(b)),
-        optionToID: (t) => t,
-        optionToLabel: (t) => t
-      },
-      {
-        type: "multiSelect",
-        name: FilterNames.USERS,
-        placeholder: "Users",
-        options: users.sort((a, b) => a.name.localeCompare(b.name)),
-        optionToID: (u) => u._id,
-        optionToLabel: (u) => u.name
-      },
-      {
-        type: "multiSelect",
-        name: FilterNames.PROJECTS,
-        placeholder: "Projects",
-        options: projects.sort((a, b) => a.name.localeCompare(b.name)),
-        optionToID: (p) => p._id,
-        optionToLabel: (p) => p.name
-      }
-    ]
+    const options: FilterOption<any>[] =
+      tags?.length !== 0
+        ? [
+            {
+              type: "multiSelect",
+              name: FilterNames.TAGS,
+              placeholder: "Tags",
+              options: tags!.sort((a, b) => a.localeCompare(b)),
+              optionToID: (t) => t,
+              optionToLabel: (t) => t
+            },
+            {
+              type: "multiSelect",
+              name: FilterNames.USERS,
+              placeholder: "Users",
+              options: users.sort((a, b) => a.name.localeCompare(b.name)),
+              optionToID: (u) => u._id,
+              optionToLabel: (u) => u.name
+            },
+            {
+              type: "multiSelect",
+              name: FilterNames.PROJECTS,
+              placeholder: "Projects",
+              options: projects.sort((a, b) => a.name.localeCompare(b.name)),
+              optionToID: (p) => p._id,
+              optionToLabel: (p) => p.name
+            }
+          ]
+        : [
+            {
+              type: "multiSelect",
+              name: FilterNames.USERS,
+              placeholder: "Users",
+              options: users.sort((a, b) => a.name.localeCompare(b.name)),
+              optionToID: (u) => u._id,
+              optionToLabel: (u) => u.name
+            },
+            {
+              type: "multiSelect",
+              name: FilterNames.PROJECTS,
+              placeholder: "Projects",
+              options: projects.sort((a, b) => a.name.localeCompare(b.name)),
+              optionToID: (p) => p._id,
+              optionToLabel: (p) => p.name
+            }
+          ]
 
     return options.filter(
       (o) => permissions.canViewIndividualUsers || o.name !== FilterNames.USERS
@@ -98,8 +118,6 @@ export const ProjectBoardFilterBar: FC<{
   }, [selectedProjects])
 
   if (!users || !projects) return <Skeleton height={70} />
-
-  console.log("Selected", selectedProjects !== null ?? undefined ? true : false)
 
   return (
     <>

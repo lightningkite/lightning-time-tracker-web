@@ -243,7 +243,12 @@ export const ProjectBoard: FC = () => {
                 <TaskStateColumn
                   key={taskState}
                   state={taskState}
-                  showProject={state.selected.length > 1 ? true : false}
+                  showProject={
+                    projectBoardFilterValues?.projects &&
+                    projectBoardFilterValues?.projects.length > 1
+                      ? true
+                      : false
+                  }
                   tasks={
                     state.status === "ready"
                       ? tasksByState[taskState]

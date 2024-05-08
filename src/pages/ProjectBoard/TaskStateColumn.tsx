@@ -141,12 +141,13 @@ export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
           )
         })()}
       </Box>
-
-      <TaskModal
-        task={selectedTask}
-        handleClose={() => changeSelectedTask(null)}
-        setTask={updateTask}
-      />
+      {selectedTask && (
+        <TaskModal
+          task={selectedTask}
+          handleClose={() => changeSelectedTask(null)}
+          setTask={updateTask}
+        />
+      )}
     </>
   )
 }

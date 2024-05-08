@@ -149,6 +149,94 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
           disabled={!canEditSomeFields}
         />
 
+        {canEdit && (
+          <>
+            <Stack
+              direction="row"
+              gap={3}
+              sx={{
+                alignItems: "center",
+                flexWrap: "wrap",
+                "& > *": {flexGrow: 1, minWidth: 150}
+              }}
+            >
+              <RestAutocompleteInput
+                label="Assignee"
+                restEndpoint={session.user}
+                getOptionLabel={(user) => user.name || user.email}
+                searchProperties={["email"]}
+                disabled={!loadedInitialAsyncValues}
+                additionalQueryConditions={[
+                  makeUserTaskCondition({
+                    project: task.project,
+                    organization: task.organization
+                  })
+                ]}
+                {...makeFormikAutocompleteProps(formik, "user")}
+              />
+              <TextField
+                select
+                label="State"
+                {...makeFormikTextFieldProps(formik, "state")}
+              >
+                {Object.values(TaskState).map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {taskStateLabels[option]}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Stack>
+
+            <Stack
+              direction="row"
+              gap={3}
+              sx={{
+                alignItems: "center",
+                flexWrap: "wrap",
+                "& > *": {flexGrow: 1, minWidth: 150}
+              }}
+            >
+              <Autocomplete
+                renderInput={(params) => (
+                  <TextField {...params} label={"Tags"} />
+                )}
+                options={possibleTags ?? []}
+                multiple
+                onChange={(_, v) => {
+                  formik.setFieldValue("tags", v)
+                }}
+                value={formik.values.tags}
+              />
+              <TextField
+                label="Estimate (hours)"
+                {...makeFormikNumericTextFieldProps(formik, "estimate")}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">hours</InputAdornment>
+                  )
+                }}
+                sx={{maxWidth: 300}}
+              />
+            </Stack>
+            <LabeledInfo label="Created">
+              {[task.creatorName, dynamicFormatDate(dayjs(task.createdAt))]
+                .filter(Boolean)
+                .join(", ")}
+            </LabeledInfo>
+
+            <FormControlLabel
+              control={
+                <Checkbox {...makeFormikCheckboxProps(formik, "emergency")} />
+              }
+              label="Emergency"
+            />
+            <PrioritySlider
+              onChange={(v) => formik.setFieldValue("priority", v)}
+              value={formik.values.priority!}
+            />
+          </>
+        )}
+
         {permissions.doesCareAboutPRs && (
           <>
             <FormSection
@@ -175,7 +263,7 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
 
         <FormSection title="Attachments">
           <AttachmentsInput
-            attachments={formik.values.attachments}
+            attachments={formik.values.attachments!}
             onChange={(value) => {
               formik.setFieldValue("attachments", value)
             }}
@@ -188,92 +276,6 @@ export const TaskForm: FC<TaskFormProps> = (props) => {
           />
         </FormSection>
       </FormSection>
-
-      {canEdit && (
-        <FormSection title="More Details">
-          <Stack
-            direction="row"
-            gap={3}
-            sx={{
-              alignItems: "center",
-              flexWrap: "wrap",
-              "& > *": {flexGrow: 1, minWidth: 150}
-            }}
-          >
-            <RestAutocompleteInput
-              label="Assignee"
-              restEndpoint={session.user}
-              getOptionLabel={(user) => user.name || user.email}
-              searchProperties={["email"]}
-              disabled={!loadedInitialAsyncValues}
-              additionalQueryConditions={[
-                makeUserTaskCondition({
-                  project: task.project,
-                  organization: task.organization
-                })
-              ]}
-              {...makeFormikAutocompleteProps(formik, "user")}
-            />
-            <TextField
-              select
-              label="State"
-              {...makeFormikTextFieldProps(formik, "state")}
-            >
-              {Object.values(TaskState).map((option) => (
-                <MenuItem key={option} value={option}>
-                  {taskStateLabels[option]}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Stack>
-
-          <RestAutocompleteInput
-            label="Project"
-            restEndpoint={session.project}
-            getOptionLabel={(project) => project.name}
-            searchProperties={["name"]}
-            disabled={!loadedInitialAsyncValues}
-            {...makeFormikAutocompleteProps(formik, "project")}
-          />
-
-          <Autocomplete
-            renderInput={(params) => <TextField {...params} label={"Tags"} />}
-            options={possibleTags ?? []}
-            multiple
-            onChange={(_, v) => {
-              formik.setFieldValue("tags", v)
-            }}
-            value={formik.values.tags}
-          />
-
-          <TextField
-            label="Estimate (hours)"
-            {...makeFormikNumericTextFieldProps(formik, "estimate")}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">hours</InputAdornment>
-              )
-            }}
-          />
-
-          <LabeledInfo label="Created">
-            {[task.creatorName, dynamicFormatDate(dayjs(task.createdAt))]
-              .filter(Boolean)
-              .join(", ")}
-          </LabeledInfo>
-
-          <FormControlLabel
-            control={
-              <Checkbox {...makeFormikCheckboxProps(formik, "emergency")} />
-            }
-            label="Emergency"
-          />
-          <PrioritySlider
-            onChange={(v) => formik.setFieldValue("priority", v)}
-            value={formik.values.priority}
-          />
-        </FormSection>
-      )}
 
       <Stack mt={4} spacing={2}>
         {error && <Alert severity="error">{error}</Alert>}

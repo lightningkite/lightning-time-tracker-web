@@ -24,24 +24,26 @@ import {AuthContext} from "utils/context"
 import {CompactColumn} from "./CompactColumn"
 import {ProjectSwitcher} from "./ProjectSwitcher"
 import {TaskStateColumn} from "./TaskStateColumn"
-import {RecentFavoriteProjectsSwitcher} from "./RecentFavoriteProjectsSwitcher"
-import {ProjectBoardFilter} from "./ProjectBoardFilter"
 import {type Condition} from "@lightningkite/lightning-server-simplified"
 import {parsePreferences} from "utils/helpers"
 import {HiddenTaskTable} from "./HiddenTaskTable"
+import {
+  ProjectBoardFilterBar,
+  type ProjectBoardFilterBarValues,
+  filtersToTaskProjectCondition,
+  filtersToTaskUserCondition,
+  filtersToTaskTagsCondition
+} from "./ProjectBoardFilterBar"
 
 export const ProjectBoard: FC = () => {
-  const {session, currentUser, activeUsers} = useContext(AuthContext)
+  const {session, currentUser} = useContext(AuthContext)
   const {annotatedTaskEndpoint} = useAnnotatedEndpoints()
   const permissions = usePermissions()
   const [urlParams, setUrlParams] = useSearchParams()
   const navigate = useNavigate()
 
-  const [filterTags, setFilterTags] = useState<string[]>([])
-
-  const [selectedUser, setSelectedUser] = useState<string[]>([])
-
-  // const [openModal, setOpenModal] = useState(false)
+  const [projectBoardFilterValues, setProjectBoardFilterValues] =
+    useState<ProjectBoardFilterBarValues>()
 
   const [tableState, setTableState] = useState<
     "Delivered" | "Cancelled" | null
@@ -50,10 +52,6 @@ export const ProjectBoard: FC = () => {
   const [state, dispatch] = useReducer(reducer, {status: "loadingProjects"})
   const taskRefreshTrigger = usePeriodicRefresh(10 * 60)
   const smallScreen = useMediaQuery("(max-width: 1400px)")
-
-  const projectUrl = urlParams.get("project")
-
-  const preferences = parsePreferences(currentUser.webPreferences)
 
   const alwaysHiddenTaskStates = [TaskState.Cancelled, TaskState.Delivered]
 
@@ -67,12 +65,18 @@ export const ProjectBoard: FC = () => {
         TaskState.Testing
       ]
 
-  const onChangeProject = (project: Project) => {
-    if ("selected" in state && state.selected._id === project._id) return
-    urlParams.set("project", project._id)
+  const onChangeProject = (projects: Project[]) => {
+    if (
+      "selected" in state &&
+      state.selected.map((p) => p._id) === projects.map((p) => p._id)
+    )
+      return
+    urlParams.set("project", `${projects.map((p) => p._id + "-")}`)
     setUrlParams(urlParams)
-    dispatch({type: "changeProject", selected: project})
+    dispatch({type: "changeProject", selected: projects})
   }
+
+  const projectUrl = urlParams.get("project")
 
   useEffect(() => {
     session.project
@@ -83,7 +87,9 @@ export const ProjectBoard: FC = () => {
         orderBy: ["name"]
       })
       .then((projects) => {
-        const projectFromQuery = projects.find((p) => p._id === projectUrl)
+        const projectFromQuery = projects.find(
+          (p) => projectUrl?.includes(p._id)
+        )
         const initialProject =
           projectFromQuery ??
           projects.find((p) => currentUser.projectFavorites.includes(p._id)) ??
@@ -97,7 +103,7 @@ export const ProjectBoard: FC = () => {
           dispatch({
             type: "setProjects",
             projects,
-            selected: initialProject
+            selected: [initialProject]
           })
         }
       })
@@ -111,42 +117,30 @@ export const ProjectBoard: FC = () => {
 
     // Update selected project in query
     const searchParams = new URLSearchParams(location.search)
-    searchParams.set("project", state.selected._id)
+    searchParams.set("project", `${state.selected.map((p) => p._id).join(" ")}`)
+
     navigate({search: searchParams.toString()})
 
-    const conditions: Condition<Task>[] =
-      selectedUser!.length > 0 && filterTags.length > 0
-        ? [
-            {project: {Equal: state.selected._id}},
-            {state: {NotInside: hiddenTaskStates}},
-            {userName: {IfNotNull: {Inside: selectedUser}}},
-            {tags: {SetAnyElements: {Inside: filterTags}}}
-          ]
-        : selectedUser!.length > 0
-          ? [
-              {project: {Equal: state.selected._id}},
-              {state: {NotInside: hiddenTaskStates}},
-              {userName: {IfNotNull: {Inside: selectedUser}}}
-            ]
-          : filterTags.length > 0
-            ? [
-                {project: {Equal: state.selected._id}},
-                {state: {NotInside: hiddenTaskStates}},
-                {tags: {SetAnyElements: {Inside: filterTags}}}
-              ]
-            : [
-                {project: {Equal: state.selected._id}},
-                {state: {NotInside: hiddenTaskStates}}
-              ]
+    const conditions: Condition<Task>[] = projectBoardFilterValues
+      ? [
+          {
+            state: {NotInside: hiddenTaskStates}
+          },
+          projectBoardFilterValues.projects !== null
+            ? filtersToTaskProjectCondition(projectBoardFilterValues)
+            : {project: {Inside: state.selected.flatMap((p) => p._id)}},
+          filtersToTaskUserCondition(projectBoardFilterValues),
+          filtersToTaskTagsCondition(projectBoardFilterValues)
+        ]
+      : [{state: {NotInside: hiddenTaskStates}}]
 
     annotatedTaskEndpoint
       .query({condition: {And: conditions}, limit: 1000})
       .then((tasks: AnnotatedTask[]) => dispatch({type: "setTasks", tasks}))
   }, [
-    "selected" in state && state.selected._id,
+    "selected" in state && state.selected,
     taskRefreshTrigger,
-    filterTags,
-    selectedUser
+    projectBoardFilterValues
   ])
 
   const tasksByState: Record<TaskState, AnnotatedTask[]> = useMemo(() => {
@@ -214,34 +208,18 @@ export const ProjectBoard: FC = () => {
         >
           <ProjectSwitcher
             projects={state.projects}
-            selected={state.selected}
+            selected={state.selected[0]}
             onSelect={onChangeProject}
+            disabled={projectBoardFilterValues?.projects !== null}
           />
+        </Stack>
+        <ProjectBoardFilterBar
+          setProjectBoardFilterValues={setProjectBoardFilterValues}
+          selectedProjects={
+            projectBoardFilterValues?.projects ?? state.selected
+          }
+        />
 
-          {preferences.favoritePrefrences === "show" && (
-            <RecentFavoriteProjectsSwitcher
-              projects={state.projects}
-              onSelect={onChangeProject}
-            />
-          )}
-        </Stack>
-        <Stack
-          direction="row"
-          alignItems="center"
-          spacing={1}
-          ml="auto"
-          sx={{ml: 1, mb: 2}}
-        >
-          <ProjectBoardFilter
-            smallScreen={smallScreen}
-            tags={state.selected.projectTags}
-            setFilterTags={setFilterTags}
-            filterTags={filterTags}
-            user={activeUsers.map((u) => u.name)}
-            selectedUser={selectedUser ?? []}
-            setSelectedUser={setSelectedUser}
-          />
-        </Stack>
         <DndProvider backend={HTML5Backend}>
           <Stack
             direction="row"
@@ -265,13 +243,14 @@ export const ProjectBoard: FC = () => {
                 <TaskStateColumn
                   key={taskState}
                   state={taskState}
+                  showProject={state.selected.length > 1 ? true : false}
                   tasks={
                     state.status === "ready"
                       ? tasksByState[taskState]
                       : undefined
                   }
                   handleDrop={handleDrop}
-                  project={state.selected}
+                  projects={state.selected}
                   onAddedTask={(task) => dispatch({type: "addTask", task})}
                   updateTask={(updatedTask) =>
                     dispatch({
@@ -306,21 +285,21 @@ export const ProjectBoard: FC = () => {
 
 type State =
   | {status: "loadingProjects"}
-  | {status: "loadingTasks"; projects: Project[]; selected: Project}
+  | {status: "loadingTasks"; projects: Project[]; selected: Project[]}
   | {
       status: "ready"
       projects: Project[]
       tasks: AnnotatedTask[]
-      selected: Project
+      selected: Project[]
     }
   | {status: "error"; message: string}
 
 type Action =
-  | {type: "setProjects"; projects: Project[]; selected: Project}
+  | {type: "setProjects"; projects: Project[]; selected: Project[]}
   | {type: "setTasks"; tasks: AnnotatedTask[]}
   | {type: "updateTask"; taskId: string; updates: Partial<AnnotatedTask>}
   | {type: "addTask"; task: AnnotatedTask}
-  | {type: "changeProject"; selected: Project}
+  | {type: "changeProject"; selected: Project[]}
   | {type: "error"; message: string}
 
 function reducer(state: State, action: Action): State {

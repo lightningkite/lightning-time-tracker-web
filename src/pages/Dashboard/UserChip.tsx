@@ -23,7 +23,7 @@ export const UserChip: FC<UserChipProps> = (props) => {
   const [isChanging, setIsChanging] = useState(false)
 
   const isMine = task.user === currentUser._id
-  const taskUser = users.find((user) => user._id === task.user)
+  const taskUser = users.find((user) => task.user === user._id)
   const open = Boolean(anchorEl)
 
   const handleClose = () => {

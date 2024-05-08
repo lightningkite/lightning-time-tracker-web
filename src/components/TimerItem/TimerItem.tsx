@@ -1,7 +1,6 @@
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {
   DeleteOutline,
-  GitHub,
   MoreVert,
   Pause,
   PlayArrow,
@@ -40,7 +39,6 @@ import {useThrottle} from "@lightningkite/react-lightning-helpers"
 import DialogForm from "components/DialogForm"
 import {CalendarIcon, DatePicker} from "@mui/x-date-pickers"
 import dayjs from "dayjs"
-import {usePermissions} from "hooks/usePermissions"
 
 export interface TimerItemProps {
   timer: Timer
@@ -52,7 +50,6 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
   const {removeTimer, submitTimer, updateTimer, toggleTimer} =
     useContext(TimerContext)
   const theme = useTheme()
-  const permissions = usePermissions()
 
   const [summary, setSummary] = useState(timer.summary)
   const [expanded, setExpanded] = useState(!timer.project || !timer.task)
@@ -60,8 +57,6 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
   const [isCreatingNewTask, setIsCreatingNewTask] = useState(false)
   const [reactivateModal, setReactivateModal] = useState(false)
   const [taskSearch, setTaskSearch] = useState("")
-  const [openPRLink, setOpenPRLink] = useState(false)
-  const [prLink, setPRLink] = useState("")
   const [selectedDate, setSelectedDate] = useState(dayjs(timer.date))
   const [shownDate, setShownDate] = useState(dayjs(timer.date))
   const [openDateModal, setOpenDateModal] = useState(false)
@@ -134,8 +129,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
     setExpanded(false)
 
     if (task.project !== project._id) updateTimer(timer._id, {task: undefined})
-    if (task.pullRequestLink) setPRLink(task.pullRequestLink)
-  }, [timer.task, timer.project, task?.pullRequestLink])
+  }, [timer.task, timer.project])
 
   const isMyActiveTask = useCallback((task: Task): boolean => {
     return task.user === currentUser._id && task.state === TaskState.Active
@@ -183,7 +177,7 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           createdAt: new Date().toISOString(),
           createdBy: currentUser._id,
           creatorName: currentUser.name,
-          pullRequestLink: null,
+          pullRequestLinks: [],
           tags: []
         })
         .then((task) => {
@@ -322,27 +316,6 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           fullWidth
         />
 
-        {task?.pullRequestLink &&
-          permissions.doesCareAboutPRs &&
-          (expanded ? (
-            <Typography
-              onClick={() => window.open(`${task?.pullRequestLink}`, "_blank")}
-              sx={{
-                "&:hover": {textDecoration: "underline"},
-                cursor: "pointer",
-                width: "fit-content",
-                mb: 2
-              }}
-              color="text.disabled"
-            >
-              {task.pullRequestLink}
-            </Typography>
-          ) : (
-            <Typography sx={{mb: 2}} color="text.disabled" variant="body2">
-              {task.pullRequestLink}
-            </Typography>
-          ))}
-
         <Stack direction="row" justifyContent="space-between" spacing={1}>
           <Button
             variant={timer.lastStarted ? "contained" : "outlined"}
@@ -369,14 +342,6 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
         </Stack>
       </Paper>
       <Menu anchorEl={anchorEl} open={open} onClick={() => setAnchorEl(null)}>
-        {timer.task && permissions.doesCareAboutPRs && (
-          <MenuItem onClick={() => setOpenPRLink(!openPRLink)}>
-            <ListItemIcon>
-              <GitHub />
-            </ListItemIcon>
-            {"Pull Request"}
-          </MenuItem>
-        )}
         <MenuItem onClick={() => setOpenDateModal(!openDateModal)}>
           <ListItemIcon>
             <CalendarIcon />
@@ -400,36 +365,6 @@ export const TimerItem: FC<TimerItemProps> = ({timer, projectOptions}) => {
           {"Delete Timer"}
         </MenuItem>
       </Menu>
-      <DialogForm
-        open={openPRLink}
-        onClose={() => setOpenPRLink(false)}
-        onSubmit={() =>
-          session.task
-            .modify(timer.task!, {pullRequestLink: {Assign: prLink}})
-            .then((newTask) => {
-              setSortedTaskOptions((prev) =>
-                prev.map((t) => (t._id === newTask._id ? newTask : t))
-              )
-            })
-        }
-        title={
-          task?.pullRequestLink
-            ? "Edit Pull Request Link"
-            : "Create Pull Request Link"
-        }
-        submitLabel="Save PR"
-      >
-        <Typography sx={{mb: 2}}>{`This will ${
-          task?.pullRequestLink ? "edit the current " : "create a "
-        } pull request link on the selected task`}</Typography>
-        <TextField
-          label="Pull Request Link"
-          value={prLink}
-          onChange={(e) => setPRLink(e.target.value)}
-          fullWidth
-          sx={{my: 2}}
-        />
-      </DialogForm>
       <DialogForm
         open={openDateModal}
         onClose={() => setOpenDateModal(false)}

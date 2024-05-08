@@ -21,7 +21,7 @@ export const TaskTab: FC<TaskTabProps> = ({project}) => {
       {(permissions.canManageAllTasks || permissions.canReportNewTasks) && (
         <div style={{textAlign: "right"}}>
           <AddTaskButton
-            project={project}
+            projects={[project]}
             afterSubmit={() => setRefreshTrigger((prev) => prev + 1)}
             sx={{mb: 1}}
           />

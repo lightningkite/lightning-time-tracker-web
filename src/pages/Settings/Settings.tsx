@@ -1,4 +1,4 @@
-import {CheckBox, DarkMode, LightMode} from "@mui/icons-material"
+import {DarkMode, LightMode} from "@mui/icons-material"
 import {
   Button,
   Card,
@@ -13,7 +13,6 @@ import {
   Typography
 } from "@mui/material"
 import {logout} from "api/useSessionManager"
-import FormSection from "components/FormSection"
 import PageHeader from "components/PageHeader"
 import {UserForm} from "components/UserForm"
 import {usePermissions} from "hooks/usePermissions"
@@ -22,12 +21,12 @@ import React, {useContext} from "react"
 import {AuthContext} from "utils/context"
 import {parsePreferences} from "utils/helpers"
 import {ColorPicker} from "./ColorPicker"
+import {FormSection} from "components/FormSection"
 
 export interface WebPreferences {
   mode: "light" | "dark"
   themeColor: string
   summaryTime: "day" | "week"
-  favoritePrefrences: "show" | "dontShow"
 }
 
 const Settings: FC = () => {
@@ -109,36 +108,6 @@ const Settings: FC = () => {
                       value="week"
                       control={<Radio />}
                       label="This Week"
-                    />
-                  </RadioGroup>
-                </FormControl>
-              </FormSection>
-              <FormSection>
-                <FormControl>
-                  <FormLabel>Show Favorites</FormLabel>
-                  <FormHelperText>
-                    Choose if the Recents and Favorites section of Project
-                    Boards is shown
-                  </FormHelperText>
-                  <RadioGroup
-                    value={preferences.favoritePrefrences}
-                    onChange={(e) =>
-                      updatePreferences({
-                        favoritePrefrences: e.target.value as
-                          | "show"
-                          | "dontShow"
-                      })
-                    }
-                  >
-                    <FormControlLabel
-                      value="show"
-                      control={<Radio />}
-                      label="Show"
-                    />
-                    <FormControlLabel
-                      value="dontShow"
-                      control={<Radio />}
-                      label="Hide"
                     />
                   </RadioGroup>
                 </FormControl>

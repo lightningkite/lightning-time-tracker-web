@@ -42,7 +42,7 @@ export const TaskListItem: FC<TaskListItemProps> = ({
   const permissions = usePermissions()
 
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
-  const isMine = currentUser._id === annotatedTask.user
+  const isMine = annotatedTask.user === currentUser._id
 
   const taskPercentBudget = annotatedTask.estimate
     ? (annotatedTask._annotations.totalTaskHours / annotatedTask.estimate) * 100
@@ -99,10 +99,12 @@ export const TaskListItem: FC<TaskListItemProps> = ({
               justifyContent="space-between"
               spacing={1}
             >
-              <Typography variant="body2" color="text.secondary">
-                {taskStateLabels[annotatedTask.state].toUpperCase()}{" "}
-                &nbsp;&#x2022;&nbsp; {annotatedTask.userName}
-              </Typography>
+              <Stack direction="row" spacing={1}>
+                <Typography variant="body2" color="text.secondary">
+                  {taskStateLabels[annotatedTask.state].toUpperCase()}{" "}
+                  &nbsp;&#x2022;&nbsp; {annotatedTask.userName}
+                </Typography>
+              </Stack>
               {!isMobile && permissions.canSubmitTime && (
                 <Box sx={{width: "8rem"}}>
                   <Typography

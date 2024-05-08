@@ -164,7 +164,7 @@ export const ProjectsTasks: FC = () => {
                 <Typography variant="h2">{project?.name}</Typography>
                 {permissions.canManageAllTasks && (
                   <AddTaskButton
-                    project={project}
+                    projects={[project!]}
                     afterSubmit={(newAnnotatedTask) =>
                       setAnnotatedTasks([
                         ...(annotatedTasks ?? []),
@@ -209,20 +209,22 @@ export const ProjectsTasks: FC = () => {
           )
         })}
 
-      <TaskModal
-        task={focusTask}
-        handleClose={() => {
-          urlParams.delete("task")
-          setUrlParams(urlParams)
-          setFocusTask(null)
-        }}
-        setTask={(task) => {
-          setAnnotatedTasks(
-            (prev) =>
-              prev?.map((t) => (t._id === task._id ? {...t, ...task} : t))
-          )
-        }}
-      />
+      {focusTask && (
+        <TaskModal
+          task={focusTask}
+          handleClose={() => {
+            urlParams.delete("task")
+            setUrlParams(urlParams)
+            setFocusTask(null)
+          }}
+          setTask={(task) => {
+            setAnnotatedTasks(
+              (prev) =>
+                prev?.map((t) => (t._id === task._id ? {...t, ...task} : t))
+            )
+          }}
+        />
+      )}
     </Box>
   )
 }

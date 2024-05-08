@@ -98,7 +98,7 @@ export interface Task {
     createdAt: Instant
     createdBy: UUID
     creatorName: string | null | undefined
-    pullRequestLink: string | null | undefined
+    pullRequestLinks: Array<string> | null | undefined
 }
 
 export enum TaskState {
@@ -3689,3 +3689,4 @@ export class LiveApi implements Api {
         },
     }
 }
+

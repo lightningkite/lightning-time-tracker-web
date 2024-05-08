@@ -18,7 +18,7 @@ import {
 } from "@mui/material"
 import type {Project, User} from "api/sdk"
 import {UserRole} from "api/sdk"
-import FormSection from "components/FormSection"
+import {FormSection} from "components/FormSection"
 import {useFormik} from "formik"
 import type {FC} from "react"
 import React, {useContext, useEffect, useState} from "react"

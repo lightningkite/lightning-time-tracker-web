@@ -44,7 +44,7 @@ const validationSchema = yup.object().shape({
 export interface AddTaskButtonProps extends ButtonProps {
   afterSubmit: (task: AnnotatedTask) => void
   state?: TaskState
-  project?: Project
+  projects?: Project[]
   user?: User
   sx?: SxProps
 }
@@ -52,9 +52,9 @@ export interface AddTaskButtonProps extends ButtonProps {
 export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
   const {
     afterSubmit,
-    project: initialProject,
     user: initialUser,
     state: initialState,
+    projects: initialProject,
     ...rest
   } = props
   const {session, currentUser, currentOrganization} = useContext(AuthContext)
@@ -71,13 +71,13 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
 
   useEffect(() => {
     setTimeout(setInputFocus, 100)
-    setTagOptions(initialProject?.projectTags)
+    setTagOptions(initialProject?.[0]?.projectTags)
   }, [showCreateForm])
 
   const formik = useFormik({
     initialValues: {
       user: initialUser ?? permissions.canBeAssignedTasks ? currentUser : null,
-      project: initialProject ?? null,
+      project: initialProject?.[0] ?? null,
       summary: "",
       description: "",
       estimate: "",
@@ -104,7 +104,7 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
         createdAt: new Date().toISOString(),
         createdBy: currentUser._id,
         creatorName: currentUser.name,
-        pullRequestLink: null
+        pullRequestLinks: []
       })
 
       afterSubmit({
@@ -159,7 +159,8 @@ export const AddTaskButton: FC<AddTaskButtonProps> = (props) => {
             />
           )}
 
-          {!initialProject && (
+          {((initialProject && initialProject?.length > 1) ??
+            !initialProject) && (
             <RestAutocompleteInput
               label="Project"
               restEndpoint={session.project}

@@ -1,17 +1,13 @@
 import {HoverHelp} from "@lightningkite/mui-lightning-components"
 import {CheckCircle, Done, Undo} from "@mui/icons-material"
 import {
-  Box,
   CircularProgress,
   IconButton,
   ListItemIcon,
   Menu,
-  MenuItem,
-  Modal,
-  TextField,
-  Typography
+  MenuItem
 } from "@mui/material"
-import {Task, TaskState} from "api/sdk"
+import {type Task, TaskState} from "api/sdk"
 import DialogForm, {shouldPreventSubmission} from "components/DialogForm"
 import {useFormik} from "formik"
 import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
@@ -19,26 +15,8 @@ import type {FC} from "react"
 import React, {useContext, useState} from "react"
 import {AuthContext} from "utils/context"
 import * as yup from "yup"
-import {
-  makeFormikNumericTextFieldProps,
-  makeFormikTextFieldProps
-} from "@lightningkite/mui-lightning-components"
-import {
-  Modification,
-  makeObjectModification
-} from "@lightningkite/lightning-server-simplified"
-
-const style = {
-  position: "absolute" as "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4
-}
+import {makeObjectModification} from "@lightningkite/lightning-server-simplified"
+import {PullRequestSection} from "components/PullRequestSection/PullRequestSection"
 
 interface TaskStateAction {
   label: string
@@ -87,10 +65,6 @@ export interface TaskStateActionButtonProps {
   refreshDashboard: () => Promise<void>
 }
 
-const validationSchema = yup.object().shape({
-  url: yup.string().required("Required")
-})
-
 export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
   props
 ) => {
@@ -100,6 +74,7 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [isChangingState, setIsChangingState] = useState(false)
   const [modalIsOpen, setModalIsOpen] = useState(false)
+
   const handleModalClose = () => {
     setModalIsOpen(false)
     formik.resetForm()
@@ -132,12 +107,11 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
   }
   const formik = useFormik({
     initialValues: {
-      url: ""
+      url: annotatedTask.pullRequestLinks ?? []
     },
-    validationSchema,
     onSubmit: async (values) => {
       const task: Partial<Task> = {
-        pullRequestLink: values.url,
+        pullRequestLinks: values.url,
         state: TaskState.PullRequest
       }
       const modification = makeObjectModification(annotatedTask, task)
@@ -160,11 +134,10 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
           }
         }}
       >
-        <TextField
-          label="URL"
-          placeholder="Put Pull Request URL here"
-          fullWidth
-          {...makeFormikTextFieldProps(formik, "url")}
+        <PullRequestSection
+          edit
+          urls={formik.values.url}
+          setUrls={(u) => formik.setFieldValue("url", u)}
         />
       </DialogForm>
       {isChangingState ? (
@@ -185,6 +158,7 @@ export const TaskStateActionButton: FC<TaskStateActionButtonProps> = (
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
         {next?.map((next) => (
           <MenuItem
+            key={next.nextState}
             onClick={() => {
               changeTaskStatus(next.nextState)
             }}

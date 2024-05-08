@@ -7,7 +7,7 @@ import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
 import type {AnnotatedTask} from "hooks/useAnnotatedEndpoints"
 import {usePermissions} from "hooks/usePermissions"
-import type {FC} from "react"
+import {type FC} from "react"
 import {useDrop} from "react-dnd"
 import {taskStateLabels} from "utils/helpers"
 import {TaskCard} from "./TaskCard"
@@ -16,16 +16,25 @@ import {useSearchParams} from "react-router-dom"
 dayjs.extend(duration)
 
 export interface TaskStateColumnProps {
-  project: Project
+  projects: Project[]
   state: TaskState
   tasks: AnnotatedTask[] | undefined
   updateTask: (task: Task) => void
   handleDrop: (task: AnnotatedTask, newState: TaskState) => void
   onAddedTask: (task: AnnotatedTask) => void
+  showProject: boolean
 }
 
 export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
-  const {state, tasks, handleDrop, project, onAddedTask, updateTask} = props
+  const {
+    state,
+    tasks,
+    handleDrop,
+    projects,
+    onAddedTask,
+    updateTask,
+    showProject
+  } = props
   const permissions = usePermissions()
 
   const [urlParams, setUrlParams] = useSearchParams()
@@ -99,7 +108,7 @@ export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
                   sx={{mb: 1.5}}
                   fullWidth
                   variant="outlined"
-                  project={project}
+                  projects={projects}
                   state={state}
                 />
               )}
@@ -124,6 +133,7 @@ export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
                       key={task._id}
                       task={task}
                       onClick={() => changeSelectedTask(task)}
+                      showProject={showProject}
                     />
                   ))}
               </Stack>
@@ -131,12 +141,13 @@ export const TaskStateColumn: FC<TaskStateColumnProps> = (props) => {
           )
         })()}
       </Box>
-
-      <TaskModal
-        task={selectedTask}
-        handleClose={() => changeSelectedTask(null)}
-        setTask={updateTask}
-      />
+      {selectedTask && (
+        <TaskModal
+          task={selectedTask}
+          handleClose={() => changeSelectedTask(null)}
+          setTask={updateTask}
+        />
+      )}
     </>
   )
 }

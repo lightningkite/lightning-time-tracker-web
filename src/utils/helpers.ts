@@ -85,8 +85,7 @@ export function parsePreferences(
   const defaultPreferences: WebPreferences = {
     mode: "dark",
     themeColor: "#90D1FF",
-    summaryTime: "week",
-    favoritePrefrences: "show"
+    summaryTime: "week"
   }
   try {
     const parsed = JSON.parse(

@@ -13,7 +13,7 @@ export const FormSection: FC<PropsWithChildren<FormSectionProps>> = (props) => {
   const {title, titleIcon, subtitle, disableTopPadding, children} = props
 
   return (
-    <Box pt={disableTopPadding ? undefined : 6} className="hcp-form-section">
+    <Box pt={disableTopPadding ? undefined : 6}>
       {title && (
         <Stack
           direction="row"
@@ -27,7 +27,7 @@ export const FormSection: FC<PropsWithChildren<FormSectionProps>> = (props) => {
         </Stack>
       )}
       {subtitle && (
-        <Typography variant="body2" sx={{color: "#888"}}>
+        <Typography variant="body2" color="text.disabled">
           {subtitle}
         </Typography>
       )}

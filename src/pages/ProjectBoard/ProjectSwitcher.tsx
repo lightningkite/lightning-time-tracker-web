@@ -24,22 +24,20 @@ export const ProjectSwitcher: FC<ProjectSwitcherProps> = (props) => {
   }
 
   return (
-    <>
-      <Autocomplete
-        disableClearable
-        options={projects.sort((a, _) => (isMyProject(a) ? -1 : 1))}
-        onChange={(_, e) => onSelect(Array.isArray(e) ? e : [e])}
-        value={selected}
-        sx={{width: 300, minWidth: 200, mt: 1, mb: 2, ml: 2}}
-        renderInput={(params) => <TextField {...params} />}
-        getOptionLabel={(options) => options.name}
-        isOptionEqualToValue={(options, value) => options._id === value._id}
-        groupBy={(options) =>
-          isMyProject(options) ? "My Projects" : "Other Projects"
-        }
-        disabled={disabled}
-      />
-    </>
+    <Autocomplete
+      disableClearable
+      options={projects.sort((a, _) => (isMyProject(a) ? -1 : 1))}
+      onChange={(_, e) => onSelect(Array.isArray(e) ? e : [e])}
+      value={selected}
+      sx={{width: 300, minWidth: 200, mt: 1, mb: 2, ml: 2}}
+      renderInput={(params) => <TextField {...params} />}
+      getOptionLabel={(options) => options.name}
+      isOptionEqualToValue={(options, value) => options._id === value._id}
+      groupBy={(options) =>
+        isMyProject(options) ? "My Projects" : "Other Projects"
+      }
+      disabled={disabled}
+    />
   )
 }
 1

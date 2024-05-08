@@ -24,7 +24,6 @@ import {AuthContext} from "utils/context"
 import {CompactColumn} from "./CompactColumn"
 import {ProjectSwitcher} from "./ProjectSwitcher"
 import {TaskStateColumn} from "./TaskStateColumn"
-import {RecentFavoriteProjectsSwitcher} from "./RecentFavoriteProjectsSwitcher"
 import {type Condition} from "@lightningkite/lightning-server-simplified"
 import {parsePreferences} from "utils/helpers"
 import {HiddenTaskTable} from "./HiddenTaskTable"
@@ -35,7 +34,6 @@ import {
   filtersToTaskUserCondition,
   filtersToTaskTagsCondition
 } from "./ProjectBoardFilterBar"
-import {start} from "repl"
 
 export const ProjectBoard: FC = () => {
   const {session, currentUser} = useContext(AuthContext)
@@ -54,8 +52,6 @@ export const ProjectBoard: FC = () => {
   const [state, dispatch] = useReducer(reducer, {status: "loadingProjects"})
   const taskRefreshTrigger = usePeriodicRefresh(10 * 60)
   const smallScreen = useMediaQuery("(max-width: 1400px)")
-
-  const preferences = parsePreferences(currentUser.webPreferences)
 
   const alwaysHiddenTaskStates = [TaskState.Cancelled, TaskState.Delivered]
 
@@ -216,13 +212,6 @@ export const ProjectBoard: FC = () => {
             onSelect={onChangeProject}
             disabled={projectBoardFilterValues?.projects !== null}
           />
-
-          {preferences.favoritePrefrences === "show" && (
-            <RecentFavoriteProjectsSwitcher
-              projects={state.projects}
-              onSelect={onChangeProject}
-            />
-          )}
         </Stack>
         <ProjectBoardFilterBar
           setProjectBoardFilterValues={setProjectBoardFilterValues}

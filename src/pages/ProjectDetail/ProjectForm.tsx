@@ -5,7 +5,7 @@ import {
 } from "@lightningkite/mui-lightning-components"
 import {LoadingButton} from "@mui/lab"
 import {Alert, InputAdornment, Stack, TextField} from "@mui/material"
-import type {Project} from "api/sdk"
+import {UserRole, type Project} from "api/sdk"
 import {useFormik} from "formik"
 import {usePermissions} from "hooks/usePermissions"
 import type {FC} from "react"
@@ -25,7 +25,7 @@ export interface ProjectFormProps {
 
 export const ProjectForm: FC<ProjectFormProps> = (props) => {
   const {project, setProject} = props
-  const {session} = useContext(AuthContext)
+  const {session, currentUser} = useContext(AuthContext)
   const permissions = usePermissions()
 
   const [error, setError] = useState("")
@@ -79,14 +79,18 @@ export const ProjectForm: FC<ProjectFormProps> = (props) => {
         {...makeFormikTextFieldProps(formik, "name")}
         disabled={!canEdit}
       />
-      <TextField
-        label="Rate"
-        {...makeFormikNumericTextFieldProps(formik, "rate")}
-        InputProps={{
-          startAdornment: <InputAdornment position="start">$</InputAdornment>
-        }}
-        disabled={!canEdit}
-      />
+      {(currentUser.role === UserRole.Client ||
+        currentUser.role === UserRole.Owner ||
+        currentUser.role === UserRole.InternalTeamMember) && (
+        <TextField
+          label="Rate"
+          {...makeFormikNumericTextFieldProps(formik, "rate")}
+          InputProps={{
+            startAdornment: <InputAdornment position="start">$</InputAdornment>
+          }}
+          disabled={!canEdit}
+        />
+      )}
       {canEdit && (
         <TextField
           label="Notes"

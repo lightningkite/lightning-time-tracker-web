@@ -1,6 +1,6 @@
 import {Add} from "@mui/icons-material"
 import {Button, TextField} from "@mui/material"
-import type {Project} from "api/sdk"
+import {UserRole, type Project} from "api/sdk"
 import {useState, type FC, useContext} from "react"
 import DialogForm from "./DialogForm"
 import {AuthContext} from "utils/context"
@@ -12,7 +12,7 @@ export interface AddTagButtonProps {
 
 export const AddTagButton: FC<AddTagButtonProps> = (props) => {
   const {project, updateTable} = props
-  const {session} = useContext(AuthContext)
+  const {session, currentUser} = useContext(AuthContext)
 
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [newTag, setNewTag] = useState("")
@@ -35,27 +35,32 @@ export const AddTagButton: FC<AddTagButtonProps> = (props) => {
 
   return (
     <>
-      <Button
-        onClick={() => setShowCreateForm(true)}
-        startIcon={<Add />}
-        sx={{mb: 1}}
-      >
-        Create Tag
-      </Button>
+      {(currentUser.role == UserRole.Owner ||
+        currentUser.role === UserRole.InternalTeamMember) && (
+        <>
+          <Button
+            onClick={() => setShowCreateForm(true)}
+            startIcon={<Add />}
+            sx={{mb: 1}}
+          >
+            Create Tag
+          </Button>
 
-      <DialogForm
-        title="New Tag"
-        open={showCreateForm}
-        onClose={onClose}
-        onSubmit={submitting}
-      >
-        <TextField
-          label="Create New Tag"
-          value={newTag}
-          onChange={(e) => setNewTag(e.target.value)}
-          fullWidth
-        />
-      </DialogForm>
+          <DialogForm
+            title="New Tag"
+            open={showCreateForm}
+            onClose={onClose}
+            onSubmit={submitting}
+          >
+            <TextField
+              label="Create New Tag"
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              fullWidth
+            />
+          </DialogForm>
+        </>
+      )}
     </>
   )
 }

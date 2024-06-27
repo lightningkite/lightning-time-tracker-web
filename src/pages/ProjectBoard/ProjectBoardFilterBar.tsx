@@ -45,7 +45,7 @@ export const ProjectBoardFilterBar: FC<{
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const options: FilterOption<any>[] =
-      tags?.length !== 0
+      tags?.length !== 0 && tags !== undefined
         ? [
             {
               type: "multiSelect",

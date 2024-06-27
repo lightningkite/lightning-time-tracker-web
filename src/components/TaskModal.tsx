@@ -1,4 +1,4 @@
-import {Cancel, Close, Edit} from "@mui/icons-material"
+import {Cancel, Close, CopyAll, Edit, Link} from "@mui/icons-material"
 import {
   Autocomplete,
   Box,
@@ -47,6 +47,7 @@ import {AuthContext} from "utils/context"
 import * as yup from "yup"
 import {TabContext, TabList, TabPanel, LoadingButton} from "@mui/lab"
 import {DeleteTaskButton} from "pages/TaskDetail/DeleteTaskButton"
+import {useThrottle} from "@lightningkite/react-lightning-helpers"
 
 const validationSchema = yup.object().shape({
   project: yup.object().required("Required"),
@@ -71,6 +72,7 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
   const [error, setError] = useState("")
   const [edit, setEdit] = useState(false)
   const [editTitle, setEditTitle] = useState(false)
+  const [copyUrlText, setCopyUrlText] = useState("Copy Link")
 
   const [loadedInitialAsyncValues, setLoadedInitialAsyncValues] =
     useState(false)
@@ -148,6 +150,14 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
       .catch(() => alert("Error loading initial values"))
   }, [])
 
+  useEffect(() => {
+    const cleanup = setTimeout(() => {
+      setCopyUrlText("Copy Link")
+    }, 3000)
+
+    return () => clearTimeout(cleanup)
+  }, [copyUrlText])
+
   return (
     <Dialog open={!!task} onClose={handleClose} maxWidth="md" fullWidth>
       <DialogTitle sx={{pr: 5}}>
@@ -167,6 +177,24 @@ export const TaskModal: FC<TaskModalProps> = (props) => {
           )}
         </Stack>
         <Typography color="text.disabled">{task?.projectName}</Typography>
+        <Tooltip title={copyUrlText}>
+          <IconButton
+            onClick={() => {
+              setCopyUrlText("Copied!")
+              navigator.clipboard.writeText(
+                `${window.location.origin}/projects/${task?.project}/tasks/${task?._id}`
+              )
+            }}
+            sx={{
+              position: "absolute",
+              right: 64,
+              top: 8,
+              color: (theme) => theme.palette.grey[500]
+            }}
+          >
+            <Link />
+          </IconButton>
+        </Tooltip>
         <Tooltip title="Close">
           <IconButton
             onClick={handleClose}

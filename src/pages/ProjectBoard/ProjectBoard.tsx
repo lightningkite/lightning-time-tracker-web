@@ -132,7 +132,10 @@ export const ProjectBoard: FC = () => {
           filtersToTaskUserCondition(projectBoardFilterValues),
           filtersToTaskTagsCondition(projectBoardFilterValues)
         ]
-      : [{state: {NotInside: hiddenTaskStates}}]
+      : [
+          {state: {NotInside: hiddenTaskStates}},
+          {project: {Inside: state.selected.flatMap((p) => p._id)}}
+        ]
 
     annotatedTaskEndpoint
       .query({condition: {And: conditions}, limit: 1000})

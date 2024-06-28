@@ -25,7 +25,6 @@ import {CompactColumn} from "./CompactColumn"
 import {ProjectSwitcher} from "./ProjectSwitcher"
 import {TaskStateColumn} from "./TaskStateColumn"
 import {type Condition} from "@lightningkite/lightning-server-simplified"
-import {parsePreferences} from "utils/helpers"
 import {HiddenTaskTable} from "./HiddenTaskTable"
 import {
   ProjectBoardFilterBar,

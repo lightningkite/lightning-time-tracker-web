@@ -115,7 +115,7 @@ export const ProjectBoardFilterBar: FC<{
     return options.filter(
       (o) => permissions.canViewIndividualUsers || o.name !== FilterNames.USERS
     )
-  }, [users, projects, selectedProjects])
+  }, [users, projects, selectedProjects, tags])
 
   if (!users || !projects) return <Skeleton height={70} />
 

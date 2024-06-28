@@ -1,8 +1,7 @@
-import {Add, Clear} from "@mui/icons-material"
-import {Autocomplete, TextField, IconButton, Stack} from "@mui/material"
+import {Autocomplete, TextField} from "@mui/material"
 import type {Project} from "api/sdk"
 import type {FC} from "react"
-import React, {useContext, useState} from "react"
+import React, {useContext} from "react"
 import {AuthContext} from "utils/context"
 
 export interface ProjectSwitcherProps {

@@ -40,6 +40,27 @@ export const ProjectBoardFilterBar: FC<{
   const [projects, setProjects] = useState<Project[]>(selectedProjects)
   const [tags, setTags] = useState<string[]>()
 
+  useEffect(() => {
+    session.user
+      .query({condition: {organization: {Equal: currentUser.organization}}})
+      .then(setUsers)
+      .catch(console.error)
+    session.project
+      .query({condition: {organization: {Equal: currentUser.organization}}})
+      .then(setProjects)
+      .catch(console.error)
+    session.project
+      .query({
+        condition: {
+          And: [
+            {_id: {Inside: selectedProjects.map((p) => p._id)}},
+            {organization: {Equal: currentUser.organization}}
+          ]
+        }
+      })
+      .then((projects) => setTags(projects.flatMap((p) => p.projectTags)))
+  }, [selectedProjects])
+
   const filterOptions = useMemo(() => {
     if (!users || !projects) return []
 
@@ -94,28 +115,7 @@ export const ProjectBoardFilterBar: FC<{
     return options.filter(
       (o) => permissions.canViewIndividualUsers || o.name !== FilterNames.USERS
     )
-  }, [users, projects, selectedProjects])
-
-  useEffect(() => {
-    session.user
-      .query({condition: {organization: {Equal: currentUser.organization}}})
-      .then(setUsers)
-      .catch(console.error)
-    session.project
-      .query({condition: {organization: {Equal: currentUser.organization}}})
-      .then(setProjects)
-      .catch(console.error)
-    session.project
-      .query({
-        condition: {
-          And: [
-            {_id: {Inside: selectedProjects.map((p) => p._id)}},
-            {organization: {Equal: currentUser.organization}}
-          ]
-        }
-      })
-      .then((projects) => setTags(projects.flatMap((p) => p.projectTags)))
-  }, [selectedProjects])
+  }, [users, projects, selectedProjects, tags])
 
   if (!users || !projects) return <Skeleton height={70} />
 

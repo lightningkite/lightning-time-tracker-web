@@ -46,8 +46,6 @@ import {makeObjectModification} from "@lightningkite/lightning-server-simplified
 import {AuthContext} from "utils/context"
 import * as yup from "yup"
 import {TabContext, TabList, TabPanel, LoadingButton} from "@mui/lab"
-import {DeleteTaskButton} from "pages/TaskDetail/DeleteTaskButton"
-import {useThrottle} from "@lightningkite/react-lightning-helpers"
 
 const validationSchema = yup.object().shape({
   project: yup.object().required("Required"),

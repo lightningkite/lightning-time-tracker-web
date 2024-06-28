@@ -1,5 +1,14 @@
 import {TabContext, TabList, TabPanel} from "@mui/lab"
-import {Card, CardContent, Container, Paper, Tab} from "@mui/material"
+import {
+  Card,
+  CardContent,
+  Container,
+  IconButton,
+  Paper,
+  Stack,
+  Tab,
+  Tooltip
+} from "@mui/material"
 import type {Task} from "api/sdk"
 import {CommentSection} from "components/CommentSection"
 import ErrorAlert from "components/ErrorAlert"
@@ -14,6 +23,7 @@ import {AuthContext} from "utils/context"
 import {DeleteTaskButton} from "./DeleteTaskButton"
 import {TaskForm} from "./TaskForm"
 import {TimeEntryTab} from "./TimeEntryTab"
+import {Link} from "@mui/icons-material"
 
 const MAX_TITLE_LENGTH = 40
 
@@ -25,6 +35,7 @@ const TaskDetail: FC = () => {
 
   const [task, setTask] = useState<Task | null>()
   const [tab, setTab] = useState("1")
+  const [copyUrlText, setCopyUrlText] = useState("Copy Link")
 
   useEffect(() => {
     session.task
@@ -32,6 +43,14 @@ const TaskDetail: FC = () => {
       .then(setTask)
       .catch(() => setTask(null))
   }, [taskId])
+
+  useEffect(() => {
+    const cleanup = setTimeout(() => {
+      setCopyUrlText("Copy Link")
+    }, 3000)
+
+    return () => clearTimeout(cleanup)
+  }, [copyUrlText])
 
   const shortSummary = useMemo(() => {
     if (!task) return ""
@@ -82,7 +101,28 @@ const TaskDetail: FC = () => {
   return (
     <Container maxWidth="md">
       <PageHeader title={shortSummary} breadcrumbs={breadcrumbs}>
-        {permissions.canManageAllTasks && <DeleteTaskButton task={task} />}
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Tooltip title={copyUrlText}>
+            <IconButton
+              onClick={() => {
+                setCopyUrlText("Copied!")
+                navigator.clipboard.writeText(
+                  `${window.location.origin}/projects/${task?.project}/tasks/${task?._id}`
+                )
+              }}
+              sx={{
+                color: (theme) => theme.palette.grey[500]
+              }}
+            >
+              <Link />
+            </IconButton>
+          </Tooltip>
+          {permissions.canManageAllTasks && <DeleteTaskButton task={task} />}
+        </Stack>
       </PageHeader>
 
       <Card>

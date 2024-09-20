@@ -119,6 +119,8 @@ export const ProjectBoardFilterBar: FC<{
 
   if (!users || !projects) return <Skeleton height={70} />
 
+  console.log(tags)
+
   return (
     <>
       <FilterBar
@@ -169,7 +171,10 @@ export function filtersToTaskTagsCondition(
 ): Condition<Task> {
   const {tags} = tfilters
 
+  // if (tags)
   return tags
     ? {tags: {SetAnyElements: {Inside: tags.map((t) => t)}}}
-    : {Always: true}
+    : // : tags.length === 0
+      // ? {tags: {Equal: []}}
+      {Always: true}
 }

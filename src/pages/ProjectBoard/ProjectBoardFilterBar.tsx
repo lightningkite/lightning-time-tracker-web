@@ -119,8 +119,6 @@ export const ProjectBoardFilterBar: FC<{
 
   if (!users || !projects) return <Skeleton height={70} />
 
-  console.log(tags)
-
   return (
     <>
       <FilterBar

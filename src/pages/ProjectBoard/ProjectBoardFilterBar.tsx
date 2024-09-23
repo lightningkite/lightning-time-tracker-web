@@ -171,10 +171,8 @@ export function filtersToTaskTagsCondition(
 ): Condition<Task> {
   const {tags} = tfilters
 
-  // if (tags)
+  if (tags && tags.length === 0) return {tags: {Equal: []}}
   return tags
     ? {tags: {SetAnyElements: {Inside: tags.map((t) => t)}}}
-    : // : tags.length === 0
-      // ? {tags: {Equal: []}}
-      {Always: true}
+    : {Always: true}
 }

@@ -18,7 +18,7 @@ terraform {
 terraform {
   backend "s3" {
     bucket = "lightningkite-terraform"
-    key    = "lktime-web"
+    key    = "TimeTracker/prod/old-app"
     region = "us-west-2"
   }
 }

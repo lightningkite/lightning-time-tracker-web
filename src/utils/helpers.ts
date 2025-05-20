@@ -43,7 +43,13 @@ const taskStateOrder: Record<TaskState, number> = {
   [TaskState.Testing]: 2,
   [TaskState.Approved]: 3,
   [TaskState.Delivered]: 4,
-  [TaskState.Cancelled]: 5
+  [TaskState.Cancelled]: 5,
+  [TaskState.Ready]: 0,
+  [TaskState.Review]: 0,
+  [TaskState.HigherReview]: 0,
+  [TaskState.FinalReview]: 0,
+  [TaskState.PartialDelivery1]: 0,
+  [TaskState.PartialDelivery2]: 0
 }
 
 export function compareTasksByState(a: Task, b: Task): number {
@@ -158,7 +164,13 @@ export const taskStateLabels: Record<TaskState, string> = {
   [TaskState.PullRequest]: "Pull Request",
   [TaskState.Testing]: "Testing",
   [TaskState.Approved]: "Customer Review",
-  [TaskState.Delivered]: "Delivered"
+  [TaskState.Delivered]: "Delivered",
+  [TaskState.Ready]: "Ready",
+  [TaskState.Review]: "Review",
+  [TaskState.HigherReview]: "Higher Review",
+  [TaskState.FinalReview]: "Final Review",
+  [TaskState.PartialDelivery1]: "Partial Delivery 1",
+  [TaskState.PartialDelivery2]: "Partial Delivery 2"
 }
 
 export function getNameInitials(name: string): string {

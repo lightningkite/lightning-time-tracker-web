@@ -153,7 +153,13 @@ export const ProjectBoard: FC = () => {
       [TaskState.Hold]: [],
       [TaskState.Testing]: [],
       [TaskState.Approved]: [], // Unused
-      [TaskState.Cancelled]: [] // Unused
+      [TaskState.Cancelled]: [], // Unused
+      [TaskState.Ready]: [],
+      [TaskState.Review]: [],
+      [TaskState.HigherReview]: [],
+      [TaskState.FinalReview]: [],
+      [TaskState.PartialDelivery1]: [],
+      [TaskState.PartialDelivery2]: []
     }
 
     if ("tasks" in state) {

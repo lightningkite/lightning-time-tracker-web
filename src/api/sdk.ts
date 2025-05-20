@@ -102,13 +102,19 @@ export interface Task {
 }
 
 export enum TaskState {
-    Cancelled = "Cancelled",
     Hold = "Hold",
+    Ready = "Ready",
     Active = "Active",
     PullRequest = "PullRequest",
     Testing = "Testing",
+    Review = "Review",
+    HigherReview = "HigherReview",
+    FinalReview = "FinalReview",
     Approved = "Approved",
+    PartialDelivery1 = "PartialDelivery1",
+    PartialDelivery2 = "PartialDelivery2",
     Delivered = "Delivered",
+    Cancelled = "Cancelled",
 }
 
 export interface TimeEntry {

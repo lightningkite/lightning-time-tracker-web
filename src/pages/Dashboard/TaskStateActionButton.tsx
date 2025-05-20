@@ -57,6 +57,30 @@ const actions: Record<
   [TaskState.Cancelled]: {
     back: null,
     next: null
+  },
+  [TaskState.Ready]: {
+    back: null,
+    next: null
+  },
+  [TaskState.Review]: {
+    back: null,
+    next: null
+  },
+  [TaskState.HigherReview]: {
+    back: null,
+    next: null
+  },
+  [TaskState.FinalReview]: {
+    back: null,
+    next: null
+  },
+  [TaskState.PartialDelivery1]: {
+    back: null,
+    next: null
+  },
+  [TaskState.PartialDelivery2]: {
+    back: null,
+    next: null
   }
 }
 

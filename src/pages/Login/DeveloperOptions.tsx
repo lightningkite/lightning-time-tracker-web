@@ -33,7 +33,7 @@ export const backendURLOptions: URLOption[] = [
   },
   {
     label: "Prod",
-    url: "https://time.cs.lightningkite.com"
+    url: "https://lk.api.lightningtime.com"
   }
 ]
 
